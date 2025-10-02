@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="BottomNavLabelStyle">
+        <item name="android:textSize">11sp</item>
+    </style>
+
+    <style name="Widget.App.BottomNavigationView" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="itemPaddingTop">4dp</item> <item name="itemPaddingBottom">4dp</item> </style>
+</resources>
