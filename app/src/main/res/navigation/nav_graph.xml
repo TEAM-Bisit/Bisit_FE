@@ -20,4 +20,10 @@
         android:name="com.example.naeottae.ui.myPage.MyPageFragment"
         android:label="My Page"
         tools:layout="@layout/fragment_my_page" />
+
+    <fragment
+        android:id="@+id/homeListFragment"
+        android:name="com.example.naeottae.ui.home.HomeListFragment"
+        android:label="Home List"
+        tools:layout="@layout/fragment_home_list" />
 </navigation>
