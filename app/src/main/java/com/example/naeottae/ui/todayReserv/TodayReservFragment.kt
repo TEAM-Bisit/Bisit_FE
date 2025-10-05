@@ -1,4 +1,4 @@
-package com.example.naeottae.ui.reservation
+package com.example.naeottae.ui.todayReserv
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -6,17 +6,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.example.naeottae.R
-import com.example.naeottae.databinding.FragmentReservationBinding
+import com.example.naeottae.databinding.FragmentTodayReservBinding
 
-class ReservationFragment : Fragment() {
-    private var _binding: FragmentReservationBinding? = null
+class TodayReservFragment : Fragment() {
+    private var _binding: FragmentTodayReservBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentReservationBinding.inflate(inflater, container, false)
+        _binding = FragmentTodayReservBinding.inflate(inflater, container, false)
         return binding.root
     }
 

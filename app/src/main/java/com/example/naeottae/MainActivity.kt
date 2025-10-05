@@ -15,6 +15,16 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val userType = intent.getStringExtra("USER_TYPE")
+
+        binding.bottomNavView.menu.clear()
+
+        if (userType == "owner") {
+            binding.bottomNavView.inflateMenu(R.menu.bottom_nav_menu_owner)
+        } else {
+            binding.bottomNavView.inflateMenu(R.menu.bottom_nav_menu)
+        }
+
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
