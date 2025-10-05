@@ -1,12 +1,11 @@
-package com.example.naeottae.ui.shop
+package com.example.naottae.ui.shop
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.naeottae.R
-import com.example.naeottae.databinding.FragmentShopBinding
+import com.example.naottae.databinding.FragmentShopBinding
 
 class ShopFragment : Fragment() {
     private var _binding: FragmentShopBinding? = null

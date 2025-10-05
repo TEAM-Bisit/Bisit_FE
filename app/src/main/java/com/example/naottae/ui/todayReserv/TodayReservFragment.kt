@@ -1,12 +1,11 @@
-package com.example.naeottae.ui.todayReserv
+package com.example.naottae.ui.todayReserv
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.naeottae.R
-import com.example.naeottae.databinding.FragmentTodayReservBinding
+import com.example.naottae.databinding.FragmentTodayReservBinding
 
 class TodayReservFragment : Fragment() {
     private var _binding: FragmentTodayReservBinding? = null

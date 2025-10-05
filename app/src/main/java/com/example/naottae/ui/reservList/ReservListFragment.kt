@@ -1,12 +1,11 @@
-package com.example.naeottae.ui.reservList
+package com.example.naottae.ui.reservList
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.naeottae.R
-import com.example.naeottae.databinding.FragmentReservListBinding
+import com.example.naottae.databinding.FragmentReservListBinding
 
 class ReservListFragment : Fragment() {
     private var _binding: FragmentReservListBinding? = null
