@@ -7,7 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitClient {
     private const val BASE_URL = "https://naveropenapi.apigw.ntruss.com/"
     private const val CLIENT_ID = "0v8s5c7tw1"
-    private const val CLIENT_SECRET = "여기에_Secret_Key를_입력하세요"
+    private const val CLIENT_SECRET = "nmKF0qGaHD2ivMcZ32YqPBYJN5RfZfAOlvlpheDC"
 
     private val client = OkHttpClient.Builder()
         .addInterceptor { chain ->
