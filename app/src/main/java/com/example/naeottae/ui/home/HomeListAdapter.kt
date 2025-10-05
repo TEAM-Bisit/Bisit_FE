@@ -1,6 +1,7 @@
 package com.example.naeottae.ui.home
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -35,6 +36,8 @@ class HomeListAdapter(private val items: List<StoreItem>) :
         holder.binding.imgOpenStatus.setImageResource(
             if (item.isOpen) com.example.naeottae.R.drawable.ic_open else com.example.naeottae.R.drawable.ic_close
         )
+
+        holder.binding.bottomDivider?.visibility = if (position == items.lastIndex) View.VISIBLE else View.GONE
 
         holder.binding.chipGroup.removeAllViews()
         val inflater = LayoutInflater.from(holder.itemView.context)
