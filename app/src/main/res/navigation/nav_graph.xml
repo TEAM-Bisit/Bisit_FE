@@ -7,6 +7,7 @@
 
     <fragment
         android:id="@+id/homeFragment"
+<<<<<<< Updated upstream
         android:name="com.example.naeottae.ui.home.HomeFragment"
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" />
@@ -19,9 +20,29 @@
         android:id="@+id/myPageFragment"
         android:name="com.example.naeottae.ui.myPage.MyPageFragment"
         android:label="fragment_my_page"
+=======
+        android:name="com.example.naottae.ui.home.HomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_home" />
+    <fragment
+        android:id="@+id/reservationFragment"
+        android:name="com.example.naottae.ui.reservation.ReservationFragment"
+        android:label="Reservation"
+        tools:layout="@layout/fragment_reservation" />
+    <fragment
+        android:id="@+id/myPageFragment"
+        android:name="com.example.naottae.ui.myPage.MyPageFragment"
+        android:label="My Page"
+>>>>>>> Stashed changes
         tools:layout="@layout/fragment_my_page" />
 
     <fragment
+        feature/customer-home-first
+        android:id="@+id/homeListFragment"
+        android:name="com.example.naottae.ui.home.HomeListFragment"
+        android:label="Home List"
+        tools:layout="@layout/fragment_home_list" />
+    <fragmnet
         android:id="@+id/ShopFragment"
         android:name="com.example.naeottae.ui.shop.ShopFragment"
         android:label="fragment_shop"
