@@ -15,6 +15,9 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        buildConfigField ("String", "NCP_ACCESS_KEY_ID", "\"${project.findProperty("NCP_ACCESS_KEY_ID") ?: ""}\"")
+        buildConfigField ("String", "NCP_SECRET_KEY", "\"${project.findProperty("NCP_SECRET_KEY") ?: ""}\"")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
