@@ -1,4 +1,4 @@
-package com.example.naeottae.ui.home
+package com.example.naottae.ui.home
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,9 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.naeottae.databinding.FragmentHomeListBinding
-import com.example.naeottae.data.model.store.StoreItem
-import com.example.naeottae.R
+import com.example.naottae.databinding.FragmentHomeListBinding
+import com.example.naottae.data.model.store.StoreItem
+import com.example.naottae.R
 
 class HomeListFragment : Fragment() {
 

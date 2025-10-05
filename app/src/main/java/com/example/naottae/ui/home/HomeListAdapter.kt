@@ -1,4 +1,4 @@
-package com.example.naeottae.ui.home
+package com.example.naottae.ui.home
 
 import android.view.LayoutInflater
 import android.view.View
@@ -6,8 +6,8 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.naeottae.data.model.store.StoreItem
-import com.example.naeottae.databinding.ItemHomeStoreBinding
+import com.example.naottae.data.model.store.StoreItem
+import com.example.naottae.databinding.ItemHomeStoreBinding
 
 class HomeListAdapter(private val items: List<StoreItem>) :
     RecyclerView.Adapter<HomeListAdapter.StoreViewHolder>() {
@@ -34,7 +34,7 @@ class HomeListAdapter(private val items: List<StoreItem>) :
         holder.binding.tvOpenStatus.text = if (item.isOpen) "영업중" else "영업종료"
         holder.binding.tvBusinessHours.text = item.businessHours
         holder.binding.imgOpenStatus.setImageResource(
-            if (item.isOpen) com.example.naeottae.R.drawable.ic_open else com.example.naeottae.R.drawable.ic_close
+            if (item.isOpen) com.example.naottae.R.drawable.ic_open else com.example.naottae.R.drawable.ic_close
         )
 
         holder.binding.bottomDivider?.visibility = if (position == items.lastIndex) View.VISIBLE else View.GONE
@@ -42,7 +42,7 @@ class HomeListAdapter(private val items: List<StoreItem>) :
         holder.binding.chipGroup.removeAllViews()
         val inflater = LayoutInflater.from(holder.itemView.context)
         item.tags.forEach { tag ->
-            val chip = inflater.inflate(com.example.naeottae.R.layout.item_home_list_tag, holder.binding.chipGroup, false) as TextView
+            val chip = inflater.inflate(com.example.naottae.R.layout.item_home_list_tag, holder.binding.chipGroup, false) as TextView
             chip.text = tag
             holder.binding.chipGroup.addView(chip)
         }

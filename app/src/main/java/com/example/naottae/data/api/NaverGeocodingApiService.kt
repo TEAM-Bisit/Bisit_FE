@@ -1,6 +1,6 @@
-package com.example.naeottae.data.api
+package com.example.naottae.data.api
 
-import com.example.naeottae.data.model.map.GeocodingResponse
+import com.example.naottae.data.model.map.GeocodingResponse
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query

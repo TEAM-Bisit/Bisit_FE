@@ -1,10 +1,10 @@
-package com.example.naeottae
+package com.example.naottae
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
-import com.example.naeottae.databinding.ActivityMainBinding
+import com.example.naottae.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 

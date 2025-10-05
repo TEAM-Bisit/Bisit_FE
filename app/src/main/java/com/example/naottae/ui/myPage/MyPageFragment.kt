@@ -1,22 +1,21 @@
-package com.example.naeottae.ui.myPageOwner
+package com.example.naottae.ui.myPage
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.naeottae.R
-import com.example.naeottae.databinding.FragmentMyPageOwnerBinding
+import com.example.naottae.databinding.FragmentMyPageBinding
 
-class MyPageOwnerFragment : Fragment() {
-    private var _binding: FragmentMyPageOwnerBinding? = null
+class MyPageFragment : Fragment() {
+    private var _binding: FragmentMyPageBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentMyPageOwnerBinding.inflate(inflater, container, false)
+        _binding = FragmentMyPageBinding.inflate(inflater, container, false)
         return binding.root
     }
 

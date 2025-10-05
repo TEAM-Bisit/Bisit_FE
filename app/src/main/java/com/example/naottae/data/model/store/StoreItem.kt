@@ -1,4 +1,4 @@
-package com.example.naeottae.data.model.store
+package com.example.naottae.data.model.store
 
 data class StoreItem(
     val name: String,

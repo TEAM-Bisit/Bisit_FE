@@ -5,18 +5,26 @@ plugins {
 }
 
 android {
-    namespace = "com.example.naeottae"
+    namespace = "com.example.naottae"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.naeottae"
+        applicationId = "com.example.naottae"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
-        buildConfigField ("String", "NCP_ACCESS_KEY_ID", "\"${project.findProperty("NCP_ACCESS_KEY_ID") ?: ""}\"")
-        buildConfigField ("String", "NCP_SECRET_KEY", "\"${project.findProperty("NCP_SECRET_KEY") ?: ""}\"")
+        buildConfigField(
+            "String",
+            "NCP_ACCESS_KEY_ID",
+            "\"${project.findProperty("NCP_ACCESS_KEY_ID") ?: ""}\""
+        )
+        buildConfigField(
+            "String",
+            "NCP_SECRET_KEY",
+            "\"${project.findProperty("NCP_SECRET_KEY") ?: ""}\""
+        )
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -40,6 +48,7 @@ android {
     buildFeatures {
         compose = true
         viewBinding = true
+        buildConfig = true
     }
 }
 

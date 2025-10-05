@@ -1,4 +1,4 @@
-package com.example.naeottae.data.model.map
+package com.example.naottae.data.model.map
 
 data class Address(
     val roadAddress: String?,

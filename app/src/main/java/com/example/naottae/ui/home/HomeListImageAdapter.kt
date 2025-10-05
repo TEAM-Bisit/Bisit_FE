@@ -1,10 +1,10 @@
-package com.example.naeottae.ui.home
+package com.example.naottae.ui.home
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.naeottae.databinding.ItemHomeStoreImageBinding
+import com.example.naottae.databinding.ItemHomeStoreImageBinding
 
 class HomeListImageAdapter(
     private val images: List<Int>,
