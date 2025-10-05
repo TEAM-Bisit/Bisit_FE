@@ -1,9 +1,10 @@
-package com.example.naeottae
+package com.example.naottae
 
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.example.naeottae.databinding.ActivityLoginBinding
+import com.example.naottae.databinding.ActivityLoginBinding
+
 
 class LoginActivity : AppCompatActivity() {
 

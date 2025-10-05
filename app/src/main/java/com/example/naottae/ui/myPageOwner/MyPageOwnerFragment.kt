@@ -1,20 +1,11 @@
-<<<<<<<< Updated upstream:app/src/main/java/com/example/naottae/ui/myPageOwner/MyPageOwnerFragment.kt
-package com.example.naeottae.ui.myPageOwner
-========
-package com.example.naottae.ui.reservation
->>>>>>>> Stashed changes:app/src/main/java/com/example/naottae/ui/reservation/ReservationFragment.kt
+package com.example.naottae.ui.myPageOwner
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-<<<<<<<< Updated upstream:app/src/main/java/com/example/naottae/ui/myPageOwner/MyPageOwnerFragment.kt
-import com.example.naeottae.R
-import com.example.naeottae.databinding.FragmentMyPageOwnerBinding
-========
-import com.example.naottae.databinding.FragmentReservationBinding
->>>>>>>> Stashed changes:app/src/main/java/com/example/naottae/ui/reservation/ReservationFragment.kt
+import com.example.naottae.databinding.FragmentMyPageOwnerBinding
 
 class MyPageOwnerFragment : Fragment() {
     private var _binding: FragmentMyPageOwnerBinding? = null
