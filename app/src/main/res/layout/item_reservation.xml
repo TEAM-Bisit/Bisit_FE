@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_marginBottom="12dp"
+    android:background="@drawable/bg_card_white"
+    android:paddingTop="24dp"
+    android:paddingBottom="15dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_marginHorizontal="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/labelProcedure"
+                android:text="@string/today_label_procedure"
+                android:textColor="#9AA1AF"
+                android:textSize="14sp"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content" />
+            <!--                android:fontFamily="@font/pretendard_regular" -->
+
+            <TextView
+                android:id="@+id/tvShopName"
+                android:textColor="#222222"
+                android:textSize="14sp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content" />
+            <!--                android:fontFamily="@font/pretendard_medium" -->
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/labelDate"
+                android:text="@string/today_label_date"
+                android:textColor="#9AA1AF"
+                android:textSize="14sp"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content" />
+            <!--                android:fontFamily="@font/pretendard_regular"-->
+
+            <TextView
+                android:id="@+id/tvDate"
+                android:textColor="#222222"
+                android:textSize="14sp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content" />
+            <!--                android:fontFamily="@font/pretendard_medium" -->
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/labelAddress"
+                android:text="@string/today_label_address"
+                android:textColor="#9AA1AF"
+                android:textSize="14sp"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content" />
+            <!--                android:fontFamily="@font/pretendard_regular" -->
+
+            <TextView
+                android:id="@+id/tvAddress"
+                android:textColor="#222222"
+                android:textSize="14sp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content" />
+            <!--                android:fontFamily="@font/pretendard_medium" -->
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_marginTop="23dp"
+        android:layout_marginHorizontal="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnReject"
+            android:text="@string/today_button_reject"
+            android:textColor="#515965"
+            app:backgroundTint="#F0F2F5"
+            android:stateListAnimator="@null"
+            app:cornerRadius="8dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:textSize="15sp"/>
+        <!--            android:fontFamily="@font/pretendard_medium" -->
+
+        <View
+            android:layout_width="10dp"
+            android:layout_height="0dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnApprove"
+            android:text="@string/today_button_approve"
+            android:textColor="#FFFFFF"
+            app:backgroundTint="#FE6B6B"
+            android:stateListAnimator="@null"
+            app:cornerRadius="8dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:textSize="15sp"/>
+        <!--            android:fontFamily="@font/pretendard_medium" -->
+    </LinearLayout>
+</LinearLayout>
