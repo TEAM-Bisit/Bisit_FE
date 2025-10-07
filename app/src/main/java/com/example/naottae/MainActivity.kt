@@ -29,6 +29,20 @@ class MainActivity : AppCompatActivity() {
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
 
+        val navGraph = navController.navInflater.inflate(R.navigation.nav_graph)
+
+        binding.bottomNavView.menu.clear()
+
+        if (userType == "owner") {
+            binding.bottomNavView.inflateMenu(R.menu.bottom_nav_menu_owner)
+            navGraph.setStartDestination(R.id.shopFragment)
+        } else {
+            binding.bottomNavView.inflateMenu(R.menu.bottom_nav_menu)
+            navGraph.setStartDestination(R.id.homeFragment)
+        }
+
+        navController.graph = navGraph
+
         NavigationUI.setupWithNavController(binding.bottomNavView, navController)
     }
 }
