@@ -2,4 +2,33 @@
     <string name="app_name">naottae</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!--오늘의 예약-->
+    <string name="sort_icon">정렬 기준 아이콘</string>
+    <string name="today_content">내용</string>
+    <string name="today_approve_check">승인 내역 확인</string>
+    <string name="sort_check_recent">최신 순으로</string>
+    <string name="sort_check_oldest">오래된 순으로</string>
+    <string name="today_title">오늘의 예약</string>
+    <string name="today_tab_pending">대기</string>
+    <string name="today_tab_approved">승인</string>
+    <string name="today_label_reservation">예약 정보</string>
+    <string name="today_label_sort">정렬 기준</string>
+    <string name="today_label_procedure">시술명</string>
+    <string name="today_label_date">방문 시간</string>
+    <string name="today_label_address">주소</string>
+    <string name="today_button_reject">거절하기</string>
+    <string name="today_button_approve">승인하기</string>
+    <string name="today_button_input">입력하기</string>
+    <string name="today_dialog_reason_title">거절 사유</string>
+    <string name="today_dialog_reason_hint">내용을 입력해주세요.</string>
+    <string name="today_dialog_confirm">확인</string>
+    <string name="today_dialog_cancel_title">예약을 취소하시겠어요?</string>
+    <string name="today_dialog_no">아니요</string>
+    <string name="today_close">닫기</string>
+    <string name="today_dialog_yes">예</string>
+    <string name="sort_title">정렬 기준</string>
+    <string name="sort_recent">최근 순으로</string>
+    <string name="sort_oldest">오래된 순으로</string>
+    <string name="sort_save">저장하기</string>
 </resources>
