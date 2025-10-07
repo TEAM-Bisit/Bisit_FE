@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/ShopFragment"
+        android:id="@+id/shopFragment"
         android:icon="@drawable/ic_shop"
         android:title="매장관리" />
     <item
