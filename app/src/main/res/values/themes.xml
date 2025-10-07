@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Base.Theme.Naeottae" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Base.Theme.Naottae" parent="Theme.Material3.DayNight.NoActionBar">
     </style>
 
-    <style name="Theme.Naeottae" parent="Base.Theme.Naeottae" />
+    <style name="Theme.Naottae" parent="Base.Theme.Naottae" />
 </resources>
