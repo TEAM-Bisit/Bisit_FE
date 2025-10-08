@@ -4,4 +4,8 @@
     <color name="white">#FFFFFFFF</color>
     <color name="bottom_nav_selected">#222222</color>
     <color name="bottom_nav_unselected">#9AA1AF</color>
+    <color name="gray">#ABAFB4</color>
+    <color name="button_red">#FA5453</color>
+    <color name="red_FE6B6B">#FE6B6B</color>
+    <color name="gray_515965">#515965</color>
 </resources>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@drawable/bg_dialog_white"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="12dp">
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:text="취소 사유"
+            android:textColor="#222222"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:letterSpacing="-0.025" />
+
+        <View
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
+
+        <ImageView
+            android:id="@+id/btnClose"
+            android:src="@drawable/ic_close_button"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:contentDescription="@string/today_close" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvContentLabel"
+        android:text="내용"
+        android:textColor="#515965"
+        android:textSize="13sp"
+        android:letterSpacing="-0.02"
+        android:lineSpacingExtra="6sp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="106dp"
+        android:background="@drawable/bg_edit_box"
+        android:padding="16dp">
+
+        <EditText
+            android:id="@+id/etReason"
+            android:layout_width="match_parent"
+            android:layout_height="106dp"
+            android:autofillHints="text"
+            android:background="@android:color/transparent"
+            android:gravity="top|start"
+            android:hint="내용을 입력해주세요."
+            android:inputType="textCapSentences|textMultiLine"
+            android:lineSpacingExtra="6sp"
+            android:maxLength="50"
+            android:overScrollMode="always"
+            android:paddingBottom="8dp"
+            android:scrollbars="none"
+            android:textColor="#222222"
+            android:textColorHint="#9AA1AF"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvCharCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="4dp"
+            android:text="0/50자"
+            android:textColor="#9AA1AF"
+            android:textSize="12sp" />
+    </RelativeLayout>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnSubmit"
+        android:text="입력하기"
+        android:layout_marginTop="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@drawable/bg_btn_selector"
+        android:stateListAnimator="@null"
+        android:textColor="#ABAFB4"
+        android:textSize="14sp"
+        android:letterSpacing="-0.02"
+        android:gravity="center"
+        android:enabled="false" />
+</LinearLayout>

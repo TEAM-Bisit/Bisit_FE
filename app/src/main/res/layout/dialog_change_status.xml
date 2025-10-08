@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="20dp"
+    android:background="@drawable/bg_dialog_white">
+
+    <TextView
+        android:id="@+id/tvStatusTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="예약 상태"
+        android:textColor="#222222"
+        android:textSize="18sp"
+        android:letterSpacing="-0.025"
+        android:textStyle="bold"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="16dp" />
+
+    <RadioGroup
+        android:id="@+id/radioGroupStatus"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.appcompat.widget.AppCompatRadioButton
+            android:id="@+id/radioWaiting"
+            style="@style/CustomRadioButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="확정 대기" />
+
+        <androidx.appcompat.widget.AppCompatRadioButton
+            android:id="@+id/radioConfirmed"
+            style="@style/CustomRadioButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="예약 확정" />
+
+        <androidx.appcompat.widget.AppCompatRadioButton
+            android:id="@+id/radioCancelled"
+            style="@style/CustomRadioButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="취소" />
+
+        <androidx.appcompat.widget.AppCompatRadioButton
+            android:id="@+id/radioNoShow"
+            style="@style/CustomRadioButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="노쇼" />
+
+        <androidx.appcompat.widget.AppCompatRadioButton
+            android:id="@+id/radioDone"
+            style="@style/CustomRadioButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="시술 완료" />
+    </RadioGroup>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnConfirm"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="4dp"
+        android:text="확인"
+        android:textColor="@android:color/white"
+        android:stateListAnimator="@null"
+        android:textSize="15sp"
+        android:background="@drawable/bg_button_red" />
+</LinearLayout>
