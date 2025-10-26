@@ -20,5 +20,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "naottae"
+rootProject.name = "bisit"
 include(":app")
