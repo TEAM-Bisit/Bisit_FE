@@ -18,4 +18,22 @@
         <item name="android:background">@android:color/transparent</item>
     </style>
 
+    <style name="CustomBottomSheetTheme" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/CustomShapeAppearanceBottomSheet</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
+    <style name="CustomShapeAppearanceBottomSheet" parent="Widget.MaterialComponents.BottomSheet.Modal">
+        <item name="backgroundTint">#FEFEFE</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.BottomSheet.RoundedTop</item>
+    </style>
+
+    <style name="ShapeAppearanceOverlay.BottomSheet.RoundedTop" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">12dp</item>
+        <item name="cornerSizeTopRight">12dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
 </resources>
