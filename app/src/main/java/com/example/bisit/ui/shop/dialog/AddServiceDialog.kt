@@ -4,7 +4,6 @@ import android.os.Build
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.DialogFragment
-import com.example.bisit.R
 import com.example.bisit.databinding.DialogAddServiceBinding
 import com.example.bisit.ui.shop.model.ServiceItem
 

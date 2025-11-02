@@ -27,18 +27,15 @@
         android:paddingEnd="18dp"
         android:clipToPadding="false" />
 
-    <!-- 등록 버튼 (FAB) -->
-    <TextView
+    <ImageView
         android:id="@+id/fabAdd"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
         android:layout_gravity="bottom|end"
         android:layout_margin="18dp"
-        android:gravity="center"
-        android:text="+"
-        android:textColor="#FFFFFF"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:elevation="6dp"
-        android:background="@drawable/bg_btn_primary_selector" />
+        android:padding="27.9dp"
+        android:src="@drawable/ic_plus_red"
+        android:background="@drawable/bg_fab_white"
+        android:elevation="10dp"
+        android:contentDescription="등록 버튼" />
 </LinearLayout>
