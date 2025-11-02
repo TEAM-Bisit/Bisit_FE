@@ -47,7 +47,6 @@ class EditSalesDialog(
         dialog?.window?.apply {
             setBackgroundDrawableResource(android.R.color.transparent)
 
-            // 화면 너비의 80%로 다이얼로그 크기 설정
             val screenWidth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val windowMetrics = requireActivity().windowManager.currentWindowMetrics
                 val insets = windowMetrics.windowInsets.getInsets(WindowInsets.Type.systemBars())

@@ -26,7 +26,7 @@ class AddServiceDialog(
         return b.root
     }
 
-    // ✅ 시간/분 선택 BottomSheet 호출
+    // 시간/분 선택 BottomSheet 호출
     private fun showDurationPicker() {
         TimePickerBottomSheet(0, 0) { h, m ->
             b.etHour.text = "${h}시간"
@@ -37,7 +37,7 @@ class AddServiceDialog(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // ✅ 수정 모드일 경우 데이터 미리 채우기
+        // 수정 모드일 경우 데이터 미리 채우기
         prefill?.let {
             b.etTitle.setText(it.title)
             b.etPrice.setText(it.price.toString())
@@ -48,11 +48,11 @@ class AddServiceDialog(
             b.etDesc.setText(it.desc)
         }
 
-        // ✅ 시간/분 클릭 시 시간 선택
+        // 시간/분 클릭 시 시간 선택
         b.etHour.setOnClickListener { showDurationPicker() }
         b.etMin.setOnClickListener { showDurationPicker() }
 
-        // ✅ 추가 버튼 클릭 시 데이터 전달
+        // 추가 버튼 클릭 시 데이터 전달
         b.btnAdd.setOnClickListener {
             val title = b.etTitle.text?.toString().orEmpty()
             val price = b.etPrice.text?.toString()?.toIntOrNull() ?: 0
@@ -75,10 +75,8 @@ class AddServiceDialog(
     override fun onStart() {
         super.onStart()
         dialog?.window?.apply {
-            // ✅ 배경 투명하게 (외곽만 어둡게)
             setBackgroundDrawableResource(android.R.color.transparent)
 
-            // ✅ 화면 너비의 약 80.6%로 설정
             val screenWidth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val wm = requireActivity().windowManager.currentWindowMetrics
                 val insets = wm.windowInsets.getInsets(WindowInsets.Type.systemBars())

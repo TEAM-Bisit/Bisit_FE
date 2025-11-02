@@ -92,10 +92,8 @@ class EditHoursDialog(
     override fun onStart() {
         super.onStart()
         dialog?.window?.apply {
-            // 투명 배경 + 모서리 둥근 카드 형태
             setBackgroundDrawableResource(android.R.color.transparent)
 
-            // 화면 너비의 80.6%만 차지
             val screenWidth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val wm = requireActivity().windowManager.currentWindowMetrics
                 val insets = wm.windowInsets.getInsets(WindowInsets.Type.systemBars())

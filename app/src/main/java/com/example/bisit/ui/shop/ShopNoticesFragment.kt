@@ -17,7 +17,7 @@ class ShopNoticesFragment : Fragment() {
     private var _binding: FragmentShopNoticesBinding? = null
     private val binding get() = _binding!!
 
-    // ✅ 전역 변수로 이동
+    // 전역 변수로 이동
     private lateinit var adapter: NoticeAdapter
 
     private val data = mutableListOf(
@@ -37,7 +37,7 @@ class ShopNoticesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // ✅ 여기서 초기화
+        // 여기서 초기화
         adapter = NoticeAdapter(onMoreClick = { notice ->
             BottomActionSheet(
                 onDelete = {

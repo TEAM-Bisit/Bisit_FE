@@ -18,7 +18,6 @@ class ShopServicesFragment : Fragment() {
     private var _binding: FragmentShopServicesBinding? = null
     private val binding get() = _binding!!
 
-    // ✅ 전역 어댑터 선언 (이게 핵심)
     private lateinit var adapter: ServiceAdapter
 
     private val data = mutableListOf(
@@ -38,7 +37,7 @@ class ShopServicesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // ✅ 지역변수 X, 전역 adapter 초기화
+        // 지역변수 X, 전역 adapter 초기화
         adapter = ServiceAdapter(onMoreClick = { item ->
             BottomActionSheet(
                 onDelete = {

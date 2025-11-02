@@ -49,10 +49,8 @@ class AddNoticeDialog(
     override fun onStart() {
         super.onStart()
         dialog?.window?.apply {
-            // 배경 투명 + 가운데 배치
             setBackgroundDrawableResource(android.R.color.transparent)
 
-            // 화면 너비의 80.6%만큼만 사용
             val screenWidth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val wm = requireActivity().windowManager.currentWindowMetrics
                 val insets = wm.windowInsets.getInsets(WindowInsets.Type.systemBars())

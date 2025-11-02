@@ -30,7 +30,7 @@ class ShopBasicFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.btnEditShopInfo.setOnClickListener {
             EditShopInfoDialog(onSaved = {
-// 서버 저장 성공 시 UI 갱신 등
+// 서버 저장 성공 시 UI 갱신
             }).show(parentFragmentManager, "edit_shop_info")
         }
         binding.btnEditSales.setOnClickListener {
@@ -41,11 +41,11 @@ class ShopBasicFragment : Fragment() {
         binding.btnEditIntro.setOnClickListener {
 // 필요 시 별도 다이얼로그 추가 가능
         }
-// 예시: 대표 이미지 변경
+// 대표 이미지 변경
         binding.btnChangeHeader.setOnClickListener { /* 갤러리/카메라 */ }
 
 
-// 영업시간 수정(디자인상 특정 버튼이 없다면, 기본 섹션 길게 눌러 띄우기 등의 트리거)
+// 영업시간 수정
         binding.root.setOnLongClickListener {
             EditHoursDialog(onSaved = { /* 저장 후 반영 */ }).show(parentFragmentManager, "edit_hours")
             true
