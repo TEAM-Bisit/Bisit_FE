@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="영업 시간 수정"
+            android:textColor="#222222"
+            android:textStyle="bold"
+            android:textSize="16sp"/>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="정기 휴무일 여부"
+            android:textColor="#666666"
+            android:textSize="14sp"/>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="6dp">
+            <TextView
+                android:id="@+id/chipHolidayYes"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="휴무일이 있어요"
+                android:textColor="#FF6B6B"
+                android:textStyle="bold"
+                android:background="@drawable/bg_chip_selector"/>
+            <Space
+                android:layout_width="8dp"
+                android:layout_height="0dp"/>
+            <TextView
+                android:id="@+id/chipHolidayNo"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="휴무일이 없어요"
+                android:textColor="#FF6B6B"
+                android:textStyle="bold"
+                android:background="@drawable/bg_chip_selector"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/rowHolidayDay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:visibility="gone">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="정기 휴무일"
+                android:textColor="#666666"
+                android:textSize="14sp"/>
+            <Spinner
+                android:id="@+id/spHolidayDay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"/>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="브레이크타임 여부"
+            android:textColor="#666666"
+            android:textSize="14sp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="6dp">
+            <TextView
+                android:id="@+id/chipBreakYes"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="브레이크타임 있음"
+                android:textColor="#FF6B6B"
+                android:textStyle="bold"
+                android:background="@drawable/bg_chip_selector"/>
+            <Space
+                android:layout_width="8dp"
+                android:layout_height="0dp"/>
+            <TextView
+                android:id="@+id/chipBreakNo"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="브레이크타임 없음"
+                android:textColor="#FF6B6B"
+                android:textStyle="bold"
+                android:background="@drawable/bg_chip_selector"/>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="영업시간"
+            android:textColor="#666666"
+            android:textSize="14sp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/etOpen"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="08:00"
+                android:textColor="#FF6B6B"
+                android:textStyle="bold"
+                android:background="@drawable/bg_chip_selector"/>
+            <Space
+                android:layout_width="8dp"
+                android:layout_height="0dp"/>
+            <TextView
+                android:id="@+id/etClose"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="20:00"
+                android:textColor="#FF6B6B"
+                android:textStyle="bold"
+                android:background="@drawable/bg_chip_selector"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/rowBreakTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:visibility="gone">
+            <TextView
+                android:id="@+id/etBreakStart"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="15:00"
+                android:textColor="#FF6B6B"
+                android:textStyle="bold"
+                android:background="@drawable/bg_chip_selector"/>
+            <Space
+                android:layout_width="8dp"
+                android:layout_height="0dp"/>
+            <TextView
+                android:id="@+id/etBreakEnd"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="16:00"
+                android:textColor="#FF6B6B"
+                android:textStyle="bold"
+                android:background="@drawable/bg_chip_selector"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:text="저장하기"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:background="@drawable/bg_btn_primary_selector"/>
+    </LinearLayout>
+</ScrollView>
