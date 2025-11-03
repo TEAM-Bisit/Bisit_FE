@@ -37,25 +37,34 @@ class ShopServicesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 지역변수 X, 전역 adapter 초기화
         adapter = ServiceAdapter(onMoreClick = { item ->
-            BottomActionSheet(
-                onDelete = {
-                    ConfirmDialog("삭제하시겠어요?", onOk = {
-                        data.removeIf { it.id == item.id }
-                        adapter.submitList(data.toList())
-                    }).show(parentFragmentManager, "confirm")
-                },
-                onEdit = {
-                    AddServiceDialog(prefill = item) { updated ->
-                        val idx = data.indexOfFirst { it.id == updated.id }
-                        if (idx >= 0) {
-                            data[idx] = updated
+            // BottomActionSheet 표시
+            BottomActionSheet().show(parentFragmentManager, "actions")
+
+            // 결과 수신 리스너 등록
+            parentFragmentManager.setFragmentResultListener(
+                BottomActionSheet.REQUEST_KEY,
+                viewLifecycleOwner
+            ) { _, bundle ->
+                when (bundle.getString(BottomActionSheet.RESULT_ACTION)) {
+                    BottomActionSheet.ACTION_DELETE -> {
+                        ConfirmDialog("삭제하시겠어요?", onOk = {
+                            data.removeIf { it.id == item.id }
                             adapter.submitList(data.toList())
-                        }
-                    }.show(parentFragmentManager, "edit_service")
+                        }).show(parentFragmentManager, "confirm")
+                    }
+
+                    BottomActionSheet.ACTION_EDIT -> {
+                        AddServiceDialog(prefill = item) { updated ->
+                            val idx = data.indexOfFirst { it.id == updated.id }
+                            if (idx >= 0) {
+                                data[idx] = updated
+                                adapter.submitList(data.toList())
+                            }
+                        }.show(parentFragmentManager, "edit_service")
+                    }
                 }
-            ).show(parentFragmentManager, "actions")
+            }
         })
 
         binding.rvServices.layoutManager = LinearLayoutManager(requireContext())

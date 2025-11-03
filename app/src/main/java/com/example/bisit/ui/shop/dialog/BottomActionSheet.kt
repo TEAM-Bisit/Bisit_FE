@@ -10,10 +10,13 @@ import com.example.bisit.R
 import com.example.bisit.databinding.SheetActionsBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-class BottomActionSheet(
-    private val onDelete: () -> Unit,
-    private val onEdit: () -> Unit
-) : BottomSheetDialogFragment() {
+class BottomActionSheet : BottomSheetDialogFragment() {
+    companion object {
+        const val REQUEST_KEY = "bottom_action_sheet"
+        const val RESULT_ACTION = "action"
+        const val ACTION_DELETE = "delete"
+        const val ACTION_EDIT = "edit"
+    }
 
     override fun getTheme(): Int = R.style.CustomBottomSheetTheme
 
@@ -30,8 +33,20 @@ class BottomActionSheet(
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        b.btnDelete.setOnClickListener { dismiss(); onDelete() }
-        b.btnEdit.setOnClickListener { dismiss(); onEdit() }
+        b.btnDelete.setOnClickListener {
+            parentFragmentManager.setFragmentResult(
+                REQUEST_KEY,
+                Bundle().apply { putString(RESULT_ACTION, ACTION_DELETE) }
+            )
+            dismiss()
+        }
+        b.btnEdit.setOnClickListener {
+            parentFragmentManager.setFragmentResult(
+                REQUEST_KEY,
+                Bundle().apply { putString(RESULT_ACTION, ACTION_EDIT) }
+            )
+            dismiss()
+        }
     }
 
     override fun onStart() {

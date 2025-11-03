@@ -81,4 +81,14 @@
     <string name="label_service">제공 서비스</string>
 
     <string name="underlined_text"><u>수정하기</u></string>
+
+    <!-- add_service -->
+    <string name="dialog_title_shop_service">메뉴 추가하기</string>
+    <string name="label_service_name">시술명</string>
+    <string name="hint_service_name">시술을 입력해주세요.</string>
+    <string name="label_price">가격</string>
+    <string name="hint_price">가격을 입력해주세요.</string>
+    <string name="label_duration">소요 시간</string>
+    <string name="label_description">시술 설명</string>
+    <string name="hint_description">시술 설명을 입력해주세요.</string>
 </resources>

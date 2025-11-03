@@ -59,20 +59,20 @@ class SortOptionDialog(
     }
 
     private fun updateUI(recentView: TextView, oldestView: TextView) {
-        val checkRed = ContextCompat.getDrawable(requireContext(), R.drawable.ic_check_blue)
+        val checkBlue = ContextCompat.getDrawable(requireContext(), R.drawable.ic_check_blue)
         val checkGray = ContextCompat.getDrawable(requireContext(), R.drawable.ic_check_gray)
 
         val selectedColor = "#4076FF".toColorInt()
         val unselectedColor = "#6D7583".toColorInt()
 
         if (isRecent) {
-            recentView.setCompoundDrawablesWithIntrinsicBounds(null, null, checkRed, null)
+            recentView.setCompoundDrawablesWithIntrinsicBounds(null, null, checkBlue, null)
             oldestView.setCompoundDrawablesWithIntrinsicBounds(null, null, checkGray, null)
             recentView.setTextColor(selectedColor)
             oldestView.setTextColor(unselectedColor)
         } else {
             recentView.setCompoundDrawablesWithIntrinsicBounds(null, null, checkGray, null)
-            oldestView.setCompoundDrawablesWithIntrinsicBounds(null, null, checkRed, null)
+            oldestView.setCompoundDrawablesWithIntrinsicBounds(null, null, checkBlue, null)
             recentView.setTextColor(unselectedColor)
             oldestView.setTextColor(selectedColor)
         }

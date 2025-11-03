@@ -27,7 +27,9 @@ class AddServiceDialog(
 
     // 시간/분 선택 BottomSheet 호출
     private fun showDurationPicker() {
-        TimePickerBottomSheet(0, 0) { h, m ->
+        val currentH = b.etHour.text?.toString()?.replace("시간", "")?.toIntOrNull() ?: 0
+        val currentM = b.etMin.text?.toString()?.replace("분", "")?.toIntOrNull() ?: 0
+        TimePickerBottomSheet(currentH, currentM) { h, m ->
             b.etHour.text = "${h}시간"
             b.etMin.text = "${m}분"
         }.show(parentFragmentManager, "durPick")

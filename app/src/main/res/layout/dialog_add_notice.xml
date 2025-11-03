@@ -30,6 +30,7 @@
         android:layout_height="48dp"
         android:hint="제목을 입력해주세요."
         android:padding="12dp"
+        android:inputType="text"
         android:background="@drawable/bg_chip_selector"/>
 
 
@@ -50,6 +51,7 @@
         android:gravity="top"
         android:hint="내용을 입력해주세요."
         android:padding="12dp"
+        android:inputType="textMultiLine|textCapSentences"
         android:background="@drawable/bg_chip_selector"/>
 
 

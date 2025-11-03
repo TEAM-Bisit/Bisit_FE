@@ -42,5 +42,8 @@
         android:text="적용"
         android:textColor="#FFFFFF"
         android:textStyle="bold"
-        android:background="@drawable/bg_btn_primary_selector"/>
+        android:background="@drawable/bg_btn_primary_selector"
+        android:clickable="true"
+        android:focusable="true" />
+
 </LinearLayout>
