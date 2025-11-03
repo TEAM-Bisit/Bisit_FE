@@ -9,8 +9,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.data.model.store.StoreItem
 import com.example.bisit.databinding.ItemHomeStoreBinding
 
-class HomeListAdapter(private val items: List<StoreItem>) :
-    RecyclerView.Adapter<HomeListAdapter.StoreViewHolder>() {
+class HomeListAdapter(
+    private val items: List<StoreItem>,
+    private val onItemClick: (StoreItem) -> Unit
+) : RecyclerView.Adapter<HomeListAdapter.StoreViewHolder>() {
 
     inner class StoreViewHolder(val binding: ItemHomeStoreBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -45,6 +47,13 @@ class HomeListAdapter(private val items: List<StoreItem>) :
             val chip = inflater.inflate(com.example.bisit.R.layout.item_home_list_tag, holder.binding.chipGroup, false) as TextView
             chip.text = tag
             holder.binding.chipGroup.addView(chip)
+        }
+
+        holder.itemView.setOnClickListener {
+            val pos = holder.bindingAdapterPosition
+            if (pos != RecyclerView.NO_POSITION) {
+                onItemClick(items[pos])
+            }
         }
     }
 

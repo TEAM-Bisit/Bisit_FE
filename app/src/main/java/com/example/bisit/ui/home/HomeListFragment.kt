@@ -6,9 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.navigation.fragment.findNavController
 import com.example.bisit.databinding.FragmentHomeListBinding
 import com.example.bisit.data.model.store.StoreItem
 import com.example.bisit.R
+import com.example.bisit.ui.shop.ShopFragment
 
 class HomeListFragment : Fragment() {
 
@@ -50,8 +52,12 @@ class HomeListFragment : Fragment() {
                 hasVisitService = false
             )
         )
+
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.recyclerView.adapter = HomeListAdapter(dummyList)
+
+        binding.recyclerView.adapter = HomeListAdapter(dummyList) { storeItem ->
+            findNavController().navigate(R.id.action_homeListFragment_to_shopFragment)
+        }
 
         binding.btnMap.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
