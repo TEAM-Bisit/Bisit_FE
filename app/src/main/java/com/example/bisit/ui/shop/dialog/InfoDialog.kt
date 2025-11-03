@@ -31,7 +31,7 @@ class InfoDialog(
 
         b.tvMessage.text = message
         b.btnOnly.text = buttonText
-        b.btnOnly.setOnClickListener { dismissAllowingStateLoss() }
+        b.btnOnly.setOnClickListener { dismiss() }
     }
 
     override fun onStart() {

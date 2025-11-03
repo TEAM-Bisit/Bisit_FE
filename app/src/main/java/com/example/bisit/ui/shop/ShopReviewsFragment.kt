@@ -43,26 +43,39 @@ class ShopReviewsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = ReviewAdapter(onMoreClick = { review ->
-            BottomActionSheet(
-                onDelete = {
-                    ConfirmDialog(
-                        message = "삭제하시겠어요?",
-                        okText = "삭제하기",
-                        onOk = {
-                            data.removeIf { it.id == review.id }
-                            adapter.submitList(data.toList())
-                        }
-                    ).show(parentFragmentManager, "confirm")
-                },
-                onEdit = { /* 리뷰 수정 로직 */ }
-            ).show(parentFragmentManager, "actions")
+            // BottomActionSheet 표시
+            BottomActionSheet().show(parentFragmentManager, "actions")
+
+            // 결과 리스너 등록
+            parentFragmentManager.setFragmentResultListener(
+                BottomActionSheet.REQUEST_KEY,
+                viewLifecycleOwner
+            ) { _, bundle ->
+                when (bundle.getString(BottomActionSheet.RESULT_ACTION)) {
+                    BottomActionSheet.ACTION_DELETE -> {
+                        ConfirmDialog(
+                            message = "삭제하시겠어요?",
+                            okText = "삭제하기",
+                            onOk = {
+                                data.removeAll { it.id == review.id }
+                                sortReviews(isRecentSort)
+                            }
+                        ).show(parentFragmentManager, "confirm")
+                    }
+
+                    BottomActionSheet.ACTION_EDIT -> {
+                        // TODO: 리뷰 수정 로직
+                        // AddReviewDialog(prefill = review) { updated -> ... }
+                    }
+                }
+            }
         })
 
         binding.rvReviews.layoutManager = LinearLayoutManager(requireContext())
         binding.rvReviews.adapter = adapter
         adapter.submitList(data.toList())
 
-        // 정렬 기준 클릭 시 SortOptionDialog 실행
+        // 정렬 옵션 다이얼로그
         binding.tvSortLabel.setOnClickListener {
             SortOptionDialog(isRecentSort) { selectedRecent ->
                 isRecentSort = selectedRecent

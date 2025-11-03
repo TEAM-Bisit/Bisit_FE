@@ -37,25 +37,35 @@ class ShopNoticesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 여기서 초기화
         adapter = NoticeAdapter(onMoreClick = { notice ->
-            BottomActionSheet(
-                onDelete = {
-                    ConfirmDialog("삭제하시겠어요?", onOk = {
-                        data.removeIf { it.id == notice.id }
-                        adapter.submitList(data.toList())
-                    }).show(parentFragmentManager, "confirm")
-                },
-                onEdit = {
-                    AddNoticeDialog(prefill = notice) { updated ->
-                        val idx = data.indexOfFirst { it.id == updated.id }
-                        if (idx >= 0) {
-                            data[idx] = updated
+            BottomActionSheet().show(parentFragmentManager, "actions")
+
+            // 결과 수신 리스너 설정
+            parentFragmentManager.setFragmentResultListener(
+                BottomActionSheet.REQUEST_KEY,
+                viewLifecycleOwner
+            ) { _, bundle ->
+                when (bundle.getString(BottomActionSheet.RESULT_ACTION)) {
+                    BottomActionSheet.ACTION_DELETE -> {
+                        ConfirmDialog("삭제하시겠어요?", onOk = {
+                            val filtered = data.filterNot { it.id == notice.id }
+                            data.clear()
+                            data.addAll(filtered)
                             adapter.submitList(data.toList())
-                        }
-                    }.show(parentFragmentManager, "edit_notice")
+                        }).show(parentFragmentManager, "confirm")
+                    }
+
+                    BottomActionSheet.ACTION_EDIT -> {
+                        AddNoticeDialog(prefill = notice) { updated ->
+                            val idx = data.indexOfFirst { it.id == updated.id }
+                            if (idx >= 0) {
+                                data[idx] = updated
+                                adapter.submitList(data.toList())
+                            }
+                        }.show(parentFragmentManager, "edit_notice")
+                    }
                 }
-            ).show(parentFragmentManager, "actions")
+            }
         })
 
         binding.rvNotices.layoutManager = LinearLayoutManager(requireContext())

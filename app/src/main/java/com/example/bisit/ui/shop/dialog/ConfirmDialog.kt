@@ -31,10 +31,10 @@ class ConfirmDialog(
         b.btnOk.text = okText
         b.btnCancel.text = cancelText
 
-        b.btnCancel.setOnClickListener { dismissAllowingStateLoss() }
+        b.btnCancel.setOnClickListener { dismiss() }
         b.btnOk.setOnClickListener {
             onOk?.invoke()
-            dismissAllowingStateLoss()
+            dismiss()
         }
     }
 

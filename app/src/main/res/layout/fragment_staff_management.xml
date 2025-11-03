@@ -5,33 +5,40 @@
     android:layout_height="match_parent"
     android:background="#F8F8F8">
 
-    <RelativeLayout
+    <!-- 헤더 -->
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:paddingHorizontal="18dp">
+        android:paddingHorizontal="18dp"
+        android:gravity="center_vertical"
+        xmlns:tools="http://schemas.android.com/tools"
+        tools:ignore="UseCompoundDrawables"
+        >
 
         <ImageView
             android:id="@+id/ivBack"
             android:layout_width="28dp"
             android:layout_height="28dp"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
             android:src="@drawable/ic_back"
+            android:layout_gravity="center_vertical"
             android:contentDescription="뒤로가기" />
 
         <TextView
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             android:text="직원 관리"
+            android:textStyle="bold"
             android:textColor="#222222"
             android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_toEndOf="@id/ivBack"
-            android:layout_marginStart="6dp"
-            android:layout_centerVertical="true" />
-    </RelativeLayout>
-
+            android:letterSpacing="0.04"
+            android:lineSpacingMultiplier="1.0"
+            android:includeFontPadding="false"
+            android:paddingTop="1dp"
+            android:gravity="center_vertical" />
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/tabContainer"
@@ -39,8 +46,10 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_marginTop="8dp"
-        android:baselineAligned="false">
+        android:layout_marginHorizontal="20dp"
+        android:baselineAligned="false" >
 
+        <!-- 직원 요청 -->
         <LinearLayout
             android:id="@+id/tabRequests"
             android:orientation="vertical"
@@ -54,9 +63,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="직원 요청"
-                android:textColor="#6D7583"
+                android:textColor="#515965"
                 android:textSize="14sp"
-                android:singleLine="true"
                 android:gravity="center"
                 android:includeFontPadding="false" />
 
@@ -64,10 +72,11 @@
                 android:id="@+id/indicatorRequests"
                 android:layout_width="36dp"
                 android:layout_height="3dp"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="8dp"
                 android:background="#4076FF" />
         </LinearLayout>
 
+        <!-- 직원 목록 -->
         <LinearLayout
             android:id="@+id/tabList"
             android:orientation="vertical"
@@ -81,9 +90,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="직원 목록"
-                android:textColor="#9AA1AF"
+                android:textColor="#515965"
                 android:textSize="14sp"
-                android:singleLine="true"
                 android:gravity="center"
                 android:includeFontPadding="false" />
 
@@ -91,11 +99,12 @@
                 android:id="@+id/indicatorList"
                 android:layout_width="36dp"
                 android:layout_height="3dp"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="8dp"
                 android:background="@android:color/transparent" />
         </LinearLayout>
     </LinearLayout>
 
+    <!-- 콘텐츠 -->
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPagerStaff"
         android:layout_width="match_parent"

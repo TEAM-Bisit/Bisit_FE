@@ -31,14 +31,11 @@ class EditSalesDialog(
 
         b.btnSubmit.setOnClickListener {
             val ok = b.etAccount.text?.isNotBlank() == true
-            val dialog = if (ok) {
-                InfoDialog("수정 완료되었습니다.")
-            } else {
-                InfoDialog("인증에 실패하였습니다.")
-            }
-            dialog.show(parentFragmentManager, "info")
             onResult?.invoke(ok)
-            dismissAllowingStateLoss()
+            dismiss()
+
+            val message = if (ok) "수정 완료되었습니다." else "인증에 실패하였습니다."
+            InfoDialog(message).show(parentFragmentManager, "info")
         }
     }
 
