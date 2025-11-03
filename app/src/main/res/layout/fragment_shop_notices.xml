@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F0F2F5">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="18dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="12dp">
+
+        <TextView
+            android:id="@+id/tvNoticeLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="공지사항"
+            android:textColor="#9AA1AF"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvSortLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="정렬 기준"
+            android:textColor="#6D7583"
+            android:textSize="14sp" />
+
+        <ImageView
+            android:id="@+id/ivSortToggle"
+            android:layout_width="10dp"
+            android:layout_height="5dp"
+            android:layout_marginStart="6dp"
+            android:src="@drawable/sort_toggle"
+            android:contentDescription="정렬 변경 아이콘" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvNotices"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingHorizontal="18dp"
+            android:clipToPadding="false" />
+
+        <ImageView
+            android:id="@+id/fabAdd"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="18dp"
+            android:padding="27.9dp"
+            android:src="@drawable/ic_plus_red"
+            android:background="@drawable/bg_fab_white"
+            android:elevation="10dp"
+            android:contentDescription="등록 버튼" />
+    </FrameLayout>
+</LinearLayout>

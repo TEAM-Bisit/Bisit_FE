@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="28dp"
+    android:paddingBottom="24dp"
+    android:paddingHorizontal="20dp"
+    android:layout_marginBottom="10dp"
+    android:background="@drawable/ripple_rect">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="개인 사정으로 휴무입니다."
+            android:textColor="#222222"
+            android:textSize="14sp"
+            android:textStyle="normal"/>
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+        <ImageView
+            android:id="@+id/btnMore"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_menu_dots"/>
+    </LinearLayout>
+
+
+    <TextView
+        android:id="@+id/tvContent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="09/13 금요일은 개인사정으로 휴무입니다. \n 다음 날은 정상 영업합니다."
+        android:textColor="#6D7583"
+        android:textSize="13sp"/>
+
+
+    <TextView
+        android:id="@+id/tvDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="2025.09.13"
+        android:textColor="#515965"
+        android:textSize="12sp"/>
+</LinearLayout>
