@@ -21,7 +21,7 @@ class SplashActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             delay(SPLASH_DELAY_MS)
-            startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
+            startActivity(Intent(this@SplashActivity, OnboardingActivity::class.java))
             finish()
         }
     }
