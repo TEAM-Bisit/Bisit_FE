@@ -1,10 +1,10 @@
 package com.example.bisit
 
-import android.content.Intent
+import android.content.Intent // A/V: Intent 임포트 추가
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.bisit.databinding.ActivityLoginBinding
-
+import com.example.bisit.ui.auth.AuthFragment
 
 class LoginActivity : AppCompatActivity() {
 
@@ -15,16 +15,14 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.btnCustomer.setOnClickListener {
-            startMainActivity("customer")
-        }
-
-        binding.btnOwner.setOnClickListener {
-            startMainActivity("owner")
+        if (savedInstanceState == null) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, AuthFragment.newInstance())
+                .commitNow()
         }
     }
 
-    private fun startMainActivity(userType: String) {
+    fun navigateToMainActivity(userType: String) {
         val intent = Intent(this, MainActivity::class.java)
         intent.putExtra("USER_TYPE", userType)
         startActivity(intent)
