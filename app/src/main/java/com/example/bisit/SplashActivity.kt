@@ -5,7 +5,10 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.bisit.databinding.ActivitySplashBinding
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class SplashActivity : AppCompatActivity() {
 
@@ -16,9 +19,14 @@ class SplashActivity : AppCompatActivity() {
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        Handler(Looper.getMainLooper()).postDelayed({
-            startActivity(Intent(this, LoginActivity::class.java))
+        lifecycleScope.launch {
+            delay(SPLASH_DELAY_MS)
+            startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
             finish()
-        }, 3000)
+        }
+    }
+
+    companion object {
+        private const val SPLASH_DELAY_MS = 3000L
     }
 }
