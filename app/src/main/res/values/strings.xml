@@ -91,4 +91,6 @@
     <string name="label_duration">소요 시간</string>
     <string name="label_description">시술 설명</string>
     <string name="hint_description">시술 설명을 입력해주세요.</string>
+
+    <string name="signup_general"><u>일반 회원가입하기</u></string>
 </resources>
