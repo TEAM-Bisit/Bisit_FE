@@ -93,4 +93,14 @@
     <string name="hint_description">시술 설명을 입력해주세요.</string>
 
     <string name="signup_general"><u>일반 회원가입하기</u></string>
+
+    // 초기 온보딩 텍스트
+    <string name="onboarding_title_1">우리 동네 방문 서비스 찾기</string>
+    <string name="onboarding_subtitle_1">내 주변에서 받을 수 있는\n방문 서비스를 탐색해보세요</string>
+    <string name="onboarding_title_2">안심할 수 있는 전문가</string>
+    <string name="onboarding_subtitle_2">검증된 전문가와 안전하게\n연결됩니다</string>
+    <string name="onboarding_title_3">버튼 하나로 예약 완료</string>
+    <string name="onboarding_subtitle_3">예약부터 결제까지 간편하게\n관리하세요</string>
+    <string name="onboarding_next">다음</string>
+    <string name="onboarding_start">시작하기</string>
 </resources>
