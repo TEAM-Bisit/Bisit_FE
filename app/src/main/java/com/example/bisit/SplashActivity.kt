@@ -1,5 +1,6 @@
 package com.example.bisit
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -21,8 +22,17 @@ class SplashActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             delay(SPLASH_DELAY_MS)
-            startActivity(Intent(this@SplashActivity, OnboardingActivity::class.java))
-            finish()
+
+            val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            val isFirstRun = prefs.getBoolean("is_first_run", true)
+
+            if (isFirstRun) {
+                startActivity(Intent(this@SplashActivity, OnboardingActivity::class.java))
+            } else {
+                startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
+            }
+
+            finish() // SplashActivity 종료
         }
     }
 

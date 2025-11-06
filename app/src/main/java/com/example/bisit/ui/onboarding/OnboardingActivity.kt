@@ -1,5 +1,6 @@
 package com.example.bisit
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -64,10 +65,11 @@ class OnboardingActivity : AppCompatActivity() {
         binding.btnNext.setOnClickListener {
             val currentItem = binding.viewPagerOnboarding.currentItem
             if (currentItem < adapter.itemCount - 1) {
-                // 다음 페이지로 이동
                 binding.viewPagerOnboarding.currentItem = currentItem + 1
             } else {
-                // 마지막 페이지 -> LoginActivity로 이동
+                val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+                prefs.edit().putBoolean("is_first_run", false).apply()
+
                 startActivity(Intent(this, LoginActivity::class.java))
                 finish()
             }
