@@ -1,0 +1,73 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_card_white"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:paddingHorizontal="14dp">
+
+    <!-- 월 이동 헤더 -->
+    <LinearLayout
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="14dp">
+
+        <ImageButton
+            android:id="@+id/btnPrev"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_left"
+            android:background="@null"
+            android:contentDescription="이전 달" />
+
+        <TextView
+            android:id="@+id/tvMonth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="25.09"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#222222"
+            android:layout_marginHorizontal="4dp" />
+
+        <ImageButton
+            android:id="@+id/btnNext"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_right"
+            android:background="@null"
+            android:contentDescription="다음 달" />
+    </LinearLayout>
+
+    <!-- 요일 + 날짜 영역 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="14dp">
+
+        <!-- 요일 라인 -->
+        <GridLayout
+            android:id="@+id/gridDaysOfWeek"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="7"
+            android:paddingBottom="8dp" />
+
+        <!-- 날짜 라인 -->
+        <GridLayout
+            android:id="@+id/gridCalendar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="7"
+            android:rowCount="6"
+            android:alignmentMode="alignMargins"
+            android:useDefaultMargins="true" />
+    </LinearLayout>
+</LinearLayout>
