@@ -4,7 +4,8 @@
     android:layout_height="102dp"
     android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:paddingVertical="16dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
     android:paddingStart="18dp"
     android:paddingEnd="18dp">
 
