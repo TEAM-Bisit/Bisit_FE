@@ -48,6 +48,11 @@ class CustomerReserveFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        selectedButton = null
+        morningGrid = null
+        afternoonGrid = null
+        selectedDate = null
+        lastCheckedId = -1
         _binding = null
     }
 
