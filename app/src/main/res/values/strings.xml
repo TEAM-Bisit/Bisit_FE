@@ -41,4 +41,74 @@
 
     <string name="next_step">다음 단계</string>
 
+    <!-- 매장관리 탭 -->
+    <string name="tab_basic">기본</string>
+    <string name="tab_reviews">리뷰</string>
+    <string name="tab_services">서비스 등록</string>
+    <string name="tab_notices">공지사항</string>
+
+    <!-- 버튼/공통 -->
+    <string name="btn_save">저장하기</string>
+    <string name="btn_add">추가하기</string>
+    <string name="btn_edit">수정하기</string>
+    <string name="btn_delete">삭제하기</string>
+    <string name="btn_close">닫기</string>
+    <string name="btn_confirm">확인</string>
+    <string name="btn_cancel">취소</string>
+
+    <!-- 다이얼로그 / 안내 -->
+    <string name="dialog_title_edit_info">매장 정보 수정</string>
+    <string name="dialog_title_edit_sales">매출 관리 수정</string>
+    <string name="dialog_title_edit_hours">영업시간 수정</string>
+    <string name="dialog_title_add_service">메뉴 추가하기</string>
+    <string name="dialog_title_add_notice">공지 추가</string>
+
+    <!-- 입력 placeholder -->
+    <string name="hint_shop_name">매장 이름을 입력해주세요.</string>
+    <string name="hint_shop_phone">010-0000-0000</string>
+    <string name="hint_shop_address">건물, 지번 또는 도로명 검색</string>
+    <string name="hint_shop_detail">상세 주소 입력</string>
+    <string name="hint_service_title">시술명을 입력해주세요.</string>
+    <string name="hint_service_price">가격을 입력해주세요.</string>
+    <string name="hint_service_time">시술 소요시간</string>
+    <string name="hint_service_desc">시술 설명을 입력해주세요.</string>
+    <string name="hint_notice_title">제목을 입력해주세요.</string>
+    <string name="hint_notice_content">내용을 입력해주세요.</string>
+
+    <!-- 안내 메시지 -->
+    <string name="msg_edit_success">수정이 완료되었습니다.</string>
+    <string name="msg_edit_fail">인증에 실패하였습니다.</string>
+    <string name="msg_delete_confirm">삭제하시겠어요?</string>
+    <string name="msg_delete_done">삭제되었습니다.</string>
+
+    <!-- 공통 라벨 -->
+    <string name="label_open_time">영업시간</string>
+    <string name="label_break_time">브레이크타임</string>
+    <string name="label_holiday">정기 휴무</string>
+    <string name="label_account">계좌번호 수정</string>
+    <string name="label_intro">매장 소개</string>
+    <string name="label_service">제공 서비스</string>
+
+    <string name="underlined_text"><u>수정하기</u></string>
+
+    <!-- add_service -->
+    <string name="dialog_title_shop_service">메뉴 추가하기</string>
+    <string name="label_service_name">시술명</string>
+    <string name="hint_service_name">시술을 입력해주세요.</string>
+    <string name="label_price">가격</string>
+    <string name="hint_price">가격을 입력해주세요.</string>
+    <string name="label_duration">소요 시간</string>
+    <string name="label_description">시술 설명</string>
+    <string name="hint_description">시술 설명을 입력해주세요.</string>
+
+    <string name="signup_general"><u>일반 회원가입하기</u></string>
+
+    <string name="onboarding_title_1">우리 동네 방문 서비스 찾기</string>
+    <string name="onboarding_subtitle_1">내 주변에서 받을 수 있는\n방문 서비스를 탐색해보세요</string>
+    <string name="onboarding_title_2">안심할 수 있는 전문가</string>
+    <string name="onboarding_subtitle_2">검증된 전문가와 안전하게\n연결됩니다</string>
+    <string name="onboarding_title_3">버튼 하나로 예약 완료</string>
+    <string name="onboarding_subtitle_3">예약부터 결제까지 간편하게\n관리하세요</string>
+    <string name="onboarding_next">다음</string>
+    <string name="onboarding_start">시작하기</string>
 </resources>

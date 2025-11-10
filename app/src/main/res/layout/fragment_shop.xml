@@ -162,5 +162,151 @@
             android:layout_height="28dp"
             android:src="@drawable/ic_home" />
     </LinearLayout>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8F8F8">
 
+    <!-- 헤더 타이틀 -->
+    <TextView
+        android:id="@+id/tvTitle"
+        android:text="매장 관리"
+        android:textColor="#222222"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.04"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="39dp"
+        android:layout_marginBottom="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:id="@+id/tabContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="13dp">
+
+        <!-- 기본 -->
+        <LinearLayout
+            android:id="@+id/tabBasic"
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:layout_marginEnd="50dp">
+
+            <TextView
+                android:id="@+id/tvBasic"
+                android:text="@string/tab_basic"
+                android:textColor="#6D7583"
+                android:textSize="14sp"
+                android:paddingHorizontal="4dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <View
+                android:id="@+id/indicatorBasic"
+                android:layout_width="match_parent"
+                android:layout_height="3dp"
+                android:layout_marginTop="10dp"
+                android:background="#4076FF" />
+        </LinearLayout>
+
+        <!-- 리뷰 -->
+        <LinearLayout
+            android:id="@+id/tabReviews"
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:layout_marginEnd="50dp">
+
+            <TextView
+                android:id="@+id/tvReviews"
+                android:text="@string/tab_reviews"
+                android:textColor="#9AA1AF"
+                android:textSize="14sp"
+                android:paddingHorizontal="4dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <View
+                android:id="@+id/indicatorReviews"
+                android:layout_width="match_parent"
+                android:layout_height="3dp"
+                android:layout_marginTop="10dp"
+                android:background="@android:color/transparent" />
+        </LinearLayout>
+
+        <!-- 서비스 등록 -->
+        <LinearLayout
+            android:id="@+id/tabServices"
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:layout_marginEnd="50dp">
+
+            <TextView
+                android:id="@+id/tvServices"
+                android:text="@string/tab_services"
+                android:textColor="#9AA1AF"
+                android:textSize="14sp"
+                android:paddingHorizontal="4dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <View
+                android:id="@+id/indicatorServices"
+                android:layout_width="match_parent"
+                android:layout_height="3dp"
+                android:layout_marginTop="10dp"
+                android:background="@android:color/transparent" />
+        </LinearLayout>
+
+        <!-- 공지사항 -->
+        <LinearLayout
+            android:id="@+id/tabNotices"
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal">
+
+            <TextView
+                android:id="@+id/tvNotices"
+                android:text="@string/tab_notices"
+                android:textColor="#9AA1AF"
+                android:textSize="14sp"
+                android:paddingHorizontal="4dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <View
+                android:id="@+id/indicatorNotices"
+                android:layout_width="match_parent"
+                android:layout_height="3dp"
+                android:layout_marginTop="10dp"
+                android:background="@android:color/transparent" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 콘텐츠 영역 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#F0F2F5"
+        android:orientation="vertical">
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPager"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+    </LinearLayout>
+</LinearLayout>
 </FrameLayout>

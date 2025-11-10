@@ -1,6 +1,5 @@
 package com.example.bisit.ui.todayReserv.dialog
 
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.toColorInt
 import androidx.fragment.app.DialogFragment
 import com.example.bisit.R
 
@@ -59,20 +59,20 @@ class SortOptionDialog(
     }
 
     private fun updateUI(recentView: TextView, oldestView: TextView) {
-        val checkRed = ContextCompat.getDrawable(requireContext(), R.drawable.ic_check_red)
+        val checkBlue = ContextCompat.getDrawable(requireContext(), R.drawable.ic_check_blue)
         val checkGray = ContextCompat.getDrawable(requireContext(), R.drawable.ic_check_gray)
 
-        val selectedColor = Color.parseColor("#FE6B6B")
-        val unselectedColor = Color.parseColor("#6D7583")
+        val selectedColor = "#4076FF".toColorInt()
+        val unselectedColor = "#6D7583".toColorInt()
 
         if (isRecent) {
-            recentView.setCompoundDrawablesWithIntrinsicBounds(null, null, checkRed, null)
+            recentView.setCompoundDrawablesWithIntrinsicBounds(null, null, checkBlue, null)
             oldestView.setCompoundDrawablesWithIntrinsicBounds(null, null, checkGray, null)
             recentView.setTextColor(selectedColor)
             oldestView.setTextColor(unselectedColor)
         } else {
             recentView.setCompoundDrawablesWithIntrinsicBounds(null, null, checkGray, null)
-            oldestView.setCompoundDrawablesWithIntrinsicBounds(null, null, checkRed, null)
+            oldestView.setCompoundDrawablesWithIntrinsicBounds(null, null, checkBlue, null)
             recentView.setTextColor(unselectedColor)
             oldestView.setTextColor(selectedColor)
         }
