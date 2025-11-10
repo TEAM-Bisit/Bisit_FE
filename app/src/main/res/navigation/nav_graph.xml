@@ -10,39 +10,79 @@
         android:name="com.example.bisit.ui.home.HomeFragment"
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" />
+
     <fragment
         android:id="@+id/myReservFragment"
         android:name="com.example.bisit.ui.myReserv.MyReservFragment"
         android:label="fragment_my_reserv"
         tools:layout="@layout/fragment_my_reserv" />
+
     <fragment
         android:id="@+id/myPageFragment"
         android:name="com.example.bisit.ui.myPage.MyPageFragment"
         android:label="fragment_my_page"
         tools:layout="@layout/fragment_my_page" />
+
     <fragment
         android:id="@+id/homeListFragment"
         android:name="com.example.bisit.ui.home.HomeListFragment"
         android:label="Home List"
-        tools:layout="@layout/fragment_home_list" />
+        tools:layout="@layout/fragment_home_list">
+
+        <action
+            android:id="@+id/action_homeListFragment_to_shopFragment"
+            app:destination="@id/shopFragment" />
+    </fragment>
+
     <fragment
         android:id="@+id/shopFragment"
-        android:name="com.example.bisit.ui.shop.ShopFragment"
+        android:name="com.example.bisit.ui.customerShop.CustomerShopFragment"
         android:label="fragment_shop"
-        tools:layout="@layout/fragment_shop" />
+        tools:layout="@layout/fragment_shop">
+
+        <action
+            android:id="@+id/action_shopFragment_to_shopDesignerFragment"
+            app:destination="@id/shopDesignerFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/shopDesignerFragment"
+        android:name="com.example.bisit.ui.customerShop.CustomerShopDesignerFragment"
+        android:label="fragment_shop_designer"
+        tools:layout="@layout/fragment_shop_designer">
+
+        <action
+            android:id="@+id/action_shopDesignerFragment_to_shopFragment"
+            app:destination="@id/shopFragment" />
+
+        <action
+            android:id="@+id/action_shopDesignerFragment_to_homeListFragment"
+            app:destination="@id/homeListFragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/customerReserveFragment"
+        android:name="com.example.bisit.ui.customerReserve.CustomerReserveFragment"
+        android:label="fragment_customer_reserve"
+        tools:layout="@layout/fragment_customer_reserve" />
+
     <fragment
         android:id="@+id/todayReservFragment"
         android:name="com.example.bisit.ui.todayReserv.TodayReservFragment"
         android:label="fragment_today_reserv"
         tools:layout="@layout/fragment_today_reserv" />
+
     <fragment
         android:id="@+id/reservListFragment"
         android:name="com.example.bisit.ui.reservList.ReservListFragment"
         android:label="fragment_reserv_list"
         tools:layout="@layout/fragment_reserv_list" />
+
     <fragment
         android:id="@+id/myPageOwnerFragment"
         android:name="com.example.bisit.ui.myPageOwner.MyPageOwnerFragment"
         android:label="fragment_my_page_owner"
         tools:layout="@layout/fragment_my_page_owner" />
+
 </navigation>

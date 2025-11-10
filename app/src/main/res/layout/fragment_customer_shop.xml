@@ -1,14 +1,15 @@
-<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- CoordinatorLayout: AppBar + RecyclerView + Bottom Button -->
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/coordinatorLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <!-- AppBarLayout + CollapsingToolbar -->
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/appBarLayout"
             android:layout_width="match_parent"
@@ -33,6 +34,7 @@
                     app:layout_collapseMode="parallax"
                     android:layout_marginTop="56dp" />
 
+                <!-- 방문 서비스 Chip -->
                 <LinearLayout
                     android:id="@+id/chipVisitService"
                     android:layout_width="wrap_content"
@@ -68,6 +70,7 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
+                <!-- 공유 버튼 배지 -->
                 <LinearLayout
                     android:id="@+id/badge_available"
                     android:layout_width="wrap_content"
@@ -96,9 +99,11 @@
                         android:textSize="14sp"
                         android:layout_marginEnd="16dp" />
                 </LinearLayout>
+
             </com.google.android.material.appbar.CollapsingToolbarLayout>
         </com.google.android.material.appbar.AppBarLayout>
 
+        <!-- RecyclerView -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvShopDetail"
             android:layout_width="match_parent"
@@ -108,6 +113,7 @@
             android:paddingBottom="60dp"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
+        <!-- 하단 버튼 -->
         <LinearLayout
             android:id="@+id/linearLayout"
             android:layout_width="match_parent"
@@ -121,19 +127,20 @@
             android:background="@color/white"
             android:elevation="8dp">
 
-        <Button
-            android:id="@+id/btnBook"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:backgroundTint="#FE6B6B"
-            android:text="예약하기"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            app:cornerRadius="8dp" />
-    </LinearLayout>
+            <Button
+                android:id="@+id/btnBook"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:backgroundTint="#FE6B6B"
+                android:text="예약하기"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                app:cornerRadius="8dp" />
+        </LinearLayout>
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
+    <!-- 최상단 TopBar -->
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
@@ -162,151 +169,5 @@
             android:layout_height="28dp"
             android:src="@drawable/ic_home" />
     </LinearLayout>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#F8F8F8">
 
-    <!-- 헤더 타이틀 -->
-    <TextView
-        android:id="@+id/tvTitle"
-        android:text="매장 관리"
-        android:textColor="#222222"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:letterSpacing="0.04"
-        android:layout_marginStart="18dp"
-        android:layout_marginTop="39dp"
-        android:layout_marginBottom="16dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <LinearLayout
-        android:id="@+id/tabContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_marginTop="13dp">
-
-        <!-- 기본 -->
-        <LinearLayout
-            android:id="@+id/tabBasic"
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:layout_marginEnd="50dp">
-
-            <TextView
-                android:id="@+id/tvBasic"
-                android:text="@string/tab_basic"
-                android:textColor="#6D7583"
-                android:textSize="14sp"
-                android:paddingHorizontal="4dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <View
-                android:id="@+id/indicatorBasic"
-                android:layout_width="match_parent"
-                android:layout_height="3dp"
-                android:layout_marginTop="10dp"
-                android:background="#4076FF" />
-        </LinearLayout>
-
-        <!-- 리뷰 -->
-        <LinearLayout
-            android:id="@+id/tabReviews"
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:layout_marginEnd="50dp">
-
-            <TextView
-                android:id="@+id/tvReviews"
-                android:text="@string/tab_reviews"
-                android:textColor="#9AA1AF"
-                android:textSize="14sp"
-                android:paddingHorizontal="4dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <View
-                android:id="@+id/indicatorReviews"
-                android:layout_width="match_parent"
-                android:layout_height="3dp"
-                android:layout_marginTop="10dp"
-                android:background="@android:color/transparent" />
-        </LinearLayout>
-
-        <!-- 서비스 등록 -->
-        <LinearLayout
-            android:id="@+id/tabServices"
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:layout_marginEnd="50dp">
-
-            <TextView
-                android:id="@+id/tvServices"
-                android:text="@string/tab_services"
-                android:textColor="#9AA1AF"
-                android:textSize="14sp"
-                android:paddingHorizontal="4dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <View
-                android:id="@+id/indicatorServices"
-                android:layout_width="match_parent"
-                android:layout_height="3dp"
-                android:layout_marginTop="10dp"
-                android:background="@android:color/transparent" />
-        </LinearLayout>
-
-        <!-- 공지사항 -->
-        <LinearLayout
-            android:id="@+id/tabNotices"
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal">
-
-            <TextView
-                android:id="@+id/tvNotices"
-                android:text="@string/tab_notices"
-                android:textColor="#9AA1AF"
-                android:textSize="14sp"
-                android:paddingHorizontal="4dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <View
-                android:id="@+id/indicatorNotices"
-                android:layout_width="match_parent"
-                android:layout_height="3dp"
-                android:layout_marginTop="10dp"
-                android:background="@android:color/transparent" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- 콘텐츠 영역 -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="#F0F2F5"
-        android:orientation="vertical">
-
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/viewPager"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
-    </LinearLayout>
-</LinearLayout>
 </FrameLayout>

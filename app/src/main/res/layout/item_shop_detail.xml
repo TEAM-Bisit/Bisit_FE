@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:background="@drawable/bg_shop_card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="24dp"
+    android:paddingTop="32dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp">
+
+        <TextView
+            android:id="@+id/tvName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="장미헤어"
+            android:textColor="#222222"
+            android:textSize="20sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/tvCategory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="미용실 · 뷰티케어"
+            android:textColor="#B0B4BB"
+            android:textSize="14sp"/>
+
+        <TextView
+            android:id="@+id/tvReview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="리뷰 9개"
+            android:textColor="#B0B4BB"
+            android:textSize="14sp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="6dp"
+        android:gravity="center_vertical"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp">
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_home_star"
+            android:contentDescription="별 아이콘"
+            android:layout_marginEnd="4dp"/>
+        <TextView
+            android:id="@+id/tvRating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="4.8"
+            android:textColor="#222222"
+            android:textSize="14sp"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvSummary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="샵 한 줄 소개입니다. 한줄소개. 샵 한 줄 소개입니다. 한줄소개"
+        android:textColor="#222222"
+        android:textSize="15sp"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:background="#E9ECF2"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="24dp"/>
+
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp">
+
+        <LinearLayout
+            android:id="@+id/layoutAddress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_region" />
+
+            <TextView
+                android:id="@+id/tvAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="대구 중구 관덕정길 6-11 1층"
+                android:textColor="#222222"
+                android:textSize="14sp"
+                android:layout_marginStart="6dp"/>
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="7dp">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_customer_clock"
+                android:contentDescription="영업시간 아이콘" />
+
+            <TextView
+                android:id="@+id/tvOpenInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="영업중 09:00 ~ 18:00"
+                android:textColor="#222222"
+                android:textSize="14sp"
+                android:layout_marginStart="6dp"/>
+
+            <ImageView
+                android:id="@+id/btnExpandHour"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="4dp"
+                android:src="@drawable/ic_down_arrow"
+                android:contentDescription="영업시간 펼치기"
+                android:clickable="true"
+                android:focusable="true"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layoutOpenHourDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginTop="1dp"
+            android:layout_marginStart="22dp"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="월 09:00 ~ 18:00"
+                android:textColor="#222222"
+                android:textSize="13sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="일 휴무"
+                android:textColor="#222222"
+                android:textSize="13sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="7dp">
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_call"
+                android:contentDescription="전화 아이콘" />
+            <TextView
+                android:id="@+id/tvPhone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="010-0000-0000"
+                android:textColor="#222222"
+                android:textSize="14sp"
+                android:layout_marginStart="6dp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="4dp"
+        android:gravity="center_vertical"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:background="@drawable/bg_shop_notice">
+
+        <FrameLayout
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_marginEnd="13dp">
+
+            <ImageView
+                android:id="@+id/tvNoticeImg"
+                android:background="@drawable/bg_shop_notice_img"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:gravity="center"
+                android:contentDescription="공지 이미지" />
+
+            <TextView
+                android:id="@+id/tvNoticeBadge"
+                android:layout_width="33dp"
+                android:layout_height="22dp"
+                android:text="알림"
+                android:background="@drawable/bg_shop_notice_badge"
+                android:textColor="@color/white"
+                android:textSize="11sp"
+                android:gravity="center"
+                android:layout_gravity="top|start"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="8dp"/>
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvNoticeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="내일은 휴무입니다"
+                android:textColor="#222222"
+                android:textSize="14sp"
+                android:textStyle="bold"/>
+            <TextView
+                android:id="@+id/tvNoticeTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="4시간 전"
+                android:textColor="#B0B4BB"
+                android:textSize="12sp"
+                android:layout_marginTop="2dp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:background="#E9ECF2"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="24dp"/>
+
+    <LinearLayout
+        android:id="@+id/layoutTab"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="2"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp">
+
+        <TextView
+            android:id="@+id/tabService"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="서비스"
+            android:textSize="16sp"
+            android:textColor="#222222"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tabReview"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="리뷰"
+            android:textSize="16sp"
+            android:textColor="#B0B4BB" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvTabInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="서비스 정보 8개"
+        android:textColor="#666666"
+        android:textSize="14sp"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="8dp"
+        android:background="@color/white" />
+
+    <LinearLayout
+        android:id="@+id/containerServiceItems"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:paddingTop="16dp" />
+
+    <LinearLayout
+        android:id="@+id/containerReviewItems"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:paddingTop="16dp"
+        android:visibility="gone" />
+
+</LinearLayout>

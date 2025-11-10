@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="8dp"
+    android:paddingBottom="16dp"
+    android:paddingStart="18dp"
+    android:paddingEnd="18dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:src="@drawable/ic_comment"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:id="@+id/tvCommentTitle"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="디자이너 한 마디"
+            android:textSize="13sp"
+            android:textColor="#666666" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvCommentContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="시술 후 관리 잘 부탁드려요 😊"
+        android:textSize="14sp"
+        android:textColor="#000000"
+        android:layout_marginTop="6dp" />
+</LinearLayout>

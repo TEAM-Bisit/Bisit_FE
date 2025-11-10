@@ -32,6 +32,15 @@
     <string name="sort_oldest">오래된 순으로</string>
     <string name="sort_save">저장하기</string>
 
+    <string-array name="step_labels">
+        <item>담당 확인</item>
+        <item>서비스 일시</item>
+        <item>서비스 선택</item>
+        <item>이용 방식</item>
+    </string-array>
+
+    <string name="next_step">다음 단계</string>
+
     <!-- 매장관리 탭 -->
     <string name="tab_basic">기본</string>
     <string name="tab_reviews">리뷰</string>
@@ -94,7 +103,6 @@
 
     <string name="signup_general"><u>일반 회원가입하기</u></string>
 
-    // 초기 온보딩 텍스트
     <string name="onboarding_title_1">우리 동네 방문 서비스 찾기</string>
     <string name="onboarding_subtitle_1">내 주변에서 받을 수 있는\n방문 서비스를 탐색해보세요</string>
     <string name="onboarding_title_2">안심할 수 있는 전문가</string>
