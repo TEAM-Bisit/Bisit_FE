@@ -81,7 +81,7 @@ class CustomerShopFragment : Fragment() {
             parentFragmentManager.popBackStack()
         }
         binding.btnBook.setOnClickListener {
-            findNavController().navigate(R.id.action_shopFragment_to_shopDesignerFragment)
+            findNavController().navigate(R.id.action_customerShopFragment_to_shopDesignerFragment)
         }
     }
 

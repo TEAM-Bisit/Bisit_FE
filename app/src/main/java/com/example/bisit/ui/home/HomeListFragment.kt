@@ -55,7 +55,7 @@ class HomeListFragment : Fragment() {
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         binding.recyclerView.adapter = HomeListAdapter(dummyList) { storeItem ->
-            findNavController().navigate(R.id.action_homeListFragment_to_shopFragment)
+            findNavController().navigate(R.id.action_homeListFragment_to_customerShopFragment)
         }
 
         binding.btnMap.setOnClickListener {
