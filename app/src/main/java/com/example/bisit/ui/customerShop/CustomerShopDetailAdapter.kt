@@ -117,7 +117,14 @@ class CustomerShopDetailAdapter(
 
             binding.containerServiceItems.visibility = View.VISIBLE
             binding.containerReviewItems.visibility = View.GONE
-        }
+            binding.tabService.apply {
+                setTextColor(ContextCompat.getColor(binding.root.context, R.color.black))
+                setBackgroundResource(R.drawable.bg_tab_selected)
+            }
+            binding.tabReview.apply {
+                setTextColor(ContextCompat.getColor(binding.root.context, R.color.gray))
+                setBackgroundResource(R.drawable.bg_tab_unselected)
+            }
 
         private fun showCopyAddressDialog(context: Context, address: String) {
             val dialog = Dialog(context)
