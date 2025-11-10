@@ -1,9 +1,15 @@
-package com.example.bisit.ui.shop
+package com.example.bisit.ui.customerShop
 
+import android.app.Dialog
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.navigation.fragment.findNavController
@@ -13,7 +19,7 @@ import com.example.bisit.data.model.shop.ShopDetailItem
 import com.example.bisit.databinding.FragmentShopBinding
 import com.example.bisit.R
 
-class ShopFragment : Fragment() {
+class CustomerShopFragment : Fragment() {
     private var _binding: FragmentShopBinding? = null
     private val binding get() = _binding!!
 
@@ -68,7 +74,7 @@ class ShopFragment : Fragment() {
         )
 
         binding.rvShopDetail.layoutManager = LinearLayoutManager(requireContext())
-        binding.rvShopDetail.adapter = ShopDetailAdapter(dummyDetailList, services, reviews)
+        binding.rvShopDetail.adapter = CustomerShopDetailAdapter(dummyDetailList, services, reviews)
 
         binding.shopBack.setOnClickListener {
             parentFragmentManager.popBackStack()
@@ -77,6 +83,33 @@ class ShopFragment : Fragment() {
         binding.btnBook.setOnClickListener {
             findNavController().navigate(R.id.action_shopFragment_to_shopDesignerFragment)
         }
+
+    }
+
+    private fun showCopyDialog(address: String) {
+        val dialog = Dialog(requireContext())
+        val view = layoutInflater.inflate(R.layout.dialog_copy_address, null)
+        dialog.setContentView(view)
+
+        val tvAddress = view.findViewById<TextView>(R.id.tvAddress)
+        val btnCopy = view.findViewById<TextView>(R.id.btnCopy)
+        val btnClose = view.findViewById<TextView>(R.id.btnClose)
+
+        tvAddress.text = address
+
+        btnCopy.setOnClickListener {
+            val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("주소", address)
+            clipboard.setPrimaryClip(clip)
+            Toast.makeText(requireContext(), "주소가 복사되었습니다.", Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+        }
+
+        btnClose.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     override fun onDestroyView() {

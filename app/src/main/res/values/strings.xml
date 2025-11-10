@@ -31,4 +31,14 @@
     <string name="sort_recent">최근 순으로</string>
     <string name="sort_oldest">오래된 순으로</string>
     <string name="sort_save">저장하기</string>
+
+    <string-array name="step_labels">
+        <item>담당 확인</item>
+        <item>서비스 일시</item>
+        <item>서비스 선택</item>
+        <item>이용 방식</item>
+    </string-array>
+
+    <string name="next_step">다음 단계</string>
+
 </resources>

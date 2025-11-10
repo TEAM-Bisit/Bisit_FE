@@ -1,38 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="290dp"
+    android:layout_height="191dp"
     android:orientation="vertical"
-    android:padding="20dp"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@drawable/bg_shop_card">
+    android:background="@drawable/bg_dialog_address_white"
+    android:padding="20dp">
 
-    <EditText
-        android:id="@+id/etAddress"
+    <TextView
+        android:id="@+id/tvDialogTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="주소"
-        android:inputType="text"
-        android:padding="12dp"
-        android:background="@android:color/transparent"/>
+        android:gravity="center"
+        android:text="주소 복사"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#222222"
+        android:layout_marginBottom="16dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="42dp"
         android:orientation="horizontal"
-        android:gravity="end"
-        android:layout_marginTop="12dp">
+        android:background="@drawable/bg_address_box"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="20dp">
 
-        <Button
-            android:id="@+id/btnClose"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:text="닫기"/>
+        <TextView
+            android:id="@+id/tvAddress"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical|start"
+            android:paddingStart="12dp"
+            android:text="대구 중구 관덕정길 6-11 1층"
+            android:textColor="#222222"
+            android:textSize="14sp" />
 
-        <Button
+        <TextView
             android:id="@+id/btnCopy"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
+            android:layout_width="64dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:background="@drawable/bg_copy_button"
             android:text="복사"
-            android:layout_marginStart="8dp"/>
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:textSize="14sp" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/btnClose"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:text="닫기"
+        android:background="@drawable/bg_close_button"
+        android:textColor="#222222"
+        android:textSize="15sp" />
+
+
 </LinearLayout>

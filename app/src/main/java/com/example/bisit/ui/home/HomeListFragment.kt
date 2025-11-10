@@ -10,7 +10,6 @@ import androidx.navigation.fragment.findNavController
 import com.example.bisit.databinding.FragmentHomeListBinding
 import com.example.bisit.data.model.store.StoreItem
 import com.example.bisit.R
-import com.example.bisit.ui.shop.ShopFragment
 
 class HomeListFragment : Fragment() {
 

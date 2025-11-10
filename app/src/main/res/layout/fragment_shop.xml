@@ -2,8 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/white">
+    android:layout_height="match_parent">
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/coordinatorLayout"
@@ -75,7 +74,7 @@
                     android:layout_height="38dp"
                     android:layout_gravity="bottom|end"
                     android:layout_marginEnd="18.5dp"
-                    android:layout_marginBottom="12dp"
+                    android:layout_marginBottom="16dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:background="@drawable/bg_shop_share">
@@ -95,7 +94,7 @@
                         android:gravity="center_vertical"
                         android:textColor="#222222"
                         android:textSize="14sp"
-                        android:layout_marginEnd="12dp" />
+                        android:layout_marginEnd="16dp" />
                 </LinearLayout>
             </com.google.android.material.appbar.CollapsingToolbarLayout>
         </com.google.android.material.appbar.AppBarLayout>
@@ -105,8 +104,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:paddingTop="0dp"
-            android:layout_marginTop="0dp"
+            android:layout_marginTop="-12dp"
+            android:paddingBottom="60dp"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
         <LinearLayout
@@ -118,19 +117,22 @@
             android:paddingStart="18dp"
             android:paddingTop="16dp"
             android:paddingEnd="18dp"
-            android:paddingBottom="16dp">
+            android:paddingBottom="16dp"
+            android:background="@color/white"
+            android:elevation="8dp">
 
-            <Button
-                android:id="@+id/btnBook"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:backgroundTint="#FE6B6B"
-                android:text="예약하기"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                app:cornerRadius="8dp" />
-        </LinearLayout>
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+        <Button
+            android:id="@+id/btnBook"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:backgroundTint="#FE6B6B"
+            android:text="예약하기"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            app:cornerRadius="8dp" />
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     <LinearLayout
         android:id="@+id/topBar"

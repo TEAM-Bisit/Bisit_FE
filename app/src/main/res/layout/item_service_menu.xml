@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_service_item_unselected"
+    android:padding="16dp"
+    android:paddingStart="18dp"
+    android:paddingEnd="18dp"
+    android:layout_marginStart="18dp"
+    android:layout_marginEnd="18dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tvServiceName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="일반 컷"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:textColor="#000000" />
+
+        <ImageView
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:src="@drawable/ic_clock_small"
+            android:layout_marginStart="6dp" />
+
+        <TextView
+            android:id="@+id/tvServiceTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="60분"
+            android:textSize="13sp"
+            android:textColor="#4285F4"
+            android:layout_marginStart="2dp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvServiceDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="가장 기본적인 컷트입니다."
+        android:textSize="13sp"
+        android:textColor="#666666"
+        android:layout_marginTop="6dp" />
+
+    <TextView
+        android:id="@+id/tvServicePrice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="12,000원"
+        android:textSize="14sp"
+        android:textColor="#000000"
+        android:textStyle="bold"
+        android:gravity="end"
+        android:layout_marginTop="10dp" />
+
+</LinearLayout>

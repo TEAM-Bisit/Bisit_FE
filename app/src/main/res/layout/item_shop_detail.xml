@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingBottom="24dp"
-    android:layout_marginTop="32dp">
+    android:paddingTop="32dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -95,6 +95,7 @@
         android:paddingEnd="18dp">
 
         <LinearLayout
+            android:id="@+id/layoutAddress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -103,8 +104,7 @@
             <ImageView
                 android:layout_width="16dp"
                 android:layout_height="16dp"
-                android:src="@drawable/ic_region"
-                android:contentDescription="지역 아이콘" />
+                android:src="@drawable/ic_region" />
 
             <TextView
                 android:id="@+id/tvAddress"
@@ -115,6 +115,7 @@
                 android:textSize="14sp"
                 android:layout_marginStart="6dp"/>
         </LinearLayout>
+
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -300,10 +301,18 @@
 
     </LinearLayout>
 
-    <View
+    <TextView
+        android:id="@+id/tvTabInfo"
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#E9ECF2" />
+        android:layout_height="wrap_content"
+        android:text="서비스 정보 8개"
+        android:textColor="#666666"
+        android:textSize="14sp"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="8dp"
+        android:background="@color/white" />
 
     <LinearLayout
         android:id="@+id/containerServiceItems"

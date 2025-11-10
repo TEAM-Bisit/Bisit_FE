@@ -1,4 +1,4 @@
-package com.example.bisit.ui.shop
+package com.example.bisit.ui.customerShop
 
 import android.app.Dialog
 import android.content.ClipData
@@ -19,11 +19,11 @@ import com.example.bisit.data.model.shop.ShopDetailItem
 import com.example.bisit.databinding.DialogCopyAddressBinding
 import com.example.bisit.databinding.ItemShopDetailBinding
 
-class ShopDetailAdapter(
+class CustomerShopDetailAdapter(
     private val items: List<ShopDetailItem>,
     private val servicesLists: List<List<ServiceItem>> = emptyList(),
     private val reviewsLists: List<List<ReviewItem>> = emptyList()
-) : RecyclerView.Adapter<ShopDetailAdapter.ShopDetailViewHolder>() {
+) : RecyclerView.Adapter<CustomerShopDetailAdapter.ShopDetailViewHolder>() {
 
     private val expandedPositions = mutableSetOf<Int>()
 
@@ -49,8 +49,6 @@ class ShopDetailAdapter(
                     text = hour
                     textSize = 13f
                     setTextColor(0xFF222222.toInt())
-                    setPadding(0, 0, 0, 0)
-                    minHeight = 0
                     includeFontPadding = false
                 }
                 val params = LinearLayout.LayoutParams(
@@ -66,20 +64,19 @@ class ShopDetailAdapter(
             val isExpanded = expandedPositions.contains(pos)
             binding.layoutOpenHourDetail.visibility = if (isExpanded) View.VISIBLE else View.GONE
             binding.btnExpandHour.rotation = if (isExpanded) 180f else 0f
-
             binding.btnExpandHour.setOnClickListener {
-                if (expandedPositions.contains(pos)) expandedPositions.remove(pos) else expandedPositions.add(pos)
+                if (expandedPositions.contains(pos)) expandedPositions.remove(pos)
+                else expandedPositions.add(pos)
                 notifyItemChanged(pos)
             }
 
-            binding.tvAddress.setOnClickListener {
+            binding.layoutAddress.setOnClickListener {
                 showCopyAddressDialog(binding.root.context, item.address)
             }
 
+            val inflater = LayoutInflater.from(binding.root.context)
             binding.containerServiceItems.removeAllViews()
             binding.containerReviewItems.removeAllViews()
-
-            val inflater = LayoutInflater.from(binding.root.context)
 
             val servicesForThis = servicesLists.getOrNull(pos) ?: emptyList()
             servicesForThis.forEach { svc ->
@@ -120,27 +117,30 @@ class ShopDetailAdapter(
 
             binding.containerServiceItems.visibility = View.VISIBLE
             binding.containerReviewItems.visibility = View.GONE
-            binding.tabService.setTextColor(ContextCompat.getColor(binding.root.context, R.color.black))
-            binding.tabReview.setTextColor(ContextCompat.getColor(binding.root.context, R.color.gray))
-            binding.tabService.setBackgroundResource(R.drawable.bg_tab_selected)
-            binding.tabReview.setBackgroundResource(R.drawable.bg_tab_unselected)
         }
 
         private fun showCopyAddressDialog(context: Context, address: String) {
             val dialog = Dialog(context)
             val dialogBinding = DialogCopyAddressBinding.inflate(LayoutInflater.from(context))
             dialog.setContentView(dialogBinding.root)
+            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
             dialog.setCancelable(true)
-            dialogBinding.etAddress.setText(address)
+
+            dialogBinding.tvAddress.text = address
 
             dialogBinding.btnCopy.setOnClickListener {
                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                clipboard.setPrimaryClip(ClipData.newPlainText("address", address))
+                clipboard.setPrimaryClip(ClipData.newPlainText("주소", address))
                 Toast.makeText(context, "주소가 복사되었습니다.", Toast.LENGTH_SHORT).show()
             }
-            dialogBinding.btnClose.setOnClickListener { dialog.dismiss() }
+
+            dialogBinding.btnClose.setOnClickListener {
+                dialog.dismiss()
+            }
+
             dialog.show()
         }
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShopDetailViewHolder {

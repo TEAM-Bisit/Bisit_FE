@@ -1,4 +1,4 @@
-package com.example.bisit.ui.shop
+package com.example.bisit.ui.customerShop
 
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.R
 import com.example.bisit.data.model.shop.Designer
 
-class ShopDesignerFragment : Fragment() {
+class CustomerShopDesignerFragment : Fragment() {
 
     private var selectedPosition = -1
 
@@ -24,16 +24,12 @@ class ShopDesignerFragment : Fragment() {
     private lateinit var btnBack: ImageView
     private lateinit var btnHome: ImageView
 
-    private lateinit var designerAdapter: ShopDesignerAdapter
+    private lateinit var designerAdapter: CustomerShopDesignerAdapter
 
     private val designers = listOf(
         Designer("김우리", "사장님", "방문 서비스, 예약 시술 모두 가능합니다.", "4.8", "리뷰 12개"),
         Designer("엘라 실장", "사장님", "펌 전문 디자이너입니다.", "4.5", "리뷰 10개")
     )
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -48,7 +44,7 @@ class ShopDesignerFragment : Fragment() {
 
         recyclerDesigner.layoutManager = LinearLayoutManager(requireContext())
 
-        designerAdapter = ShopDesignerAdapter(designers) { pos ->
+        designerAdapter = CustomerShopDesignerAdapter(designers) { pos ->
             selectedPosition = if (selectedPosition != pos) pos else -1
             designerAdapter.selectedPosition = selectedPosition
             designerAdapter.notifyDataSetChanged()
@@ -59,18 +55,13 @@ class ShopDesignerFragment : Fragment() {
         updateBookButtonState()
 
         btnBack.setOnClickListener {
-            findNavController().navigate(R.id.action_shopDesignerFragment_to_shopDetailFragment)
+            findNavController().navigate(R.id.action_shopDesignerFragment_to_shopFragment)
         }
 
         btnHome.setOnClickListener {
             findNavController().navigate(R.id.action_shopDesignerFragment_to_homeListFragment)
         }
 
-        btnBook.setOnClickListener {
-            if (selectedPosition >= 0) {
-                val selectedDesigner = designers[selectedPosition]
-            }
-        }
         btnBook.setOnClickListener {
             if (selectedPosition >= 0) {
                 findNavController().navigate(R.id.customerReserveFragment)

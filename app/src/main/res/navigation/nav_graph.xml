@@ -36,7 +36,7 @@
 
     <fragment
         android:id="@+id/shopFragment"
-        android:name="com.example.bisit.ui.shop.ShopFragment"
+        android:name="com.example.bisit.ui.customerShop.CustomerShopFragment"
         android:label="fragment_shop"
         tools:layout="@layout/fragment_shop">
 
@@ -47,24 +47,19 @@
 
     <fragment
         android:id="@+id/shopDesignerFragment"
-        android:name="com.example.bisit.ui.shop.ShopDesignerFragment"
+        android:name="com.example.bisit.ui.customerShop.CustomerShopDesignerFragment"
         android:label="fragment_shop_designer"
         tools:layout="@layout/fragment_shop_designer">
 
         <action
-            android:id="@+id/action_shopDesignerFragment_to_shopDetailFragment"
-            app:destination="@id/shopDetailFragment" />
+            android:id="@+id/action_shopDesignerFragment_to_shopFragment"
+            app:destination="@id/shopFragment" />
 
         <action
             android:id="@+id/action_shopDesignerFragment_to_homeListFragment"
             app:destination="@id/homeListFragment" />
-    </fragment>
 
-    <fragment
-        android:id="@+id/shopDetailFragment"
-        android:name="com.example.bisit.ui.shop.ShopFragment"
-        android:label="fragment_shop_detail"
-        tools:layout="@layout/fragment_shop" />
+    </fragment>
 
     <fragment
         android:id="@+id/customerReserveFragment"
@@ -89,4 +84,5 @@
         android:name="com.example.bisit.ui.myPageOwner.MyPageOwnerFragment"
         android:label="fragment_my_page_owner"
         tools:layout="@layout/fragment_my_page_owner" />
+
 </navigation>

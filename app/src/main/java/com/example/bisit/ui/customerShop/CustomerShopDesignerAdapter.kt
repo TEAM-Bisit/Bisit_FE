@@ -1,4 +1,4 @@
-package com.example.bisit.ui.shop
+package com.example.bisit.ui.customerShop
 
 import android.graphics.Color
 import android.view.LayoutInflater
@@ -11,10 +11,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.R
 import com.example.bisit.data.model.shop.Designer
 
-class ShopDesignerAdapter(
+class CustomerShopDesignerAdapter(
     private val items: List<Designer>,
     private val itemClick: (Int) -> Unit
-) : RecyclerView.Adapter<ShopDesignerAdapter.VH>() {
+) : RecyclerView.Adapter<CustomerShopDesignerAdapter.VH>() {
 
     var selectedPosition: Int = -1
 
@@ -46,13 +46,28 @@ class ShopDesignerAdapter(
         holder.itemView.isSelected = isSelected
         holder.container.isSelected = isSelected
 
+        val selectedTextColor = Color.parseColor("#FE6B6B")
+        val defaultTextColor = Color.parseColor("#222222")
+
         if (isSelected) {
-            holder.tvName.setTextColor(Color.parseColor("#4076FF"))
+            holder.tvName.setTextColor(selectedTextColor)
+            holder.tvRole.setTextColor(selectedTextColor)
+            holder.tvIntro.setTextColor(selectedTextColor)
+            holder.tvRating.setTextColor(selectedTextColor)
+            holder.tvReviewCount.setTextColor(selectedTextColor)
         } else {
-            holder.tvName.setTextColor(Color.parseColor("#222222"))
+            holder.tvName.setTextColor(defaultTextColor)
+            holder.tvRole.setTextColor(Color.parseColor("#9AA0A6"))
+            holder.tvIntro.setTextColor(Color.parseColor("#6B6F73"))
+            holder.tvRating.setTextColor(Color.parseColor("#6B6F73"))
+            holder.tvReviewCount.setTextColor(Color.parseColor("#6B6F73"))
         }
 
         holder.itemView.setOnClickListener {
+            val previous = selectedPosition
+            selectedPosition = position
+            notifyItemChanged(previous)
+            notifyItemChanged(selectedPosition)
             itemClick(position)
         }
     }
