@@ -55,7 +55,7 @@ class CustomerShopDesignerFragment : Fragment() {
         updateBookButtonState()
 
         btnBack.setOnClickListener {
-            findNavController().navigate(R.id.action_shopDesignerFragment_to_shopFragment)
+            findNavController().navigate(R.id.action_shopDesignerFragment_to_customerShopFragment)
         }
 
         btnHome.setOnClickListener {
