@@ -16,18 +16,18 @@ import androidx.navigation.fragment.findNavController
 import com.example.bisit.data.model.shop.ServiceItem
 import com.example.bisit.data.model.shop.ReviewItem
 import com.example.bisit.data.model.shop.ShopDetailItem
-import com.example.bisit.databinding.FragmentShopBinding
+import com.example.bisit.databinding.FragmentCustomerShopBinding
 import com.example.bisit.R
 
 class CustomerShopFragment : Fragment() {
-    private var _binding: FragmentShopBinding? = null
+    private var _binding: FragmentCustomerShopBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentShopBinding.inflate(inflater, container, false)
+        _binding = FragmentCustomerShopBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -76,14 +76,13 @@ class CustomerShopFragment : Fragment() {
         binding.rvShopDetail.layoutManager = LinearLayoutManager(requireContext())
         binding.rvShopDetail.adapter = CustomerShopDetailAdapter(dummyDetailList, services, reviews)
 
+        // 뒤로가기
         binding.shopBack.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
-
         binding.btnBook.setOnClickListener {
             findNavController().navigate(R.id.action_shopFragment_to_shopDesignerFragment)
         }
-
     }
 
     private fun showCopyDialog(address: String) {

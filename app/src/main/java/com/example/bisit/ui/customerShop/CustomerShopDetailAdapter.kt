@@ -42,6 +42,7 @@ class CustomerShopDetailAdapter(
             binding.tvNoticeText.text = item.notice
             binding.tvNoticeTime.text = item.noticeTime
 
+            // 오픈 시간 리스트
             val marginInPx = (2 * binding.root.context.resources.displayMetrics.density).toInt()
             binding.layoutOpenHourDetail.removeAllViews()
             item.weeklyOpenHours.forEach { hour ->
@@ -61,6 +62,7 @@ class CustomerShopDetailAdapter(
                 binding.layoutOpenHourDetail.addView(tv)
             }
 
+            // expand/collapse
             val isExpanded = expandedPositions.contains(pos)
             binding.layoutOpenHourDetail.visibility = if (isExpanded) View.VISIBLE else View.GONE
             binding.btnExpandHour.rotation = if (isExpanded) 180f else 0f
@@ -70,33 +72,36 @@ class CustomerShopDetailAdapter(
                 notifyItemChanged(pos)
             }
 
+            // 주소 클릭 → 복사
             binding.layoutAddress.setOnClickListener {
                 showCopyAddressDialog(binding.root.context, item.address)
             }
 
+            // 서비스/리뷰
             val inflater = LayoutInflater.from(binding.root.context)
             binding.containerServiceItems.removeAllViews()
             binding.containerReviewItems.removeAllViews()
 
             val servicesForThis = servicesLists.getOrNull(pos) ?: emptyList()
             servicesForThis.forEach { svc ->
-                val v = inflater.inflate(R.layout.item_shop_service, binding.containerServiceItems, false)
-                v.findViewById<TextView>(R.id.tvServiceName)?.text = svc.name
-                v.findViewById<TextView>(R.id.tvServiceDesc)?.text = svc.desc ?: ""
-                v.findViewById<TextView>(R.id.tvServicePrice)?.text = svc.price ?: ""
-                v.findViewById<TextView>(R.id.tvServiceTime)?.text = svc.time ?: ""
-                binding.containerServiceItems.addView(v)
+                val view = inflater.inflate(R.layout.item_shop_service, binding.containerServiceItems, false)
+                view.findViewById<TextView>(R.id.tvServiceName)?.text = svc.name
+                view.findViewById<TextView>(R.id.tvServiceDesc)?.text = svc.desc ?: ""
+                view.findViewById<TextView>(R.id.tvServicePrice)?.text = svc.price ?: ""
+                view.findViewById<TextView>(R.id.tvServiceTime)?.text = svc.time ?: ""
+                binding.containerServiceItems.addView(view)
             }
 
             val reviewsForThis = reviewsLists.getOrNull(pos) ?: emptyList()
             reviewsForThis.forEach { rev ->
-                val v = inflater.inflate(R.layout.item_shop_review, binding.containerReviewItems, false)
-                v.findViewById<TextView>(R.id.tvReviewContent)?.text = rev.content
-                v.findViewById<TextView>(R.id.tvReviewDate)?.text = rev.date
-                v.findViewById<TextView>(R.id.tvReviewer)?.text = rev.author
-                binding.containerReviewItems.addView(v)
+                val view = inflater.inflate(R.layout.item_shop_review, binding.containerReviewItems, false)
+                view.findViewById<TextView>(R.id.tvReviewContent)?.text = rev.content
+                view.findViewById<TextView>(R.id.tvReviewDate)?.text = rev.date
+                view.findViewById<TextView>(R.id.tvReviewer)?.text = rev.author
+                binding.containerReviewItems.addView(view)
             }
 
+            // 탭 클릭
             binding.tabService.setOnClickListener {
                 binding.containerServiceItems.visibility = View.VISIBLE
                 binding.containerReviewItems.visibility = View.GONE
@@ -115,6 +120,7 @@ class CustomerShopDetailAdapter(
                 binding.tabReview.setBackgroundResource(R.drawable.bg_tab_selected)
             }
 
+            // 초기 상태
             binding.containerServiceItems.visibility = View.VISIBLE
             binding.containerReviewItems.visibility = View.GONE
             binding.tabService.apply {
@@ -125,6 +131,7 @@ class CustomerShopDetailAdapter(
                 setTextColor(ContextCompat.getColor(binding.root.context, R.color.gray))
                 setBackgroundResource(R.drawable.bg_tab_unselected)
             }
+        }
 
         private fun showCopyAddressDialog(context: Context, address: String) {
             val dialog = Dialog(context)
@@ -147,7 +154,6 @@ class CustomerShopDetailAdapter(
 
             dialog.show()
         }
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShopDetailViewHolder {
