@@ -11,7 +11,7 @@ import com.example.bisit.databinding.ItemServiceMenuBinding
 import com.google.android.material.card.MaterialCardView
 
 class CustomerReserveAdapter(
-    private val items: List<CustomerReserveItem>
+    private var items: List<CustomerReserveItem>
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var selectedPosition: Int = -1
@@ -54,6 +54,12 @@ class CustomerReserveAdapter(
 
     override fun getItemCount(): Int = items.size
 
+    fun updateItems(newItems: List<CustomerReserveItem>) {
+        items = newItems
+        selectedPosition = -1
+        notifyDataSetChanged()
+    }
+
     class DesignerInfoViewHolder(private val binding: ItemDesignerInfoBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: CustomerReserveItem.DesignerInfo) {
@@ -72,7 +78,6 @@ class CustomerReserveAdapter(
 
     inner class ServiceMenuViewHolder(private val binding: ItemServiceMenuBinding) :
         RecyclerView.ViewHolder(binding.root) {
-
         fun bind(item: CustomerReserveItem.ServiceMenu, position: Int) {
             binding.tvServiceName.text = item.title
             binding.tvServiceTime.text =
@@ -96,3 +101,4 @@ class CustomerReserveAdapter(
         }
     }
 }
+

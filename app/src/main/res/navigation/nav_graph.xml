@@ -12,10 +12,10 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/myReservFragment"
-        android:name="com.example.bisit.ui.myReserv.MyReservFragment"
-        android:label="fragment_my_reserv"
-        tools:layout="@layout/fragment_my_reserv" />
+        android:id="@+id/CustomerMyReserve"
+        android:name="com.example.bisit.ui.customerMyReserve.CustomerMyReserveFragment"
+        android:label="fragment_customer_my_reserve"
+        tools:layout="@layout/fragment_customer_my_reserve" />
 
     <fragment
         android:id="@+id/myPageFragment"
