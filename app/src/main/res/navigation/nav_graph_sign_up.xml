@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph_sign_up"
+    app:startDestination="@id/signUpInfoFragment">
+
+    <fragment
+        android:id="@+id/signUpInfoFragment"
+        android:name="com.example.bisit.ui.signUp.SignUpInfoFragment"
+        tools:layout="@layout/fragment_sign_up_info" >
+        <action
+            android:id="@+id/action_signUpInfoFragment_to_signUpCredentialsFragment"
+            />
+    </fragment>
+
+
+</navigation>
