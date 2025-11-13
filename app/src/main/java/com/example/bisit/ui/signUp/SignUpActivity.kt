@@ -41,18 +41,14 @@ class SignUpActivity : AppCompatActivity() {
                     binding.toolbarTitle.text = ""
                     binding.toolbar.navigationIcon = ContextCompat.getDrawable(this, R.drawable.ic_back)
                 }
-//                R.id.signUpCredentialsFragment -> {
-//                    // 2단계: 툴바 보이기, "회원가입" 타이틀
-//                    binding.toolbar.visibility = View.VISIBLE
-//                    binding.toolbarTitle.text = "회원가입"
-//                    binding.toolbar.navigationIcon = ContextCompat.getDrawable(this, R.drawable.ic_back)
-//                }
-//                R.id.signUpCompleteFragment -> {
-//                    // 3단계: 툴바 보이기, 타이틀 없고 뒤로가기 버튼도 없음
-//                    binding.toolbar.visibility = View.VISIBLE
-//                    binding.toolbarTitle.text = ""
-//                    binding.toolbar.navigationIcon = null
-//                }
+                R.id.signUpCredentialsFragment -> {
+                    binding.toolbar.visibility = View.VISIBLE
+                    binding.toolbarTitle.text = ""
+                    binding.toolbar.navigationIcon = ContextCompat.getDrawable(this, R.drawable.ic_back)
+                }
+                R.id.signUpCompleteFragment -> {
+                    binding.toolbar.visibility = View.GONE
+                }
                 else -> {
                     binding.toolbar.visibility = View.VISIBLE
                     binding.toolbar.navigationIcon = ContextCompat.getDrawable(this, R.drawable.ic_back)
