@@ -1,11 +1,11 @@
 package com.example.bisit.ui.signUp
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
-// import androidx.navigation.ui.AppBarConfiguration // 👈 이 줄 삭제
-// import androidx.navigation.ui.setupWithNavController // 👈 이 줄 삭제
 import com.example.bisit.R
 import com.example.bisit.databinding.ActivitySignUpBinding
 
@@ -19,22 +19,45 @@ class SignUpActivity : AppCompatActivity() {
         binding = ActivitySignUpBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // NavController 설정
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment_sign_up) as NavHostFragment
         navController = navHostFragment.navController
 
-        // ✨ 1. 툴바의 '뒤로가기' 버튼(navigationIcon)에 클릭 리스너를 직접 설정합니다.
         binding.toolbar.setNavigationOnClickListener {
-            // 2. NavController가 스택에서 뒤로 갈 수 있으면 (예: 2단계 -> 1단계) 뒤로 가고,
-            //    더 이상 뒤로 갈 수 없으면 (즉, 1단계 화면이면) Activity를 종료합니다.
             if (!navController.popBackStack()) {
                 finish()
             }
         }
 
-        // ✨ 3. 완료 화면에서는 뒤로가기 버튼 숨기기 (선택 사항)
-        //    (3단계 완료 화면에서는 뒤로가기 버튼이 없는 것이 자연스럽습니다.)
-
+        navController.addOnDestinationChangedListener { _, destination, arguments ->
+            when (destination.id) {
+                R.id.termsDetailFragment -> {
+                    binding.toolbar.visibility = View.VISIBLE
+                    binding.toolbarTitle.text = arguments?.getString("termTitle") ?: "약관 상세"
+                    binding.toolbar.navigationIcon = ContextCompat.getDrawable(this, R.drawable.ic_back)
+                }
+                R.id.signUpInfoFragment -> {
+                    binding.toolbar.visibility = View.VISIBLE
+                    binding.toolbarTitle.text = ""
+                    binding.toolbar.navigationIcon = ContextCompat.getDrawable(this, R.drawable.ic_back)
+                }
+//                R.id.signUpCredentialsFragment -> {
+//                    // 2단계: 툴바 보이기, "회원가입" 타이틀
+//                    binding.toolbar.visibility = View.VISIBLE
+//                    binding.toolbarTitle.text = "회원가입"
+//                    binding.toolbar.navigationIcon = ContextCompat.getDrawable(this, R.drawable.ic_back)
+//                }
+//                R.id.signUpCompleteFragment -> {
+//                    // 3단계: 툴바 보이기, 타이틀 없고 뒤로가기 버튼도 없음
+//                    binding.toolbar.visibility = View.VISIBLE
+//                    binding.toolbarTitle.text = ""
+//                    binding.toolbar.navigationIcon = null
+//                }
+                else -> {
+                    binding.toolbar.visibility = View.VISIBLE
+                    binding.toolbar.navigationIcon = ContextCompat.getDrawable(this, R.drawable.ic_back)
+                }
+            }
+        }
     }
 }

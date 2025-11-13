@@ -1,19 +1,27 @@
-package com.example.bisit.ui.dialog
+package com.example.bisit.ui.signUp // ✨ 1. 패키지 경로를 ui.signUp으로 수정
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
+import androidx.fragment.app.activityViewModels
 import com.example.bisit.databinding.SheetTermsAgreementBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
+enum class TermType {
+    SERVICE, LOCATION
+}
+
 class TermsAgreementSheet(
-    private val onAgreementComplete: () -> Unit
+    private val onAgreementComplete: () -> Unit,
+    private val onTermClick: (TermType) -> Unit
 ) : BottomSheetDialogFragment() {
 
     private var _binding: SheetTermsAgreementBinding? = null
     private val binding get() = _binding!!
+
+    private val viewModel: SignUpViewModel by activityViewModels()
 
     private lateinit var requiredCheckBoxes: List<CheckBox>
     private lateinit var allCheckBoxes: List<CheckBox>
@@ -30,47 +38,60 @@ class TermsAgreementSheet(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 체크박스 리스트 초기화
         requiredCheckBoxes = listOf(binding.cbTermService, binding.cbTermLocation)
         allCheckBoxes = requiredCheckBoxes
 
+        binding.cbTermService.isChecked = viewModel.isTermServiceChecked.value ?: false
+        binding.cbTermLocation.isChecked = viewModel.isTermLocationChecked.value ?: false
+        binding.cbAllAgree.isChecked = viewModel.isAllChecked.value ?: false
+        checkRequiredFields()
         setupListeners()
     }
 
     private fun setupListeners() {
-        // "전체 동의" 클릭 리스너
         binding.cbAllAgree.setOnClickListener {
             val isChecked = binding.cbAllAgree.isChecked
             allCheckBoxes.forEach { it.isChecked = isChecked }
+
+            viewModel.isAllChecked.value = isChecked
+            viewModel.isTermServiceChecked.value = isChecked
+            viewModel.isTermLocationChecked.value = isChecked
+
             checkRequiredFields()
         }
 
-        // 개별 약관 클릭 리스너
         allCheckBoxes.forEach { checkBox ->
             checkBox.setOnClickListener {
                 checkAllAgreeState()
                 checkRequiredFields()
+
+                viewModel.isTermServiceChecked.value = binding.cbTermService.isChecked
+                viewModel.isTermLocationChecked.value = binding.cbTermLocation.isChecked
             }
         }
 
-        // "다음" 버튼 클릭 리스너
         binding.btnNext.setOnClickListener {
             onAgreementComplete.invoke()
             dismiss()
         }
 
-        // TODO: 각 약관 화살표(>) 클릭 시 약관 상세 보기 웹뷰(또는 새 Fragment)로 이동하는 리스너 추가
-        // binding.ivArrowService.setOnClickListener { ... }
-        // binding.ivArrowPrivacy.setOnClickListener { ... }
-        // binding.ivArrowMarketing.setOnClickListener { ... }
+        binding.ivArrowService.setOnClickListener {
+            onTermClick.invoke(TermType.SERVICE)
+            dismiss()
+        }
+
+        binding.ivArrowLocation.setOnClickListener {
+            onTermClick.invoke(TermType.LOCATION)
+            dismiss()
+        }
     }
 
-    // 개별 약관 상태에 따라 "전체 동의" 체크박스 상태 업데이트
     private fun checkAllAgreeState() {
-        binding.cbAllAgree.isChecked = allCheckBoxes.all { it.isChecked }
+        val isAllChecked = allCheckBoxes.all { it.isChecked }
+        binding.cbAllAgree.isChecked = isAllChecked
+        viewModel.isAllChecked.value = isAllChecked
     }
 
-    // (필수) 약관이 모두 동의되었는지 확인하여 "다음" 버튼 활성화
     private fun checkRequiredFields() {
         binding.btnNext.isEnabled = requiredCheckBoxes.all { it.isChecked }
     }

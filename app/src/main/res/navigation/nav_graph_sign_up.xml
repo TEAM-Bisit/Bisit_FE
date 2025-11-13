@@ -12,6 +12,24 @@
         <action
             android:id="@+id/action_signUpInfoFragment_to_signUpCredentialsFragment"
             />
+        <action
+            android:id="@+id/action_signUpInfoFragment_to_termsDetailFragment"
+            app:destination="@id/termsDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/termsDetailFragment"
+        android:name="com.example.bisit.ui.signUp.TermsDetailFragment"
+        android:label="fragment_terms_detail"
+        tools:layout="@layout/fragment_terms_detail">
+        <argument
+            android:name="termTitle"
+            app:argType="string"
+            android:defaultValue="약관 상세" />
+        <argument
+            android:name="termContent"
+            app:argType="string"
+            android:defaultValue="약관 내용" />
     </fragment>
 
 

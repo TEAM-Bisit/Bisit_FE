@@ -4,18 +4,31 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:background="@color/white"
     android:fitsSystemWindows="true"
-    tools:context=".ui.signUp.SignUpActivity"
-    android:background="@color/white">
+    android:orientation="vertical"
+    tools:context=".ui.signUp.SignUpActivity">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
+        app:contentInsetStartWithNavigation="18dp"
         app:navigationIcon="@drawable/ic_back"
-        app:title=""
-        app:contentInsetStartWithNavigation="18dp" />
+        app:title="">
+
+        <TextView
+            android:id="@+id/toolbarTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start|center_vertical"
+            android:layout_marginStart="8dp"
+            android:textColor="#222222"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:text="회원가입" />
+
+    </com.google.android.material.appbar.MaterialToolbar>
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/nav_host_fragment_sign_up"
