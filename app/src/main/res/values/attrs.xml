@@ -1,0 +1,12 @@
+<resources>
+    <declare-styleable name="StepProgressView">
+        <attr name="stepCount" format="integer" />
+        <attr name="currentStep" format="integer" />
+        <attr name="activeColor" format="color" />
+        <attr name="inactiveColor" format="color" />
+        <attr name="circleRadius" format="dimension" />
+        <attr name="outerCircleRadius" format="dimension" />
+        <attr name="lineStroke" format="dimension" />
+        <attr name="textSize" format="dimension" />
+    </declare-styleable>
+</resources>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/itemServiceRoot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
+    android:paddingStart="18dp"
+    android:paddingEnd="18dp"
+    android:background="@android:color/transparent">
+
+    <LinearLayout
+        android:id="@+id/leftContent"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvServiceName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="모니터 수리"
+            android:textColor="#222222"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvServiceDesc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="모니터 브랜드 모두 취급합니다."
+            android:textColor="#8A8F98"
+            android:textSize="13sp"
+            android:layout_marginTop="6dp" />
+
+        <TextView
+            android:id="@+id/tvServicePrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="50,000원"
+            android:textColor="#222222"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginTop="12dp" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvServiceTime"
+        android:layout_width="56dp"
+        android:layout_height="26dp"
+        android:gravity="center"
+        android:padding="4dp"
+        android:text="60분"
+        android:textSize="12sp"
+        android:textColor="#2E6DF6"
+        android:background="@drawable/bg_time_badge"
+        android:layout_gravity="center_vertical"
+        android:drawableStart="@drawable/ic_clock_small"
+        android:drawablePadding="4dp"
+        android:contentDescription="서비스 시간"/>
+</LinearLayout>

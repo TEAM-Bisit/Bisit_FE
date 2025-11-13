@@ -1,0 +1,7 @@
+<resources>
+    <dimen name="sp_circle_radius">6dp</dimen>
+    <dimen name="sp_circle_outer_radius">12dp</dimen>
+    <dimen name="sp_line_stroke">4dp</dimen>
+    <dimen name="sp_text_size">12sp</dimen>
+    <dimen name="sp_text_margin">8dp</dimen>
+</resources>
