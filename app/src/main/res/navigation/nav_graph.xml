@@ -41,18 +41,24 @@
         tools:layout="@layout/fragment_home_list">
 
         <action
-            android:id="@+id/action_homeListFragment_to_shopFragment"
-            app:destination="@id/shopFragment" />
+            android:id="@+id/action_homeListFragment_to_customerShopFragment"
+            app:destination="@id/customerShopFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/shopFragment"
-        android:name="com.example.bisit.ui.customerShop.CustomerShopFragment"
+        android:name="com.example.bisit.ui.shop.ShopFragment"
         android:label="fragment_shop"
-        tools:layout="@layout/fragment_shop">
+        tools:layout="@layout/fragment_shop" />
+
+    <fragment
+        android:id="@+id/customerShopFragment"
+        android:name="com.example.bisit.ui.customerShop.CustomerShopFragment"
+        android:label="fragment_customer_shop"
+        tools:layout="@layout/fragment_customer_shop">
 
         <action
-            android:id="@+id/action_shopFragment_to_shopDesignerFragment"
+            android:id="@+id/action_customerShopFragment_to_shopDesignerFragment"
             app:destination="@id/shopDesignerFragment" />
     </fragment>
 
@@ -63,13 +69,12 @@
         tools:layout="@layout/fragment_shop_designer">
 
         <action
-            android:id="@+id/action_shopDesignerFragment_to_shopFragment"
-            app:destination="@id/shopFragment" />
+            android:id="@+id/action_shopDesignerFragment_to_customerShopFragment"
+            app:destination="@id/customerShopFragment" />
 
         <action
             android:id="@+id/action_shopDesignerFragment_to_homeListFragment"
             app:destination="@id/homeListFragment" />
-
     </fragment>
 
     <fragment
@@ -88,7 +93,18 @@
         android:id="@+id/reservListFragment"
         android:name="com.example.bisit.ui.reservList.ReservListFragment"
         android:label="fragment_reserv_list"
-        tools:layout="@layout/fragment_reserv_list" />
+        tools:layout="@layout/fragment_reserv_list">
+
+        <action
+            android:id="@+id/action_reservList_to_detail"
+            app:destination="@id/reservListDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/reservListDetailFragment"
+        android:name="com.example.bisit.ui.reservList.ReservListDetailFragment"
+        android:label="fragment_reserv_list_detail"
+        tools:layout="@layout/fragment_reserv_list_detail" />
 
     <fragment
         android:id="@+id/myPageOwnerFragment"

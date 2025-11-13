@@ -1,0 +1,236 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    tools:ignore="UseCompoundDrawables">
+
+    <!-- 헤더 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_marginTop="24dp"
+        android:paddingHorizontal="18dp">
+
+        <ImageView
+            android:id="@+id/ivBack"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@drawable/ic_back"
+            android:contentDescription="뒤로가기" />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="상세보기"
+            android:textColor="#222222"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:includeFontPadding="false" />
+    </LinearLayout>
+
+    <!-- 본문 -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingHorizontal="18dp"
+        android:paddingTop="36dp"
+        android:paddingBottom="40dp"
+        android:background="#FFFFFF">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!-- 예약 상태 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="4dp">
+
+                <!-- 왼쪽 상태 영역 -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/tvReservStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="예약 확정"
+                        android:textColor="#FE6B6B"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <!-- 구분선 | -->
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="8dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="6dp"
+                        android:background="#D7DBDF" />
+
+                    <TextView
+                        android:id="@+id/tvProcedureStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="시술 전"
+                        android:textColor="#9AA1AF"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/tvPaymentStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="4dp"
+                    android:paddingHorizontal="13dp"
+                    android:background="@drawable/bg_payment_confirming"
+                    android:text="입금 완료"
+                    android:textColor="#515965"
+                    android:textSize="13sp"
+                    android:gravity="center"
+                    android:textStyle="normal" />
+            </LinearLayout>
+
+            <!-- 예약 번호 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="예약 번호"
+                    android:textColor="#515965"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/tvReservNumber"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="fhEheoqkr777"
+                    android:textColor="#515965"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <!-- 구분선 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="14dp"
+                android:layout_marginBottom="20dp"
+                android:background="#EDEDED" />
+
+            <!-- 시술 정보 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="시술 정보"
+                android:textStyle="normal"
+                android:textSize="13sp"
+                android:textColor="#515965" />
+
+            <TextView
+                android:id="@+id/tvService"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="매니큐어"
+                android:textColor="#222222"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="2025.09.13 · 17:00"
+                android:textColor="#6D7583"
+                android:textSize="13sp" />
+
+            <!-- 예약자 정보 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="예약자 정보"
+                android:textStyle="normal"
+                android:textSize="13sp"
+                android:textColor="#515965" />
+
+            <TextView
+                android:id="@+id/tvName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="김ㅇㅇ"
+                android:textColor="#222222"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvPhone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="010-0000-0000"
+                android:textColor="#222222"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="경상북도 경산시 하양읍 대학로 298길 20-9 롯데아파트 101동 1111호"
+                android:textColor="#222222"
+                android:textSize="14sp" />
+
+            <!-- 예약 가격 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="예약 가격"
+                android:textStyle="normal"
+                android:textSize="15sp"
+                android:textColor="#515965" />
+
+            <TextView
+                android:id="@+id/tvPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="25,000원"
+                android:textColor="#222222"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </ScrollView>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="8dp"
+        android:background="#F0F2F5"
+        android:layout_marginBottom="28dp" />
+</LinearLayout>

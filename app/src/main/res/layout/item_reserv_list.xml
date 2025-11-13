@@ -1,0 +1,189 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:orientation="vertical"
+    android:background="@drawable/bg_dialog_white"
+    android:paddingHorizontal="16dp"
+    android:paddingTop="20dp"
+    android:paddingBottom="16dp">
+
+    <!-- 예약 상태 / 입금 상태 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="2dp">
+
+        <!-- 예약 상태 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvReservStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="예약 확정"
+                android:textColor="#FE6B6B"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <!-- 구분선 | -->
+            <View
+                android:layout_width="1dp"
+                android:layout_height="8dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="6dp"
+                android:background="#D7DBDF" />
+
+            <TextView
+                android:id="@+id/tvProcedureStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="시술 전"
+                android:textColor="#9AA1AF"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvPaymentStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingVertical="4dp"
+            android:paddingHorizontal="13dp"
+            android:background="@drawable/bg_payment_confirming"
+            android:text="입금 완료"
+            android:textColor="#515965"
+            android:textSize="13sp"
+            android:textStyle="normal"
+            android:gravity="center" />
+    </LinearLayout>
+
+    <!-- 예약 번호 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="14dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="예약 번호"
+            android:textColor="#515965"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/tvReservNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:text="fhEheoqkr777"
+            android:textColor="#515965"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#F0F2F5"
+        android:layout_marginBottom="12dp" />
+
+    <!-- 시술 정보 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="시술정보"
+            android:textColor="#515965"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvServiceName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="컷트"
+            android:textColor="#222222"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <!-- 예약자명 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="예약자명"
+            android:textColor="#515965"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvCustomerName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="김OO"
+            android:textColor="#222222"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <!-- 방문 시간 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="방문 시간"
+            android:textColor="#515965"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvVisitTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="2025.09.04  17:00"
+            android:textColor="#222222"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <!-- 상세보기 버튼 -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnDetail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="0dp"
+        android:minWidth="0dp"
+        android:paddingVertical="12.5dp"
+        android:text="상세보기"
+        android:textColor="#515965"
+        android:textSize="14sp"
+        app:cornerRadius="8dp"
+        app:strokeColor="#D7DBDF"
+        app:strokeWidth="1dp"
+        app:backgroundTint="#FEFEFE"
+        app:rippleColor="@android:color/transparent"
+        tools:ignore="TouchTargetSizeCheck" />
+</LinearLayout>
