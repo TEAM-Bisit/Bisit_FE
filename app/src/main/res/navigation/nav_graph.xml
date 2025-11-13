@@ -10,16 +10,30 @@
         android:name="com.example.bisit.ui.home.HomeFragment"
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" />
+
     <fragment
-        android:id="@+id/myReservFragment"
-        android:name="com.example.bisit.ui.myReserv.MyReservFragment"
-        android:label="fragment_my_reserv"
-        tools:layout="@layout/fragment_my_reserv" />
+        android:id="@+id/CustomerMyReserve"
+        android:name="com.example.bisit.ui.customerMyReserve.CustomerMyReserveFragment"
+        android:label="fragment_customer_my_reserve"
+        tools:layout="@layout/fragment_customer_my_reserve" >
+
+        <action
+            android:id="@+id/action_customerMyReserve_to_detail"
+            app:destination="@id/customerMyReserveDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/customerMyReserveDetailFragment"
+        android:name="com.example.bisit.ui.customerMyReserve.CustomerMyReserveDetailFragment"
+        android:label="예약 상세"
+        tools:layout="@layout/fragment_customer_my_reserve_detail" />
+
     <fragment
         android:id="@+id/myPageFragment"
         android:name="com.example.bisit.ui.myPage.MyPageFragment"
         android:label="fragment_my_page"
         tools:layout="@layout/fragment_my_page" />
+
     <fragment
         android:id="@+id/homeListFragment"
         android:name="com.example.bisit.ui.home.HomeListFragment"
@@ -61,7 +75,6 @@
         <action
             android:id="@+id/action_shopDesignerFragment_to_homeListFragment"
             app:destination="@id/homeListFragment" />
-
     </fragment>
 
     <fragment
@@ -80,7 +93,7 @@
         android:id="@+id/reservListFragment"
         android:name="com.example.bisit.ui.reservList.ReservListFragment"
         android:label="fragment_reserv_list"
-        tools:layout="@layout/fragment_reserv_list" >
+        tools:layout="@layout/fragment_reserv_list">
 
         <action
             android:id="@+id/action_reservList_to_detail"

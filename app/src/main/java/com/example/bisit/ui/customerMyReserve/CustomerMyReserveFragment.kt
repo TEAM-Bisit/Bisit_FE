@@ -1,60 +1,46 @@
 package com.example.bisit.ui.customerMyReserve
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.R
+import com.google.android.material.tabs.TabLayout
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+class CustomerMyReserveFragment : Fragment(R.layout.fragment_customer_my_reserve) {
 
-/**
- * A simple [Fragment] subclass.
- * Use the [CustomerMyReserveFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class CustomerMyReserveFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: CustomerMyReserveAdapter
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val tabLayout = view.findViewById<TabLayout>(R.id.tabLayout)
+        recyclerView = view.findViewById(R.id.recyclerReserve)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        adapter = CustomerMyReserveAdapter {
+            findNavController().navigate(R.id.action_customerMyReserve_to_detail)
         }
-    }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_customer_my_reserve, container, false)
-    }
+        recyclerView.adapter = adapter
+        adapter.setItems(R.layout.item_customer_my_reserve_wait)
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment CustomerMyReserveFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            CustomerMyReserveFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+        val tabs = listOf("예정", "완료", "취소")
+        tabs.forEach { tabLayout.addTab(tabLayout.newTab().setText(it)) }
+
+        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                when (tab?.position ?: 0) {
+                    0 -> adapter.setItems(R.layout.item_customer_my_reserve_wait)
+                    1 -> adapter.setItems(R.layout.item_customer_my_reserve_completed)
+                    2 -> adapter.setItems(R.layout.item_customer_my_reserve_canceled)
                 }
             }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+        })
     }
 }

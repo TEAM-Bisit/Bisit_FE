@@ -16,4 +16,11 @@
     
     <color name="surface_white">#FEFEFE</color>
 
+    <color name="bg_gray">#F5F6F8</color>
+    <color name="muted_gray">#9AA0A6</color>
+    <color name="dark_gray">#222222</color>
+    <color name="main_red">#F06B66</color>
+    <color name="main_red_light">#FFEDED</color>
+    <color name="outline_gray">#E6E9EB</color>
+
 </resources>
