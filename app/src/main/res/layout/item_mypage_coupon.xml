@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card="http://schemas.android.com/apk/res-auto"
+    android:layout_width="324dp"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:foreground="?android:attr/selectableItemBackground"
+    card:cardCornerRadius="16dp"
+    android:background="@drawable/bg_coupon_card">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:id="@+id/tv_coupon_title_percent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="20%"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/tv_coupon_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="[첫 구매 적용 쿠폰]"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:layout_marginBottom="6dp"/>
+
+        <TextView
+            android:id="@+id/tv_coupon_desc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="첫 구매 20% 할인 쿠폰입니다. 이 너비까지의 텍스트가 출력되고 이후로는 다음줄로 내려갑니다."
+            android:textColor="#6D7583"
+            android:textSize="12sp"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp">
+
+            <TextView
+                android:id="@+id/tv_coupon_meta_dday"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1일 남음"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#4076FF"/>
+
+            <TextView
+                android:id="@+id/tv_coupon_meta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="2025년 09월 22일까지 사용 가능"
+                android:textSize="12sp"
+                android:textColor="#9AA1AF"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
