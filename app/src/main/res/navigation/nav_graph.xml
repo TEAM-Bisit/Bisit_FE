@@ -15,7 +15,18 @@
         android:id="@+id/CustomerMyReserve"
         android:name="com.example.bisit.ui.customerMyReserve.CustomerMyReserveFragment"
         android:label="fragment_customer_my_reserve"
-        tools:layout="@layout/fragment_customer_my_reserve" />
+        tools:layout="@layout/fragment_customer_my_reserve" >
+
+        <action
+            android:id="@+id/action_customerMyReserve_to_detail"
+            app:destination="@id/customerMyReserveDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/customerMyReserveDetailFragment"
+        android:name="com.example.bisit.ui.customerMyReserve.CustomerMyReserveDetailFragment"
+        android:label="예약 상세"
+        tools:layout="@layout/fragment_customer_my_reserve_detail" />
 
     <fragment
         android:id="@+id/myPageFragment"

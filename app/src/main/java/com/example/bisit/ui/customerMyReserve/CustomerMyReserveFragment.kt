@@ -3,6 +3,7 @@ package com.example.bisit.ui.customerMyReserve
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.R
@@ -20,9 +21,11 @@ class CustomerMyReserveFragment : Fragment(R.layout.fragment_customer_my_reserve
         recyclerView = view.findViewById(R.id.recyclerReserve)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        adapter = CustomerMyReserveAdapter()
-        recyclerView.adapter = adapter
+        adapter = CustomerMyReserveAdapter {
+            findNavController().navigate(R.id.action_customerMyReserve_to_detail)
+        }
 
+        recyclerView.adapter = adapter
         adapter.setItems(R.layout.item_customer_my_reserve_wait)
 
         val tabs = listOf("예정", "완료", "취소")
@@ -36,7 +39,6 @@ class CustomerMyReserveFragment : Fragment(R.layout.fragment_customer_my_reserve
                     2 -> adapter.setItems(R.layout.item_customer_my_reserve_canceled)
                 }
             }
-
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
