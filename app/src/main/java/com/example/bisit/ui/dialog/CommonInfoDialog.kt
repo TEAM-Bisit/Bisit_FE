@@ -1,5 +1,6 @@
 package com.example.bisit.ui.dialog
 
+import android.content.DialogInterface
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -47,6 +48,11 @@ class CommonInfoDialog(
             onConfirm.invoke()
             dismiss()
         }
+    }
+
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
+        onConfirm.invoke()
     }
 
     override fun onDestroyView() {
