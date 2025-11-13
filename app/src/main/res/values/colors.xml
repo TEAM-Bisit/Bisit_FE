@@ -15,7 +15,7 @@
     <color name="sp_text_inactive">#9E9E9E</color>
     
     <color name="surface_white">#FEFEFE</color>
-
+    <color name="green">#0FAD37</color>
     <color name="bg_gray">#F5F6F8</color>
     <color name="muted_gray">#9AA0A6</color>
     <color name="dark_gray">#222222</color>

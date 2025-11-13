@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph_sign_up"
+    app:startDestination="@id/signUpInfoFragment">
+
+    <fragment
+        android:id="@+id/signUpInfoFragment"
+        android:name="com.example.bisit.ui.signUp.SignUpInfoFragment"
+        android:label="fragment_sign_up_info"
+        tools:layout="@layout/fragment_sign_up_info" >
+        <action
+            android:id="@+id/action_signUpInfoFragment_to_signUpCredentialsFragment"
+            app:destination="@id/signUpCredentialsFragment" />
+        <action
+            android:id="@+id/action_signUpInfoFragment_to_termsDetailFragment"
+            app:destination="@id/termsDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/termsDetailFragment"
+        android:name="com.example.bisit.ui.signUp.TermsDetailFragment"
+        android:label="fragment_terms_detail"
+        tools:layout="@layout/fragment_terms_detail">
+        <argument
+            android:name="termTitle"
+            app:argType="string"
+            android:defaultValue="약관 상세" />
+        <argument
+            android:name="termContent"
+            app:argType="string"
+            android:defaultValue="약관 내용" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/signUpCredentialsFragment"
+        android:name="com.example.bisit.ui.signUp.SignUpCredentialsFragment"
+        android:label="fragment_sign_up_credentials"
+        tools:layout="@layout/fragment_sign_up_credentials" >
+        <action
+            android:id="@+id/action_signUpCredentialsFragment_to_signUpCompleteFragment"
+            app:destination="@id/signUpCompleteFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/signUpCompleteFragment"
+        android:name="com.example.bisit.ui.signUp.SignUpCompleteFragment"
+        android:label="fragment_sign_up_complete"
+        tools:layout="@layout/fragment_sign_up_complete" />
+
+</navigation>
