@@ -3,6 +3,7 @@ package com.example.bisit.ui.reservList
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
+import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import com.example.bisit.R
 import com.example.bisit.databinding.FragmentReservListDetailBinding
@@ -34,14 +35,14 @@ class ReservListDetailFragment : Fragment(R.layout.fragment_reserv_list_detail) 
                 // 입금 완료 (진회색)
                 binding.btnPaymentStatus.text = "입금 완료"
                 binding.btnPaymentStatus.setTextColor(Color.WHITE)
-                binding.btnPaymentStatus.setBackgroundColor(Color.parseColor("#515965"))
+                binding.btnPaymentStatus.setBackgroundColor("#515965".toColorInt())
             }
 
             "예약 확인 중" -> {
                 // 입금 완료 (밝은 회색)
                 binding.btnPaymentStatus.text = "입금 완료"
-                binding.btnPaymentStatus.setTextColor(Color.parseColor("#515965"))
-                binding.btnPaymentStatus.setBackgroundColor(Color.parseColor("#F0F2F5"))
+                binding.btnPaymentStatus.setTextColor("#515965".toColorInt())
+                binding.btnPaymentStatus.setBackgroundColor("#F0F2F5".toColorInt())
             }
 
             else -> {
