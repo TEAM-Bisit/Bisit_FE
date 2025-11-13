@@ -15,6 +15,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.bisit.R
 import com.example.bisit.databinding.FragmentSignUpInfoBinding
 import com.example.bisit.ui.dialog.CommonInfoDialog
+import com.example.bisit.ui.dialog.TermsAgreementSheet
 import java.util.regex.Pattern
 
 class SignUpInfoFragment : Fragment() {
@@ -118,6 +119,16 @@ class SignUpInfoFragment : Fragment() {
 
         binding.etName.addTextChangedListener(nextButtonEnablerWatcher)
         binding.etEmail.addTextChangedListener(nextButtonEnablerWatcher)
+
+        binding.btnNext.setOnClickListener {
+            // "이용약관 동의" BottomSheet를 띄웁니다.
+            val sheet = TermsAgreementSheet {
+                // 약관 동의가 완료되면 (BottomSheet의 "다음" 버튼 클릭 시)
+                // 2단계(ID/PW 입력) 프래그먼트로 이동합니다.
+                findNavController().navigate(R.id.action_signUpInfoFragment_to_signUpCredentialsFragment)
+            }
+            sheet.show(parentFragmentManager, "TermsAgreementSheet")
+        }
     }
 
     private fun checkAllFieldsAndEnableNextButton() {
