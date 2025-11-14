@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_term4"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_back" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="위치기반 서비스 이용약관"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginStart="12dp"/>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#EAEAEA" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/term1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="위치정보 수집 항목"
+                android:textColor="#222222"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"/>
+
+            <TextView
+                android:id="@+id/term1_content"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="GPS, 네트워크 기반 위치."
+                android:textColor="#515965"
+                android:textSize="12sp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="24dp"/>
+
+            <TextView
+                android:id="@+id/term1_title2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="이용 목적"
+                android:textColor="#222222"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"/>
+
+            <TextView
+                android:id="@+id/term1_content2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="“회원 근처의 제휴 매장을 추천하고, 예약 가능한 서비스를 보여주기 위함.”"
+                android:textColor="#515965"
+                android:textSize="12sp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="24dp"/>
+
+            <TextView
+                android:id="@+id/term1_title3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="보유 및 이용 기간"
+                android:textColor="#222222"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"/>
+
+            <TextView
+                android:id="@+id/term1_content3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="서비스 제공 후 즉시 파기 (단, 예약 이력은 1년 보관)."
+                android:textColor="#515965"
+                android:textSize="12sp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="24dp"/>
+
+            <TextView
+                android:id="@+id/term1_title4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="제 3자 제공"
+                android:textColor="#222222"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"/>
+
+            <TextView
+                android:id="@+id/term1_content4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="예약 확정 시 매장에 고객의 위치와 연락처 제공."
+                android:textColor="#515965"
+                android:textSize="12sp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="24dp"/>
+
+            <TextView
+                android:id="@+id/term1_title5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="이용자의 권리"
+                android:textColor="#222222"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"/>
+
+            <TextView
+                android:id="@+id/term1_content5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="위치정보 수집/이용/제공 동의 철회 가능."
+                android:textColor="#515965"
+                android:textSize="12sp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="24dp"/>
+
+            <TextView
+                android:id="@+id/term1_title6"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="회사의 의무"
+                android:textColor="#222222"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"/>
+
+            <TextView
+                android:id="@+id/term1_content6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="위치정보 보호, 오·남용 방지."
+                android:textColor="#515965"
+                android:textSize="12sp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="24dp"/>
+
+            <TextView
+                android:id="@+id/term1_title7"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="위치정보 관리 책임자"
+                android:textColor="#222222"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"/>
+
+            <TextView
+                android:id="@+id/term1_content7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="이름 / 이메일 / 전화번호."
+                android:textColor="#515965"
+                android:textSize="12sp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="24dp"/>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

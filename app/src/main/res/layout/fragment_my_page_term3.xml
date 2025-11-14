@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_term3"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_back" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="전자상거래 표준 약관"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginStart="12dp"/>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#EAEAEA" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/term1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="예약 및 결제"
+                android:textColor="#222222"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"/>
+
+            <TextView
+                android:id="@+id/term1_content"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="회원은 서비스 내에서 예약 신청 및 결제를 진행할 수 있음."
+                android:textColor="#515965"
+                android:textSize="12sp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="24dp"/>
+
+            <TextView
+                android:id="@+id/term1_title2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="청약 철회/취소"
+                android:textColor="#222222"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"/>
+
+            <TextView
+                android:id="@+id/term1_content2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="서비스 시작 전 100% 환불, 서비스 시작 후 환불 불가(단, 매장 정책 따름)."
+                android:textColor="#515965"
+                android:textSize="12sp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="24dp"/>
+
+            <TextView
+                android:id="@+id/term1_title3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="과오금 환급"
+                android:textColor="#222222"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"/>
+
+            <TextView
+                android:id="@+id/term1_content3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="이중 결제 시 즉시 환불."
+                android:textColor="#515965"
+                android:textSize="12sp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="24dp"/>
+
+            <TextView
+                android:id="@+id/term1_title4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="회사의 의무"
+                android:textColor="#222222"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"/>
+
+            <TextView
+                android:id="@+id/term1_content4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="결제 시스템 제공, 수수료 투명 공지."
+                android:textColor="#515965"
+                android:textSize="12sp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="24dp"/>
+
+            <TextView
+                android:id="@+id/term1_title5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="회원의 의무"
+                android:textColor="#222222"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"/>
+
+            <TextView
+                android:id="@+id/term1_content5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="허위 예약 금지, 정당한 결제 수단 사용."
+                android:textColor="#515965"
+                android:textSize="12sp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="24dp"/>
+
+            <TextView
+                android:id="@+id/term1_title6"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="이용자의 권리"
+                android:textColor="#222222"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"/>
+
+            <TextView
+                android:id="@+id/term1_content6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="개인정보 열람/수정/삭제/동의 철회 가능."
+                android:textColor="#515965"
+                android:textSize="12sp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="24dp"/>
+
+            <TextView
+                android:id="@+id/term1_title7"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="분쟁해결"
+                android:textColor="#222222"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"/>
+
+            <TextView
+                android:id="@+id/term1_content7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="전자상거래법 및 소비자보호법 따름."
+                android:textColor="#515965"
+                android:textSize="12sp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="24dp"/>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

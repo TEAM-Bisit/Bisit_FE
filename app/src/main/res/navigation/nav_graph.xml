@@ -15,8 +15,7 @@
         android:id="@+id/CustomerMyReserve"
         android:name="com.example.bisit.ui.customerMyReserve.CustomerMyReserveFragment"
         android:label="fragment_customer_my_reserve"
-        tools:layout="@layout/fragment_customer_my_reserve" >
-
+        tools:layout="@layout/fragment_customer_my_reserve">
         <action
             android:id="@+id/action_customerMyReserve_to_detail"
             app:destination="@id/customerMyReserveDetailFragment" />
@@ -32,14 +31,56 @@
         android:id="@+id/myPageFragment"
         android:name="com.example.bisit.ui.myPage.MyPageFragment"
         android:label="fragment_my_page"
-        tools:layout="@layout/fragment_my_page" />
+        tools:layout="@layout/fragment_my_page">
+        <action
+            android:id="@+id/action_myPageFragment_to_myPageCouponFragment"
+            app:destination="@id/myPageCouponFragment" />
+        <action
+            android:id="@+id/action_myPageFragment_to_myPageReviewFragment"
+            app:destination="@id/myPageReviewFragment" />
+        <action
+            android:id="@+id/action_myPageFragment_to_authFragment"
+            app:destination="@id/authFragment" />
+        <action
+            android:id="@+id/action_myPageFragment_to_myPageLeaveFragment"
+            app:destination="@id/myPageLeaveFragment" />
+        <action
+            android:id="@+id/action_myPageFragment_to_myPageCenterFragment"
+            app:destination="@id/myPageCenterFragment" />
+        <action
+            android:id="@+id/action_myPageFragment_to_myPageAnnounceFragment"
+            app:destination="@id/myPageAnnounceFragment" />
+        <action
+            android:id="@+id/action_myPageFragment_to_myPageTerm1Fragment"
+            app:destination="@id/myPageTerm1Fragment" />
+        <action
+            android:id="@+id/action_myPageFragment_to_myPageTerm2Fragment"
+            app:destination="@id/myPageTerm2Fragment" />
+        <action
+            android:id="@+id/action_myPageFragment_to_myPageTerm3Fragment"
+            app:destination="@id/myPageTerm3Fragment" />
+        <action
+            android:id="@+id/action_myPageFragment_to_myPageTerm4Fragment"
+            app:destination="@id/myPageTerm4Fragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/myPageCouponFragment"
+        android:name="com.example.bisit.ui.myPage.MyPageCouponFragment"
+        android:label="fragment_my_page_coupon"
+        tools:layout="@layout/fragment_my_page_coupon" />
+
+    <fragment
+        android:id="@+id/myPageReviewFragment"
+        android:name="com.example.bisit.ui.myPage.MyPageReviewFragment"
+        android:label="fragment_my_page_review"
+        tools:layout="@layout/fragment_my_page_review" />
 
     <fragment
         android:id="@+id/homeListFragment"
         android:name="com.example.bisit.ui.home.HomeListFragment"
         android:label="Home List"
         tools:layout="@layout/fragment_home_list">
-
         <action
             android:id="@+id/action_homeListFragment_to_customerShopFragment"
             app:destination="@id/customerShopFragment" />
@@ -56,7 +97,6 @@
         android:name="com.example.bisit.ui.customerShop.CustomerShopFragment"
         android:label="fragment_customer_shop"
         tools:layout="@layout/fragment_customer_shop">
-
         <action
             android:id="@+id/action_customerShopFragment_to_shopDesignerFragment"
             app:destination="@id/shopDesignerFragment" />
@@ -67,11 +107,9 @@
         android:name="com.example.bisit.ui.customerShop.CustomerShopDesignerFragment"
         android:label="fragment_shop_designer"
         tools:layout="@layout/fragment_shop_designer">
-
         <action
             android:id="@+id/action_shopDesignerFragment_to_customerShopFragment"
             app:destination="@id/customerShopFragment" />
-
         <action
             android:id="@+id/action_shopDesignerFragment_to_homeListFragment"
             app:destination="@id/homeListFragment" />
@@ -94,7 +132,6 @@
         android:name="com.example.bisit.ui.reservList.ReservListFragment"
         android:label="fragment_reserv_list"
         tools:layout="@layout/fragment_reserv_list">
-
         <action
             android:id="@+id/action_reservList_to_detail"
             app:destination="@id/reservListDetailFragment" />
@@ -111,5 +148,69 @@
         android:name="com.example.bisit.ui.myPageOwner.MyPageOwnerFragment"
         android:label="fragment_my_page_owner"
         tools:layout="@layout/fragment_my_page_owner" />
+
+    <fragment
+        android:id="@+id/myPageEditFragment"
+        android:name="com.example.bisit.ui.myPage.MyPageEditFragment"
+        android:label="fragment_my_page_edit"
+        tools:layout="@layout/fragment_my_page_edit" />
+
+    <fragment
+        android:id="@+id/authFragment"
+        android:name="com.example.bisit.ui.auth.AuthFragment"
+        android:label="fragment_auth"
+        tools:layout="@layout/fragment_auth" />
+
+    <fragment
+        android:id="@+id/myPageLeaveFragment"
+        android:name="com.example.bisit.ui.myPage.MyPageLeaveFragment"
+        android:label="fragment_my_page_leave"
+        tools:layout="@layout/fragment_my_page_leave" />
+
+    <fragment
+        android:id="@+id/myPageCenterFragment"
+        android:name="com.example.bisit.ui.myPage.MyPageCenterFragment"
+        android:label="fragment_my_page_center"
+        tools:layout="@layout/fragment_my_page_center" />
+
+    <fragment
+        android:id="@+id/myPageAnnounceFragment"
+        android:name="com.example.bisit.ui.myPage.MyPageAnnounceFragment"
+        android:label="fragment_my_page_announce"
+        tools:layout="@layout/fragment_my_page_announce">
+        <action
+            android:id="@+id/action_myPageAnnounceFragment_to_myPageAnnounceDetailFragment"
+            app:destination="@id/myPageAnnounceDetailFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/myPageAnnounceDetailFragment"
+        android:name="com.example.bisit.ui.myPage.MyPageAnnounceDetailFragment"
+        android:label="fragment_my_page_announce_detail"
+        tools:layout="@layout/fragment_my_page_announce_detail" />
+
+    <fragment
+        android:id="@+id/myPageTerm1Fragment"
+        android:name="com.example.bisit.ui.myPage.terms.MyPageTerm1Fragment"
+        android:label="fragment_my_page_term1"
+        tools:layout="@layout/fragment_my_page_term1" />
+
+    <fragment
+        android:id="@+id/myPageTerm2Fragment"
+        android:name="com.example.bisit.ui.myPage.terms.MyPageTerm2Fragment"
+        android:label="fragment_my_page_term2"
+        tools:layout="@layout/fragment_my_page_term2" />
+
+    <fragment
+        android:id="@+id/myPageTerm3Fragment"
+        android:name="com.example.bisit.ui.myPage.terms.MyPageTerm3Fragment"
+        android:label="fragment_my_page_term3"
+        tools:layout="@layout/fragment_my_page_term3" />
+
+    <fragment
+        android:id="@+id/myPageTerm4Fragment"
+        android:name="com.example.bisit.ui.myPage.terms.MyPageTerm4Fragment"
+        android:label="fragment_my_page_term4"
+        tools:layout="@layout/fragment_my_page_term4" />
 
 </navigation>
