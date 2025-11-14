@@ -29,7 +29,7 @@ class MyPageEditFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.btnBack.setOnClickListener {
-            findNavController().navigate(R.id.myPageFragment)
+            findNavController().popBackStack()
         }
 
         binding.etPhone.addTextChangedListener { text ->
@@ -43,7 +43,7 @@ class MyPageEditFragment : Fragment() {
         binding.btnVerify.setOnClickListener {
             if (!isVerifyActive) {
                 isVerifyActive = true
-                binding.btnVerify.setBackgroundResource(R.drawable.bg_my_page_phone)
+                binding.btnVerify.setBackgroundResource(R.drawable.bg_my_page_phone_active)
                 binding.etCode.visibility = View.VISIBLE
                 binding.btnDone.visibility = View.VISIBLE
             } else {
