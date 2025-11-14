@@ -25,7 +25,7 @@ class MyPageLeaveFragment : Fragment() {
         }
 
         // 탈퇴하기 버튼 클릭 등 다른 로직 추가 가능
-        binding.btnBook.setOnClickListener {
+        binding.btnLeave.setOnClickListener {
             // 탈퇴 처리 후 원하는 화면 이동
         }
 
