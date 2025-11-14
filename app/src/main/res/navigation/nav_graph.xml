@@ -176,7 +176,7 @@
     <fragment
         android:id="@+id/myPageAnnounceFragment"
         android:name="com.example.bisit.ui.myPage.MyPageAnnounceFragment"
-        android:label="fragment_my_page_accoounce"
+        android:label="fragment_my_page_announce"
         tools:layout="@layout/fragment_my_page_announce">
         <action
             android:id="@+id/action_myPageAnnounceFragment_to_myPageAnnounceDetailFragment"
