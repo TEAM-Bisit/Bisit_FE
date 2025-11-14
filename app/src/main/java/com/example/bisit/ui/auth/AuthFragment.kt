@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.bisit.ui.auth.AuthActivity
 import com.example.bisit.databinding.FragmentAuthBinding
+import com.example.bisit.ui.login.LoginActivity
 import com.example.bisit.ui.signUp.SignUpActivity
 
 class AuthFragment : Fragment(), UserTypeDialog.UserTypeDialogListener {
@@ -37,6 +38,10 @@ class AuthFragment : Fragment(), UserTypeDialog.UserTypeDialogListener {
         binding.signupText.setOnClickListener {
             val intent = Intent(requireContext(), SignUpActivity::class.java)
             startActivity(intent)
+        }
+
+        binding.loginBtn.setOnClickListener {
+            startActivity(Intent(requireContext(), LoginActivity::class.java))
         }
     }
 
