@@ -29,7 +29,7 @@ class MyPageEditFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.btnBack.setOnClickListener {
-            findNavController().navigate(R.id.myPageFragment)
+            findNavController().popBackStack()
         }
 
         binding.etPhone.addTextChangedListener { text ->
