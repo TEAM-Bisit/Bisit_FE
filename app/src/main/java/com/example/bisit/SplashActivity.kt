@@ -3,11 +3,10 @@ package com.example.bisit
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.bisit.databinding.ActivitySplashBinding
+import com.example.bisit.ui.auth.AuthActivity
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -29,7 +28,7 @@ class SplashActivity : AppCompatActivity() {
             if (isFirstRun) {
                 startActivity(Intent(this@SplashActivity, OnboardingActivity::class.java))
             } else {
-                startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
+                startActivity(Intent(this@SplashActivity, AuthActivity::class.java))
             }
 
             finish() // SplashActivity 종료

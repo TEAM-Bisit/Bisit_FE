@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.example.bisit.LoginActivity
+import com.example.bisit.ui.auth.AuthActivity
 import com.example.bisit.databinding.FragmentAuthBinding
 import com.example.bisit.ui.signUp.SignUpActivity
 
@@ -57,7 +57,7 @@ class AuthFragment : Fragment(), UserTypeDialog.UserTypeDialogListener {
     }
 
     override fun onUserTypeSelected(userType: String) {
-        (activity as? LoginActivity)?.navigateToMainActivity(userType)
+        (activity as? AuthActivity)?.navigateToMainActivity(userType)
     }
 
     override fun onDestroyView() {

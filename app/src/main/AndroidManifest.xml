@@ -39,7 +39,7 @@
             android:theme="@style/Theme.Bisit" />
 
         <activity
-            android:name=".LoginActivity"
+            android:name=".ui.auth.AuthActivity"
             android:exported="false"
             android:label="@string/app_name"
             android:theme="@style/Theme.Bisit">
