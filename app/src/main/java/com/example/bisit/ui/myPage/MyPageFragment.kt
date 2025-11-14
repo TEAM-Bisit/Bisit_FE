@@ -19,28 +19,44 @@ class MyPageFragment : Fragment() {
     ): View {
         _binding = FragmentMyPageBinding.inflate(inflater, container, false)
 
-        // 내 쿠폰 이동
         binding.root.findViewById<View>(R.id.ic_coupon)?.setOnClickListener {
             findNavController().navigate(R.id.action_myPageFragment_to_myPageCouponFragment)
         }
 
-        // 내 리뷰 이동
         binding.root.findViewById<View>(R.id.ic_review_list)?.setOnClickListener {
             findNavController().navigate(R.id.action_myPageFragment_to_myPageReviewFragment)
         }
 
-        // 🔽 로그아웃 클릭 시 AuthFragment로 이동
         binding.root.findViewById<View>(R.id.logout_layout)?.setOnClickListener {
             findNavController().navigate(R.id.action_myPageFragment_to_authFragment)
         }
 
-        // 🔽 탈퇴하기 클릭 시 MyPageLeaveFragment로 이동
         binding.root.findViewById<View>(R.id.leave_layout)?.setOnClickListener {
             findNavController().navigate(R.id.action_myPageFragment_to_myPageLeaveFragment)
         }
 
         binding.root.findViewById<View>(R.id.center_layout)?.setOnClickListener {
             findNavController().navigate(R.id.action_myPageFragment_to_myPageCenterFragment)
+        }
+
+        binding.root.findViewById<View>(R.id.announce_layout)?.setOnClickListener {
+            findNavController().navigate(R.id.action_myPageFragment_to_myPageAnnounceFragment)
+        }
+
+        binding.root.findViewById<View>(R.id.term1)?.setOnClickListener {
+            findNavController().navigate(R.id.action_myPageFragment_to_myPageTerm1Fragment)
+        }
+
+        binding.root.findViewById<View>(R.id.term2)?.setOnClickListener {
+            findNavController().navigate(R.id.action_myPageFragment_to_myPageTerm2Fragment)
+        }
+
+        binding.root.findViewById<View>(R.id.term3)?.setOnClickListener {
+            findNavController().navigate(R.id.action_myPageFragment_to_myPageTerm3Fragment)
+        }
+
+        binding.root.findViewById<View>(R.id.term4)?.setOnClickListener {
+            findNavController().navigate(R.id.action_myPageFragment_to_myPageTerm4Fragment)
         }
 
         return binding.root
