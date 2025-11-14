@@ -8,13 +8,13 @@
     <fragment
         android:id="@+id/loginCredentialsFragment"
         android:name="com.example.bisit.ui.login.LoginCredentialsFragment"
-        android:label="fragment_login_credentials"
-        tools:layout="@layout/fragment_login_credentials">
+        android:label="로그인" tools:layout="@layout/fragment_login_credentials">
         <action
             android:id="@+id/action_loginCredentialsFragment_to_findIdFragment"
             app:destination="@id/findIdFragment"/>
         <action
-            android:id="@+id/action_loginCredentialsFragment_to_findPasswordFragment" />
+            android:id="@+id/action_loginCredentialsFragment_to_findPasswordFragment"
+            app:destination="@id/findPasswordFragment" />
     </fragment>
 
     <fragment
@@ -22,5 +22,11 @@
         android:name="com.example.bisit.ui.login.FindIdFragment"
         android:label="아이디 찾기"
         tools:layout="@layout/fragment_find_id" />
+
+    <fragment
+        android:id="@+id/findPasswordFragment"
+        android:name="com.example.bisit.ui.login.FindPasswordFragment"
+        android:label="비밀번호 찾기"
+        tools:layout="@layout/fragment_find_password" />
 
 </navigation>
