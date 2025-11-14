@@ -11,9 +11,16 @@
         android:label="fragment_login_credentials"
         tools:layout="@layout/fragment_login_credentials">
         <action
-            android:id="@+id/action_loginCredentialsFragment_to_findIdFragment" />
+            android:id="@+id/action_loginCredentialsFragment_to_findIdFragment"
+            app:destination="@id/findIdFragment"/>
         <action
             android:id="@+id/action_loginCredentialsFragment_to_findPasswordFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/findIdFragment"
+        android:name="com.example.bisit.ui.login.FindIdFragment"
+        android:label="아이디 찾기"
+        tools:layout="@layout/fragment_find_id" />
 
 </navigation>

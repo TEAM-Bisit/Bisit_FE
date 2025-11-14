@@ -37,7 +37,6 @@ class LoginCredentialsFragment : Fragment() {
         }
 
         binding.tvFindId.setOnClickListener {
-            // 아이디 찾기 Fragment로 이동
             findNavController().navigate(R.id.action_loginCredentialsFragment_to_findIdFragment)
         }
 
