@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 import com.example.bisit.databinding.ActivityOnboardingBinding
+import com.example.bisit.ui.auth.AuthActivity
 import com.example.bisit.ui.onboarding.OnboardingPagerAdapter
 import com.google.android.material.tabs.TabLayoutMediator
 
@@ -70,7 +71,7 @@ class OnboardingActivity : AppCompatActivity() {
                 val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
                 prefs.edit().putBoolean("is_first_run", false).apply()
 
-                startActivity(Intent(this, LoginActivity::class.java))
+                startActivity(Intent(this, AuthActivity::class.java))
                 finish()
             }
         }

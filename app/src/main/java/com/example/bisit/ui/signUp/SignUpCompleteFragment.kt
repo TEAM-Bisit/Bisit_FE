@@ -8,9 +8,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 // import androidx.navigation.NavOptions (삭제)
 // import androidx.navigation.fragment.findNavController (삭제)
-import com.example.bisit.R
 import com.example.bisit.databinding.FragmentSignUpCompleteBinding
-import com.example.bisit.LoginActivity // ✨ 2. LoginActivity 경로 (추측)
+import com.example.bisit.ui.auth.AuthActivity // ✨ 2. LoginActivity 경로 (추측)
 
 class SignUpCompleteFragment : Fragment() {
 
@@ -36,7 +35,7 @@ class SignUpCompleteFragment : Fragment() {
             // 1. LoginActivity로 가는 Intent 생성
             //    (LoginActivity::class.java를 사용하려면 import가 필요합니다)
             //    'LoginActivity'는 실제 로그인 액티비티 클래스 이름입니다.
-            val intent = Intent(requireActivity(), LoginActivity::class.java)
+            val intent = Intent(requireActivity(), AuthActivity::class.java)
 
             // 2. 새 태스크를 만들고, 기존 태스크(회원가입 화면들)를 모두 제거하는 플래그 설정
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

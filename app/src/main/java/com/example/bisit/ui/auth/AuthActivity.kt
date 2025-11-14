@@ -1,18 +1,19 @@
-package com.example.bisit
+package com.example.bisit.ui.auth
 
-import android.content.Intent // A/V: Intent 임포트 추가
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.example.bisit.databinding.ActivityLoginBinding
-import com.example.bisit.ui.auth.AuthFragment
+import com.example.bisit.MainActivity
+import com.example.bisit.R
+import com.example.bisit.databinding.ActivityAuthBinding
 
-class LoginActivity : AppCompatActivity() {
+class AuthActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityLoginBinding
+    private lateinit var binding: ActivityAuthBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityLoginBinding.inflate(layoutInflater)
+        binding = ActivityAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         if (savedInstanceState == null) {
