@@ -123,7 +123,7 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
     <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btnBook"
+        android:id="@+id/btn_leave"
         android:layout_width="0dp"
         android:layout_height="52dp"
         android:layout_margin="16dp"
