@@ -27,6 +27,10 @@ class MyPageFragment : Fragment() {
             findNavController().navigate(R.id.action_myPageFragment_to_myPageReviewFragment)
         }
 
+        binding.root.findViewById<View>(R.id.btnEditInfo)?.setOnClickListener {
+            findNavController().navigate(R.id.action_myPageFragment_to_myPageEditFragment)
+        }
+
         binding.root.findViewById<View>(R.id.logout_layout)?.setOnClickListener {
             findNavController().navigate(R.id.action_myPageFragment_to_authFragment)
         }

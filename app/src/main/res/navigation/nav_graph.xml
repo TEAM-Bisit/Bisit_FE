@@ -39,6 +39,9 @@
             android:id="@+id/action_myPageFragment_to_myPageReviewFragment"
             app:destination="@id/myPageReviewFragment" />
         <action
+            android:id="@+id/action_myPageFragment_to_myPageEditFragment"
+            app:destination="@id/myPageEditFragment" />
+        <action
             android:id="@+id/action_myPageFragment_to_authFragment"
             app:destination="@id/authFragment" />
         <action
