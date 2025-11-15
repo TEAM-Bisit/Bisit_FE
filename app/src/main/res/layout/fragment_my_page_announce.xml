@@ -14,7 +14,7 @@
         android:paddingEnd="16dp">
 
         <ImageButton
-            android:id="@+id/btn_back_coupon"
+            android:id="@+id/btn_back_announce"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:background="@android:color/transparent"
@@ -37,6 +37,5 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_announce"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="18dp"/>
+        android:layout_height="match_parent" />
 </LinearLayout>

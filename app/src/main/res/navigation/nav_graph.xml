@@ -147,7 +147,41 @@
         android:id="@+id/myPageOwnerFragment"
         android:name="com.example.bisit.ui.myPageOwner.MyPageOwnerFragment"
         android:label="fragment_my_page_owner"
-        tools:layout="@layout/fragment_my_page_owner" />
+        tools:layout="@layout/fragment_my_page_owner" >
+
+        <action
+            android:id="@+id/action_myPageOwnerFragment_to_myPageOwnerEditFragment"
+            app:destination="@id/myPageOwnerEditFragment" />
+        <action
+            android:id="@+id/action_myPageOwnerFragment_to_authFragment"
+            app:destination="@id/authFragment" />
+        <action
+            android:id="@+id/action_myPageOwnerFragment_to_myPageLeaveFragment"
+            app:destination="@id/myPageLeaveFragment" />
+        <action
+            android:id="@+id/action_myPageOwnerFragment_to_myPageCenterFragment"
+            app:destination="@id/myPageCenterFragment" />
+        <action
+            android:id="@+id/action_myPageOwnerFragment_to_myPageAnnounceFragment"
+            app:destination="@id/myPageAnnounceFragment" />
+        <action
+            android:id="@+id/action_myPageOwnerFragment_to_myPageTerm1Fragment"
+            app:destination="@id/myPageTerm1Fragment" />
+        <action
+            android:id="@+id/action_myPageOwnerFragment_to_myPageTerm2Fragment"
+            app:destination="@id/myPageTerm2Fragment" />
+        <action
+            android:id="@+id/action_myPageOwnerFragment_to_myPageTerm3Fragment"
+            app:destination="@id/myPageTerm3Fragment" />
+        <action
+            android:id="@+id/action_myPageOwnerFragment_to_myPageTerm4Fragment"
+            app:destination="@id/myPageTerm4Fragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/myPageOwnerEditFragment"
+        android:name="com.example.bisit.ui.myPageOwner.MyPageOwnerEditFragment"
+        android:label="MyPageOwnerEditFragment" />
 
     <fragment
         android:id="@+id/myPageEditFragment"
