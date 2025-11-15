@@ -5,21 +5,28 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.R
+import com.example.bisit.databinding.FragmentMyPageReviewBinding
 
 class MyPageReviewFragment : Fragment() {
+
+    private var _binding: FragmentMyPageReviewBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_my_page_review, container, false)
+    ): View {
+        _binding = FragmentMyPageReviewBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-        val recyclerView = view.findViewById<RecyclerView>(R.id.rv_coupons)
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         val dummyReviews = listOf(
             "매우 만족했습니다!",
@@ -30,9 +37,14 @@ class MyPageReviewFragment : Fragment() {
         val adapter = MyPageReviewAdapter(dummyReviews) { clickedView ->
             showMoreDialog(clickedView)
         }
-        recyclerView.adapter = adapter
 
-        return view
+        binding.rvReview.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvReview.adapter = adapter
+
+        val backBtn = view.findViewById<ImageButton>(R.id.btn_back_review)
+        backBtn.setOnClickListener {
+            findNavController().navigateUp()
+        }
     }
 
     private fun showMoreDialog(view: View) {
@@ -68,5 +80,10 @@ class MyPageReviewFragment : Fragment() {
         }
 
         dialog.show()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

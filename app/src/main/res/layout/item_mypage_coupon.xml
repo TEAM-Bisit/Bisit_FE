@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card="http://schemas.android.com/apk/res-auto"
-    android:layout_width="324dp"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="12dp"
-    android:foreground="?android:attr/selectableItemBackground"
+    android:layout_marginTop="12dp"
+    android:layout_marginBottom="-4dp"
+    android:layout_marginHorizontal="18dp"
     card:cardCornerRadius="16dp"
-    android:background="@drawable/bg_coupon_card">
+    android:layout_gravity="center"
+    card:cardElevation="0dp"
+    card:cardUseCompatPadding="false">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="24dp"
+        android:background="@drawable/bg_coupon_card">
 
         <TextView
             android:id="@+id/tv_coupon_title_percent"

@@ -44,22 +44,24 @@ class MyPageEditFragment : Fragment() {
             if (!isVerifyActive) {
                 isVerifyActive = true
                 binding.btnVerify.setBackgroundResource(R.drawable.bg_my_page_phone_active)
-                binding.etCode.visibility = View.VISIBLE
-                binding.btnDone.visibility = View.VISIBLE
+
+                binding.etPhone2.visibility = View.VISIBLE
+                binding.btnVerify2.visibility = View.VISIBLE
             } else {
                 isVerifyActive = false
                 binding.btnVerify.setBackgroundResource(R.drawable.bg_my_page_phone)
-                binding.etCode.visibility = View.GONE
-                binding.btnDone.visibility = View.GONE
-                binding.etCode.text.clear()
+
+                binding.etPhone2.visibility = View.GONE
+                binding.btnVerify2.visibility = View.GONE
+                binding.etPhone2.text.clear()
             }
         }
 
-        binding.etCode.addTextChangedListener { text ->
+        binding.etPhone2.addTextChangedListener { text ->
             if (!text.isNullOrEmpty()) {
-                binding.btnDone.setBackgroundResource(R.drawable.bg_my_page_phone_active)
+                binding.btnVerify2.setBackgroundResource(R.drawable.bg_my_page_phone_active)
             } else {
-                binding.btnDone.setBackgroundResource(R.drawable.bg_my_page_phone)
+                binding.btnVerify2.setBackgroundResource(R.drawable.bg_my_page_phone)
             }
         }
     }

@@ -106,26 +106,31 @@
             android:background="@drawable/bg_my_page_phone"/>
     </LinearLayout>
 
-    <EditText
-        android:id="@+id/et_code"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/bg_edittext"
-        android:paddingStart="14dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginStart="18dp"
-        android:hint="인증번호 입력"
-        android:visibility="gone" />
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_done"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="완료"
-        android:backgroundTint="#000000"
-        android:textColor="@color/white"
-        android:layout_marginTop="10dp"
-        android:layout_marginStart="6dp"
-        android:layout_marginEnd="18dp"
-        android:visibility="gone" />
+        <EditText
+            android:id="@+id/et_phone2"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_edittext"
+            android:layout_marginStart="18dp"
+            android:paddingStart="14dp"
+            android:visibility="gone"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_verify2"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="18dp"
+            android:backgroundTint="#E0E0E0"
+            android:text="완"
+            android:background="@drawable/bg_my_page_phone"
+            android:visibility="gone" />
+    </LinearLayout>
 </LinearLayout>

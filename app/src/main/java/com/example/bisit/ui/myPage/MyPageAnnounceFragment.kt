@@ -4,9 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.R
 
@@ -24,6 +26,9 @@ class MyPageAnnounceFragment : Fragment() {
 
         val recyclerView = view.findViewById<RecyclerView>(R.id.rv_announce)
 
+        recyclerView.layoutManager =
+            LinearLayoutManager(requireContext())
+
         val adapter = MyPageAnnounceAdapter(
             listOf(
                 "공지 제목 1" to "1시간 전",
@@ -36,8 +41,14 @@ class MyPageAnnounceFragment : Fragment() {
 
         recyclerView.adapter = adapter
 
+        val backBtn = view.findViewById<ImageButton>(R.id.btn_back_announce)
+        backBtn.setOnClickListener {
+            findNavController().navigateUp()
+        }
+
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             findNavController().navigateUp()
         }
     }
+
 }
