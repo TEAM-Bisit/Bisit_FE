@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph_sign_up"
-    app:startDestination="@id/signUpInfoFragment"> <fragment
+    app:startDestination="@id/userTypeFragment"> <fragment
     android:id="@+id/userTypeFragment"
     android:name="com.example.bisit.ui.signUp.UserTypeFragment"
     android:label="UserTypeFragment"
@@ -12,7 +12,19 @@
         android:id="@+id/action_userTypeFragment_to_signUpInfoFragment"
         app:destination="@id/signUpInfoFragment"
         app:popUpTo="@id/userTypeFragment"
-        app:popUpToInclusive="true" /> </fragment>
+        app:popUpToInclusive="true" />
+
+    <action
+        android:id="@+id/action_userTypeFragment_to_ownerOnboardingFragment"
+        app:destination="@id/ownerOnboardingFragment" />
+</fragment>
+
+    <fragment
+        android:id="@+id/ownerOnboardingFragment"
+        android:name="com.example.bisit.ui.signUp.OwnerOnboardingFragment"
+        android:label="OwnerOnboardingFragment"
+        tools:layout="@layout/fragment_owner_onboarding" >
+    </fragment>
 
     <fragment
         android:id="@+id/signUpInfoFragment"

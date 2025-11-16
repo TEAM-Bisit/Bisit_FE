@@ -27,4 +27,8 @@
     <color name="userType_selected_background">#EBF1FF</color>
     <color name="gray_300">#D7DBDF</color>
 
+    <color name="stepper_text_active">#222222</color>
+    <color name="stepper_text_inactive">#AAAAAA</color>
+    <color name="stepper_line_color">#E0E0E0</color>
+
 </resources>

@@ -58,12 +58,15 @@ class SignUpActivity : AppCompatActivity() {
                     binding.toolbarTitle.text = ""
                     binding.toolbar.navigationIcon = ContextCompat.getDrawable(this, R.drawable.ic_back)
                 }
-                /* (signUpCompleteFragment는 위로 이동됨) */
                 else -> {
                     binding.toolbar.visibility = View.VISIBLE
                     binding.toolbar.navigationIcon = ContextCompat.getDrawable(this, R.drawable.ic_back)
                 }
             }
         }
+    }
+
+    fun setToolbarTitle(title: String) {
+        binding.toolbarTitle.text = title
     }
 }

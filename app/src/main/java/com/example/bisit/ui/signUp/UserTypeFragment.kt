@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.example.bisit.MainActivity
 import com.example.bisit.R
 import com.example.bisit.databinding.FragmentUserTypeBinding
@@ -51,13 +52,16 @@ class UserTypeFragment : Fragment() {
         binding.btnNext.setOnClickListener {
             val userTypeString = selectedUserType!!.name
 
-            val intent = Intent(requireActivity(), MainActivity::class.java).apply {
-                putExtra("USER_TYPE", userTypeString)
+            if (selectedUserType == UserType.OWNER) {
+                findNavController().navigate(R.id.action_userTypeFragment_to_ownerOnboardingFragment)
+
+            } else {
+                val intent = Intent(requireActivity(), MainActivity::class.java).apply {
+                    putExtra("USER_TYPE", userTypeString)
+                }
+                startActivity(intent)
+                requireActivity().finish() // SignUpActivity 종료
             }
-
-            startActivity(intent)
-
-            requireActivity().finish()
         }
     }
 
