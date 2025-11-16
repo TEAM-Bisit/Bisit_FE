@@ -1,8 +1,10 @@
 package com.example.bisit
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI
 import com.example.bisit.databinding.ActivityMainBinding
 
@@ -31,7 +33,6 @@ class MainActivity : AppCompatActivity() {
         // NavGraph 불러오기
         val navGraph = navController.navInflater.inflate(R.navigation.nav_graph)
 
-        // 바로 CustomerCategoryFragment를 시작 화면으로 설정
         if (userType == "owner") {
             navGraph.setStartDestination(R.id.shopFragment)
         } else {
@@ -40,7 +41,33 @@ class MainActivity : AppCompatActivity() {
 
         navController.graph = navGraph
 
-        // BottomNavigationView와 NavController 연결
+        // BottomNavigation과 NavController 연결
         NavigationUI.setupWithNavController(binding.bottomNavView, navController)
+    }
+
+    fun logout() {
+        binding.bottomNavView.visibility = View.GONE
+
+        val navController = findNavController(R.id.nav_host_fragment)
+        val navGraph = navController.navInflater.inflate(R.navigation.nav_graph)
+
+        navGraph.setStartDestination(R.id.authFragment)
+
+        navController.setGraph(navGraph, null)
+    }
+
+    fun moveToHomeAfterLogin(userType: String) {
+        binding.bottomNavView.visibility = View.VISIBLE
+
+        val navController = findNavController(R.id.nav_host_fragment)
+        val navGraph = navController.navInflater.inflate(R.navigation.nav_graph)
+
+        if (userType == "owner") {
+            navGraph.setStartDestination(R.id.shopFragment)
+        } else {
+            navGraph.setStartDestination(R.id.customerCategoryFragment)
+        }
+
+        navController.setGraph(navGraph, null)
     }
 }
