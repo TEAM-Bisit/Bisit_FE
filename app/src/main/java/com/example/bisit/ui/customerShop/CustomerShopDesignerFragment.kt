@@ -75,7 +75,7 @@ class CustomerShopDesignerFragment : Fragment() {
         val enabled = selectedPosition >= 0
         btnBook.isEnabled = enabled
         if (enabled) {
-            btnBook.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#FE6B6B"))
+            btnBook.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#4076FF"))
             btnBook.setTextColor(Color.WHITE)
         } else {
             btnBook.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#E0E0E0"))

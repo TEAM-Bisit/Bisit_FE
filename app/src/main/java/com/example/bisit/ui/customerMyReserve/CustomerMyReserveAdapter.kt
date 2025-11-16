@@ -1,10 +1,12 @@
 package com.example.bisit.ui.customerMyReserve
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.R
 
@@ -13,8 +15,9 @@ class CustomerMyReserveAdapter(
 ) : RecyclerView.Adapter<CustomerMyReserveAdapter.ViewHolder>() {
 
     private var items: List<Int> = listOf()
-    private var itemCount = 5
+    private var itemCount = 5 // 각 탭에서 보여줄 아이템 수
 
+    // 레이아웃 리소스 설정
     fun setItems(layoutRes: Int) {
         items = List(itemCount) { layoutRes }
         notifyDataSetChanged()
@@ -30,27 +33,33 @@ class CustomerMyReserveAdapter(
     }
 
     override fun getItemCount(): Int = items.size
+
     override fun getItemViewType(position: Int): Int = items[position]
 
     class ViewHolder(itemView: View, private val onDetailClick: () -> Unit) : RecyclerView.ViewHolder(itemView) {
 
-        fun bind(context: android.content.Context) {
+        fun bind(context: Context) {
+            val btnDoneDetail = itemView.findViewById<Button>(R.id.btn_done_detail)
+            btnDoneDetail?.setOnClickListener {
+                onDetailClick()
+            }
+
+            val btnCancelDetail = itemView.findViewById<Button>(R.id.btn_cancel_detail)
+            btnCancelDetail?.setOnClickListener {
+                onDetailClick()
+            }
+
             val btnInquire = itemView.findViewById<Button>(R.id.btn_wait_inquire)
             btnInquire?.setOnClickListener {
                 showInquireDialog(context)
             }
-
-            val btnDetail = itemView.findViewById<Button>(R.id.btn_done_detail)
-            btnDetail?.setOnClickListener {
-                onDetailClick()
-            }
         }
 
-        private fun showInquireDialog(context: android.content.Context) {
+        private fun showInquireDialog(context: Context) {
             val dialogView = LayoutInflater.from(context)
                 .inflate(R.layout.dialog_customer_my_reserve_ask, null)
 
-            val dialog = android.app.AlertDialog.Builder(context)
+            val dialog = AlertDialog.Builder(context)
                 .setView(dialogView)
                 .create()
 

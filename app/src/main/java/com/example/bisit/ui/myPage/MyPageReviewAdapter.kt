@@ -1,6 +1,5 @@
 package com.example.bisit.ui.myPage
 
-import android.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,7 +10,7 @@ import com.example.bisit.R
 
 class MyPageReviewAdapter(
     private val reviews: List<String>,
-    private val onMoreClick: (View) -> Unit
+    private val onMoreClick: (Int) -> Unit
 ) : RecyclerView.Adapter<MyPageReviewAdapter.ReviewViewHolder>() {
 
     inner class ReviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -28,7 +27,7 @@ class MyPageReviewAdapter(
     override fun onBindViewHolder(holder: ReviewViewHolder, position: Int) {
         holder.tvContent.text = reviews[position]
         holder.btnMore.setOnClickListener {
-            onMoreClick(it)
+            onMoreClick(position)
         }
     }
 

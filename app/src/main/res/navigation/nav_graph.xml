@@ -3,13 +3,33 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/homeFragment">
+    app:startDestination="@id/customerCategoryFragment">
 
     <fragment
-        android:id="@+id/homeFragment"
-        android:name="com.example.bisit.ui.home.HomeFragment"
-        android:label="fragment_home"
-        tools:layout="@layout/fragment_home" />
+        android:id="@+id/mapFragment"
+        android:name="com.example.bisit.ui.home.MapFragment"
+        android:label="fragment_map"
+        tools:layout="@layout/fragment_map" />
+
+    <fragment
+        android:id="@+id/customerCategoryFragment"
+        android:name="com.example.bisit.ui.home.CustomerCategoryFragment"
+        android:label="customer_category"
+        tools:layout="@layout/fragment_customer_category">
+
+        <action
+            android:id="@+id/actionCategoryToHomeList"
+            app:destination="@id/homeListFragment">
+            <argument
+                android:name="category"
+                app:argType="string"
+                android:defaultValue="전체" />
+        </action>
+
+        <action
+            android:id="@+id/actionCategoryToMap"
+            app:destination="@id/mapFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/CustomerMyReserve"
@@ -38,6 +58,9 @@
         <action
             android:id="@+id/action_myPageFragment_to_myPageReviewFragment"
             app:destination="@id/myPageReviewFragment" />
+        <action
+            android:id="@+id/action_myPageFragment_to_myPageEditFragment"
+            app:destination="@id/myPageEditFragment" />
         <action
             android:id="@+id/action_myPageFragment_to_authFragment"
             app:destination="@id/authFragment" />
@@ -79,8 +102,7 @@
     <fragment
         android:id="@+id/homeListFragment"
         android:name="com.example.bisit.ui.home.HomeListFragment"
-        android:label="Home List"
-        tools:layout="@layout/fragment_home_list">
+        android:label="home_list">
         <action
             android:id="@+id/action_homeListFragment_to_customerShopFragment"
             app:destination="@id/customerShopFragment" />
@@ -147,7 +169,7 @@
         android:id="@+id/myPageOwnerFragment"
         android:name="com.example.bisit.ui.myPageOwner.MyPageOwnerFragment"
         android:label="fragment_my_page_owner"
-        tools:layout="@layout/fragment_my_page_owner" >
+        tools:layout="@layout/fragment_my_page_owner">
 
         <action
             android:id="@+id/action_myPageOwnerFragment_to_myPageOwnerEditFragment"
@@ -214,7 +236,7 @@
         tools:layout="@layout/fragment_my_page_announce">
         <action
             android:id="@+id/action_myPageAnnounceFragment_to_myPageAnnounceDetailFragment"
-            app:destination="@id/myPageAnnounceDetailFragment"/>
+            app:destination="@id/myPageAnnounceDetailFragment" />
     </fragment>
 
     <fragment

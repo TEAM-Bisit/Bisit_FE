@@ -284,7 +284,7 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnNextStep"
         android:layout_width="match_parent"
-        android:layout_height="54dp"
+        android:layout_height="56dp"
         android:text="다음 단계"
         android:textColor="@android:color/white"
         android:textSize="16sp"
@@ -293,5 +293,5 @@
         android:layout_marginHorizontal="20dp"
         android:layout_marginBottom="20dp"
         app:cornerRadius="10dp"
-        android:backgroundTint="#FE6B6B" />
+        android:backgroundTint="#4076FF" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

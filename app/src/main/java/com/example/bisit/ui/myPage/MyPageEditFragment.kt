@@ -33,36 +33,29 @@ class MyPageEditFragment : Fragment() {
         }
 
         binding.etPhone.addTextChangedListener { text ->
-            if (!text.isNullOrEmpty() && !isVerifyActive) {
-                binding.btnVerify.setBackgroundResource(R.drawable.bg_my_page_phone_active)
-            } else if (!isVerifyActive) {
-                binding.btnVerify.setBackgroundResource(R.drawable.bg_my_page_phone)
+            val hasText = !text.isNullOrEmpty()
+
+            if (!isVerifyActive) {
+                binding.btnVerify.isEnabled = hasText
             }
         }
 
         binding.btnVerify.setOnClickListener {
-            if (!isVerifyActive) {
-                isVerifyActive = true
-                binding.btnVerify.setBackgroundResource(R.drawable.bg_my_page_phone_active)
+            isVerifyActive = !isVerifyActive
 
+            if (isVerifyActive) {
+                binding.btnVerify.isEnabled = true
                 binding.etPhone2.visibility = View.VISIBLE
                 binding.btnVerify2.visibility = View.VISIBLE
             } else {
-                isVerifyActive = false
-                binding.btnVerify.setBackgroundResource(R.drawable.bg_my_page_phone)
-
+                binding.btnVerify.isEnabled = false
                 binding.etPhone2.visibility = View.GONE
                 binding.btnVerify2.visibility = View.GONE
                 binding.etPhone2.text.clear()
             }
         }
-
         binding.etPhone2.addTextChangedListener { text ->
-            if (!text.isNullOrEmpty()) {
-                binding.btnVerify2.setBackgroundResource(R.drawable.bg_my_page_phone_active)
-            } else {
-                binding.btnVerify2.setBackgroundResource(R.drawable.bg_my_page_phone)
-            }
+            binding.btnVerify2.isEnabled = !text.isNullOrEmpty()
         }
     }
 

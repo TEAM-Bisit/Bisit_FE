@@ -32,7 +32,8 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#EAEAEA" />
+        android:background="#EAEAEA"
+        android:layout_marginBottom="16dp"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_announce"

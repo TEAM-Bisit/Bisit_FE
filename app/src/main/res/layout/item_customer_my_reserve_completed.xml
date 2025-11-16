@@ -21,9 +21,9 @@
             android:id="@+id/tv_done_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="시술 완료"
+            android:text="서비스 완료"
             android:textSize="14sp"
-            android:textColor="@color/main_red"
+            android:textColor="#4076FF"
             android:textStyle="bold"/>
 
         <TextView

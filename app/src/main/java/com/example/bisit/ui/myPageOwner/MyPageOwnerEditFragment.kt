@@ -63,9 +63,13 @@ class MyPageOwnerEditFragment : Fragment() {
 
         phoneEt.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-                if (s.toString().trim().isNotEmpty()) {
+                val hasText = s.toString().trim().isNotEmpty()
+
+                if (hasText) {
+                    verifyBtn.isEnabled = true
                     verifyBtn.setBackgroundResource(R.drawable.bg_my_page_phone_active)
                 } else {
+                    verifyBtn.isEnabled = false
                     verifyBtn.setBackgroundResource(R.drawable.bg_my_page_phone)
                 }
             }
@@ -79,6 +83,8 @@ class MyPageOwnerEditFragment : Fragment() {
             binding.btnVerify2.visibility = View.VISIBLE
         }
     }
+
+
 
     override fun onDestroyView() {
         super.onDestroyView()

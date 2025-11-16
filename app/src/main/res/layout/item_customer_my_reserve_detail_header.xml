@@ -11,8 +11,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginStart="16dp"
-        android:text="시술 완료"
-        android:textColor="#FF6E6E"
+        android:text="서비스 완료"
+        android:textColor="#4076FF"
         android:textSize="14sp"
         android:textStyle="bold" />
 
