@@ -18,7 +18,6 @@ class MainActivity : AppCompatActivity() {
         val userType = intent.getStringExtra("USER_TYPE")
 
         binding.bottomNavView.menu.clear()
-
         if (userType == "owner") {
             binding.bottomNavView.inflateMenu(R.menu.bottom_nav_menu_owner)
         } else {
@@ -29,20 +28,19 @@ class MainActivity : AppCompatActivity() {
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
 
+        // NavGraph 불러오기
         val navGraph = navController.navInflater.inflate(R.navigation.nav_graph)
 
-        binding.bottomNavView.menu.clear()
-
+        // 바로 CustomerCategoryFragment를 시작 화면으로 설정
         if (userType == "owner") {
-            binding.bottomNavView.inflateMenu(R.menu.bottom_nav_menu_owner)
             navGraph.setStartDestination(R.id.shopFragment)
         } else {
-            binding.bottomNavView.inflateMenu(R.menu.bottom_nav_menu)
-            navGraph.setStartDestination(R.id.homeFragment)
+            navGraph.setStartDestination(R.id.customerCategoryFragment)
         }
 
         navController.graph = navGraph
 
+        // BottomNavigationView와 NavController 연결
         NavigationUI.setupWithNavController(binding.bottomNavView, navController)
     }
 }

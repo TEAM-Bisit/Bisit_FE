@@ -16,6 +16,12 @@ class HomeListFragment : Fragment() {
     private var _binding: FragmentHomeListBinding? = null
     private val binding get() = _binding!!
 
+    private val filterItems = listOf(
+        "가까운 순",
+        "별점 높은 순",
+        "리뷰 많은 순"
+    )
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -27,7 +33,34 @@ class HomeListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val dummyList = listOf(
+        val categoryName = arguments?.getString("category") ?: "전체"
+
+        binding.tvTitle.text = "$categoryName 보기"
+
+        val filterAdapter = HomeFilterChipAdapter(filterItems) { selectedFilter ->
+
+        }
+
+        binding.rvFilters.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+
+        binding.rvFilters.adapter = filterAdapter
+
+        val dummyList = getDummyList(categoryName)
+
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerView.adapter = HomeListAdapter(dummyList) {
+            findNavController().navigate(R.id.action_homeListFragment_to_customerShopFragment)
+        }
+
+        binding.btnBack.setOnClickListener {
+            findNavController().popBackStack()
+        }
+    }
+
+
+    private fun getDummyList(category: String?): List<StoreItem> {
+        val all = listOf(
             StoreItem(
                 name = "장미헤어",
                 category = "미용실 · 뷰티케어",
@@ -36,7 +69,7 @@ class HomeListFragment : Fragment() {
                 isOpen = true,
                 businessHours = "09:00 ~ 18:00",
                 tags = listOf("컷트", "펌", "머리감기", "+3"),
-                images = listOf(R.drawable.img_example, R.drawable.img_example),
+                images = listOf(R.drawable.img_example),
                 hasVisitService = true
             ),
             StoreItem(
@@ -51,16 +84,7 @@ class HomeListFragment : Fragment() {
                 hasVisitService = false
             )
         )
-
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-
-        binding.recyclerView.adapter = HomeListAdapter(dummyList) { storeItem ->
-            findNavController().navigate(R.id.action_homeListFragment_to_customerShopFragment)
-        }
-
-        binding.btnMap.setOnClickListener {
-            requireActivity().onBackPressedDispatcher.onBackPressed()
-        }
+        return all
     }
 
     override fun onDestroyView() {
