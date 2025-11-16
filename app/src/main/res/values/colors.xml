@@ -23,4 +23,8 @@
     <color name="main_red_light">#FFEDED</color>
     <color name="outline_gray">#E6E9EB</color>
 
+    <color name="userType_selected_blue">#4076FF</color>
+    <color name="userType_selected_background">#EBF1FF</color>
+    <color name="gray_300">#D7DBDF</color>
+
 </resources>

@@ -23,6 +23,13 @@ class SignUpActivity : AppCompatActivity() {
             .findFragmentById(R.id.nav_host_fragment_sign_up) as NavHostFragment
         navController = navHostFragment.navController
 
+        val startDestination = intent.getStringExtra("START_DESTINATION")
+        if (startDestination == "USER_TYPE") {
+            val navGraph = navController.navInflater.inflate(R.navigation.nav_graph_sign_up)
+            navGraph.setStartDestination(R.id.userTypeFragment)
+            navController.graph = navGraph
+        }
+
         binding.toolbar.setNavigationOnClickListener {
             if (!navController.popBackStack()) {
                 finish()
@@ -31,6 +38,11 @@ class SignUpActivity : AppCompatActivity() {
 
         navController.addOnDestinationChangedListener { _, destination, arguments ->
             when (destination.id) {
+                R.id.userTypeFragment,
+                R.id.signUpCompleteFragment -> {
+                    binding.toolbar.visibility = View.GONE
+                }
+
                 R.id.termsDetailFragment -> {
                     binding.toolbar.visibility = View.VISIBLE
                     binding.toolbarTitle.text = arguments?.getString("termTitle") ?: "약관 상세"
@@ -46,9 +58,7 @@ class SignUpActivity : AppCompatActivity() {
                     binding.toolbarTitle.text = ""
                     binding.toolbar.navigationIcon = ContextCompat.getDrawable(this, R.drawable.ic_back)
                 }
-                R.id.signUpCompleteFragment -> {
-                    binding.toolbar.visibility = View.GONE
-                }
+                /* (signUpCompleteFragment는 위로 이동됨) */
                 else -> {
                     binding.toolbar.visibility = View.VISIBLE
                     binding.toolbar.navigationIcon = ContextCompat.getDrawable(this, R.drawable.ic_back)

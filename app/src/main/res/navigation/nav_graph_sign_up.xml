@@ -3,7 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph_sign_up"
-    app:startDestination="@id/signUpInfoFragment">
+    app:startDestination="@id/signUpInfoFragment"> <fragment
+    android:id="@+id/userTypeFragment"
+    android:name="com.example.bisit.ui.signUp.UserTypeFragment"
+    android:label="UserTypeFragment"
+    tools:layout="@layout/fragment_user_type">
+    <action
+        android:id="@+id/action_userTypeFragment_to_signUpInfoFragment"
+        app:destination="@id/signUpInfoFragment"
+        app:popUpTo="@id/userTypeFragment"
+        app:popUpToInclusive="true" /> </fragment>
 
     <fragment
         android:id="@+id/signUpInfoFragment"
@@ -23,14 +32,6 @@
         android:name="com.example.bisit.ui.signUp.TermsDetailFragment"
         android:label="fragment_terms_detail"
         tools:layout="@layout/fragment_terms_detail">
-        <argument
-            android:name="termTitle"
-            app:argType="string"
-            android:defaultValue="약관 상세" />
-        <argument
-            android:name="termContent"
-            app:argType="string"
-            android:defaultValue="약관 내용" />
     </fragment>
 
     <fragment

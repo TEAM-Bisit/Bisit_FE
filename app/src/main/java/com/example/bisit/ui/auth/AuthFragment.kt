@@ -43,6 +43,10 @@ class AuthFragment : Fragment(), UserTypeDialog.UserTypeDialogListener {
         binding.loginBtn.setOnClickListener {
             startActivity(Intent(requireContext(), LoginActivity::class.java))
         }
+
+        binding.naverBtn.setOnClickListener {
+            launchSignUpActivityWithUserType()
+        }
     }
 
     private fun handleLogoTaps() {
@@ -63,6 +67,13 @@ class AuthFragment : Fragment(), UserTypeDialog.UserTypeDialogListener {
 
     override fun onUserTypeSelected(userType: String) {
         (activity as? AuthActivity)?.navigateToMainActivity(userType)
+    }
+
+    private fun launchSignUpActivityWithUserType() {
+        val intent = Intent(requireContext(), SignUpActivity::class.java).apply {
+            putExtra("START_DESTINATION", "USER_TYPE")
+        }
+        startActivity(intent)
     }
 
     override fun onDestroyView() {
