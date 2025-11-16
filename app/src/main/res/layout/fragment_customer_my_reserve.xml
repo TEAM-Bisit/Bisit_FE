@@ -7,7 +7,6 @@
     android:layout_height="match_parent"
     android:background="#FFFFFF">
 
-    <!-- 상단바 -->
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="0dp"
@@ -37,7 +36,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
-        app:tabIndicatorColor="@color/red_FE6B6B"
+        app:tabIndicatorColor="#4076FF"
         app:tabIndicatorHeight="3dp"
         app:tabSelectedTextColor="@color/black"
         app:tabTextColor="@color/gray"

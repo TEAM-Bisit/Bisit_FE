@@ -122,7 +122,7 @@
         android:layout_width="0dp"
         android:layout_height="52dp"
         android:layout_margin="16dp"
-        android:backgroundTint="#FE6B6B"
+        android:backgroundTint="#4076FF"
         android:text="예약하기"
         android:textColor="@color/white"
         android:textSize="16sp"

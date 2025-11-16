@@ -46,7 +46,7 @@ class CustomerShopDesignerAdapter(
         holder.itemView.isSelected = isSelected
         holder.container.isSelected = isSelected
 
-        val selectedTextColor = Color.parseColor("#FE6B6B")
+        val selectedTextColor = Color.parseColor("#4076FF")
         val defaultTextColor = Color.parseColor("#222222")
 
         if (isSelected) {
