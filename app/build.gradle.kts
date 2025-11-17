@@ -1,8 +1,15 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
+
+val localProps = Properties()
+localProps.load(project.rootProject.file("local.properties").inputStream())
+
+val BASE_SERVER_URL: String = localProps.getProperty("BASE_SERVER_URL") ?: ""
 
 android {
     namespace = "com.example.bisit"
@@ -25,6 +32,8 @@ android {
             "NCP_SECRET_KEY",
             "\"${project.findProperty("NCP_SECRET_KEY") ?: ""}\""
         )
+
+        buildConfigField("String", "BASE_SERVER_URL", "\"$BASE_SERVER_URL\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

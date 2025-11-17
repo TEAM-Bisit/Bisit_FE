@@ -3,6 +3,7 @@ package com.example.bisit.data.api
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import com.example.bisit.BuildConfig
 
 object RetrofitClient {
     private const val BASE_URL = "https://naveropenapi.apigw.ntruss.com/"
@@ -10,7 +11,7 @@ object RetrofitClient {
     private const val NCP_ACCESS_KEY_ID = "ncp_iam_BPAMKR3PLgKeBYxJmUID"
     private const val NCP_SECRET_KEY = "ncp_iam_BPKMKRX3UqkCGZPw1EAquRBDKK6hscFwiz"
 
-    private val client = OkHttpClient.Builder()
+    private val naverClient = OkHttpClient.Builder()
         .addInterceptor { chain ->
             val request = chain.request().newBuilder()
                 .addHeader("X-NCP-APIGW-API-KEY-ID", NCP_ACCESS_KEY_ID)
@@ -24,8 +25,18 @@ object RetrofitClient {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
-            .client(client)
+            .client(naverClient)
             .build()
             .create(NaverGeocodingApiService::class.java)
+    }
+
+    private val BASE_SERVER_URL = BuildConfig.BASE_SERVER_URL
+
+    val todayReservationApi: TodayReservationApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(TodayReservationApiService::class.java)
     }
 }
