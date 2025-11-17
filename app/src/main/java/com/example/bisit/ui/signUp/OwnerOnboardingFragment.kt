@@ -74,7 +74,7 @@ class OwnerOnboardingFragment : Fragment() {
         // 4. 초기 자식 프래그먼트(1단계) 로드
         if (savedInstanceState == null) {
             childFragmentManager.beginTransaction()
-//                .replace(R.id.owner_onboarding_nav_host, BusinessRegistrationFragment.newInstance())
+                .replace(R.id.owner_onboarding_nav_host, BusinessRegistrationFragment.newInstance())
                 // 첫 프래그먼트는 백스택에 추가하지 않음
                 .commit()
         }
