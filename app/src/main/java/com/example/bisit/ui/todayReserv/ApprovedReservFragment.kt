@@ -6,20 +6,26 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.bisit.data.model.todayReservation.ReservationItem
 import com.example.bisit.databinding.FragmentApprovedReservBinding
-import com.example.bisit.ui.todayReserv.adapter.ApprovedReservation
-import com.example.bisit.ui.todayReserv.adapter.ApprovedReservationAdapter
+import com.example.bisit.ui.todayReserv.adapter.TodayReservationAdapter
 import com.example.bisit.ui.todayReserv.dialog.ChangeStatusDialog
 
 class ApprovedReservFragment : Fragment(), SortableFragment {
+
     private var _binding: FragmentApprovedReservBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var adapter: ApprovedReservationAdapter
-    private var originalList = mutableListOf<ApprovedReservation>()
+    private lateinit var adapter: TodayReservationAdapter
+    private var reservationList = mutableListOf<ReservationItem>()
+
+    // TodayReservFragment에서 넘겨주는 정렬값
+    private var sortBy: String = "recent"
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
         _binding = FragmentApprovedReservBinding.inflate(inflater, container, false)
         return binding.root
@@ -28,67 +34,88 @@ class ApprovedReservFragment : Fragment(), SortableFragment {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        originalList = mutableListOf(
-            ApprovedReservation(
-                reservationId = "fhEheoqkr777",
-                shopName = "컷트",
-                date = "2025.09.04 17:00",
-                address = "경산시 하양읍 대학로 298길 20-9 롯데아파트 101동 111호",
-                status = "예약 확정"
+        // arguments에서 정렬값 가져오기
+        sortBy = arguments?.getString("sortBy") ?: "recent"
+
+        val currentTab = "confirmed"
+
+        // --------------------------
+        // 목데이터
+        // --------------------------
+        reservationList = mutableListOf(
+            ReservationItem(
+                reservationId = 1,
+                status = "CONFIRMED",
+                serviceStatus = "NONE",
+                customerName = "김철수",
+                treatmentName = "컷트",
+                staffName = "원장",
+                visitAddressLine = "서울시 강남구 논현로 10길 12",
+                reservedDate = "2025-09-04",
+                startTime = "17:00"
             ),
-            ApprovedReservation(
-                reservationId = "fhEheoqkr778",
-                shopName = "헤드 스파",
-                date = "2025.09.10 14:00",
-                address = "서울특별시 마포구 서교동 12길 15",
-                status = "확정 대기"
+            ReservationItem(
+                reservationId = 2,
+                status = "PENDING",   // confirmed 탭에서도 보임
+                serviceStatus = "NONE",
+                customerName = "박민서",
+                treatmentName = "헤드 스파",
+                staffName = "실장",
+                visitAddressLine = "서울시 마포구 연남로 22길 8",
+                reservedDate = "2025-09-10",
+                startTime = "14:00"
             ),
-            ApprovedReservation(
-                reservationId = "fhEheoqkr779",
-                shopName = "염색 & 클리닉",
-                date = "2025.09.12 10:30",
-                address = "부산광역시 해운대구 달맞이길 54",
-                status = "시술 완료"
-            ),
-            ApprovedReservation(
-                reservationId = "fhEheoqkr780",
-                shopName = "볼륨 매직",
-                date = "2025.09.15 13:00",
-                address = "서울특별시 강남구 논현로 45길 12",
-                status = "노쇼"
-            ),
-            ApprovedReservation(
-                reservationId = "fhEheoqkr781",
-                shopName = "클리닉 & 드라이",
-                date = "2025.09.18 15:00",
-                address = "대전광역시 유성구 문화로 102번길 9",
-                status = "취소"
+            ReservationItem(
+                reservationId = 3,
+                status = "COMPLETED",
+                serviceStatus = "NONE",
+                customerName = "이현지",
+                treatmentName = "클리닉",
+                staffName = "디자이너",
+                visitAddressLine = "부산 해운대구 달맞이길 24",
+                reservedDate = "2025-09-12",
+                startTime = "10:30"
             )
         )
 
-        adapter = ApprovedReservationAdapter { item ->
-            ChangeStatusDialog(item.status) { newStatus ->
-                val itemToUpdate = originalList.find { it.reservationId == item.reservationId }
-                itemToUpdate?.status = newStatus
-                adapter.submitList(originalList.toList())
-            }.show(parentFragmentManager, "change_status")
-        }
+        adapter = TodayReservationAdapter(
+            currentTab = currentTab,
+            onApprove = {},
+            onReject = {},
+            onChangeStatus = { item ->
+                ChangeStatusDialog(item.status) { newStatus ->
+                    val idx =
+                        reservationList.indexOfFirst { it.reservationId == item.reservationId }
+
+                    if (idx != -1) {
+                        reservationList[idx] = reservationList[idx].copy(status = newStatus)
+                    }
+
+                    // 변경 후 정렬 반영
+                    sort(sortBy)
+                }.show(parentFragmentManager, "change-status")
+            }
+        )
 
         binding.rvApprovedList.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = this@ApprovedReservFragment.adapter
         }
 
-        adapter.submitList(originalList)
+        // 초기 정렬 반영 후 submit
+        sort(sortBy)
     }
 
-    override fun sort(isRecent: Boolean) {
-        val sortedList = if (isRecent) {
-            originalList.sortedByDescending { it.date }
-        } else {
-            originalList.sortedBy { it.date }
+    override fun sort(sortBy: String) {
+        this.sortBy = sortBy
+
+        val sorted = when (sortBy) {
+            "recent" -> reservationList.sortedByDescending { "${it.reservedDate} ${it.startTime}" }
+            "oldest" -> reservationList.sortedBy { "${it.reservedDate} ${it.startTime}" }
+            else -> reservationList
         }
-        adapter.submitList(sortedList)
+
+        adapter.submitList(sorted)
     }
 
     override fun onDestroyView() {

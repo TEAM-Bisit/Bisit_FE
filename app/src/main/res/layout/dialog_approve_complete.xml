@@ -23,7 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:text="@string/today_approve_check"
-        android:background="@drawable/bg_button_red"
+        android:background="@drawable/bg_button_blue"
         android:stateListAnimator="@null"
         android:textColor="@android:color/white"
         android:textSize="14sp"

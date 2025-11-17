@@ -5,11 +5,11 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-
     <TextView
         android:id="@+id/tvMessage"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:text="삭제하시겠어요?"
         android:textColor="#222222"
         android:textStyle="bold"
@@ -28,7 +28,8 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="닫기"
-            android:textColor="#FF6B6B"
+            android:textColor="#515965"
+            android:textSize="14sp"
             android:textStyle="bold"
             android:background="@drawable/bg_chip_selector"/>
         <Space
@@ -41,7 +42,8 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="삭제하기"
-            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textColor="#FEFEFE"
             android:textStyle="bold"
             android:background="@drawable/bg_btn_primary_selector"/>
     </LinearLayout>

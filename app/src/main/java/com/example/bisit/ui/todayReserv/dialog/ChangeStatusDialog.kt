@@ -25,27 +25,41 @@ class ChangeStatusDialog(
         val radioGroup = view.findViewById<RadioGroup>(R.id.radioGroupStatus)
         val confirmButton = view.findViewById<AppCompatButton>(R.id.btnConfirm)
 
-        val current = when (currentStatus) {
-            "확정 대기" -> R.id.radioWaiting
-            "예약 확정" -> R.id.radioConfirmed
-            "취소" -> R.id.radioCancelled
-            "노쇼" -> R.id.radioNoShow
-            "시술 완료" -> R.id.radioDone
+        // 현재 상태에 따른 기본 선택 라디오 버튼 지정
+        val currentCheckedId = when (currentStatus) {
+            "확정 대기", "PENDING" -> R.id.radioWaiting
+            "예약 확정", "CONFIRMED", "CUSTOMER_CONFIRMED" -> R.id.radioConfirmed
+            "취소", "CANCELED_BY_CUSTOMER", "CANCELED_BY_SHOP" -> R.id.radioCancelled
+            "노쇼", "NO_SHOW" -> R.id.radioNoShow
+            "시술 완료", "COMPLETED" -> R.id.radioDone
             else -> R.id.radioWaiting
         }
-        radioGroup.check(current)
+        radioGroup.check(currentCheckedId)
 
         confirmButton.setOnClickListener {
             val selectedId = radioGroup.checkedRadioButtonId
             val selectedText = view.findViewById<RadioButton>(selectedId).text.toString()
 
-            if (selectedText == "취소") {
+            // 한글 UI 텍스트 → 서버 상태 코드로 변환
+            val mappedStatus = when (selectedText) {
+                "확정 대기" -> "PENDING"
+                "예약 확정" -> "CONFIRMED"
+                "취소" -> "CANCELED_BY_SHOP"
+                "노쇼" -> "NO_SHOW"
+                "시술 완료" -> "COMPLETED"
+                else -> currentStatus
+            }
+
+            // 취소 사유 필요
+            if (mappedStatus == "CANCELED_BY_SHOP") {
                 dismiss()
                 ChangeCancelReasonDialog().show(parentFragmentManager, "cancel_reason")
-            } else {
-                onConfirm(selectedText)
-                dismiss()
+                return@setOnClickListener
             }
+
+            // 즉시 상태 반영
+            onConfirm(mappedStatus)
+            dismiss()
         }
 
         return view
