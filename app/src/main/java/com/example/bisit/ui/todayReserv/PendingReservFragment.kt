@@ -7,17 +7,20 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bisit.databinding.FragmentPendingReservBinding
-import com.example.bisit.ui.todayReserv.adapter.Reservation
-import com.example.bisit.ui.todayReserv.adapter.ReservationAdapter
+import com.example.bisit.data.model.todayReservation.ReservationItem
+import com.example.bisit.ui.todayReserv.adapter.TodayReservationAdapter
 import com.example.bisit.ui.todayReserv.dialog.ApproveCompleteDialog
 import com.example.bisit.ui.todayReserv.dialog.ChangeReasonDialog
 
 class PendingReservFragment : Fragment(), SortableFragment {
+
     private var _binding: FragmentPendingReservBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var adapter: ReservationAdapter
-    private var originalList = mutableListOf<Reservation>()
+    private lateinit var adapter: TodayReservationAdapter
+    private var pendingList = mutableListOf<ReservationItem>()
+
+    private var sortBy: String = "recent"
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -29,25 +32,51 @@ class PendingReservFragment : Fragment(), SortableFragment {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        originalList = mutableListOf(
-            Reservation("id1", "볼륨 매직", "2025.10.07 13:00", "서울 강남구 논현로 45길 12"),
-            Reservation("id2", "염색 & 클리닉", "2025.10.08 10:30", "서울 마포구 연남로 22길 8"),
-            Reservation("id3", "컷트 & 스타일링", "2025.10.09 17:20", "서울 서초구 서초대로 78길 4"),
-            Reservation("id4", "헤드 스파", "2025.10.10 14:00", "서울 용산구 한남대로 12길 21"),
-            Reservation("id5", "남성 커트", "2025.10.11 11:10", "서울 송파구 백제고분로 33길 19")
+        sortBy = arguments?.getString("sortBy") ?: "recent"
+
+        pendingList = mutableListOf(
+            ReservationItem(
+                reservationId = 1L,
+                status = "PENDING",
+                serviceStatus = "NONE",
+                customerName = "김철수",
+                treatmentName = "볼륨 매직",
+                staffName = "박디자이너",
+                visitAddressLine = "서울 강남구 논현로 123",
+                reservedDate = "2025-10-07",
+                startTime = "13:00"
+            ),
+            ReservationItem(
+                reservationId = 2L,
+                status = "PENDING",
+                serviceStatus = "NONE",
+                customerName = "이영희",
+                treatmentName = "염색 & 클리닉",
+                staffName = "김디자이너",
+                visitAddressLine = "서울 마포구 연남로 22길 8",
+                reservedDate = "2025-10-08",
+                startTime = "10:30"
+            )
         )
 
-        adapter = ReservationAdapter(
-            onReject = { item ->
-                ChangeReasonDialog().show(parentFragmentManager, "reject")
-                originalList.remove(item)
-                adapter.submitList(originalList.toList())
-            },
+        adapter = TodayReservationAdapter(
+            currentTab = "pending",
             onApprove = { item ->
-                ApproveCompleteDialog().show(parentFragmentManager, "approve")
-                originalList.remove(item)
-                adapter.submitList(originalList.toList())
-            }
+                ApproveCompleteDialog().show(parentFragmentManager, "approve_dialog")
+
+                pendingList.remove(item)
+                adapter.submitList(pendingList.toList())
+            },
+            onReject = { item ->
+
+                ChangeReasonDialog(
+                    onRejectConfirmed = {
+                        pendingList.remove(item)
+                        adapter.submitList(pendingList.toList())
+                    }
+                ).show(parentFragmentManager, "reject_dialog")
+            },
+            onChangeStatus = {}
         )
 
         binding.rvPendingList.apply {
@@ -55,18 +84,20 @@ class PendingReservFragment : Fragment(), SortableFragment {
             adapter = this@PendingReservFragment.adapter
         }
 
-        adapter.submitList(originalList.toList())
+        sort(sortBy)
     }
 
+    override fun sort(sortBy: String) {
+        this.sortBy = sortBy
 
-    override fun sort(isRecent: Boolean) {
-        val sortedList = if (isRecent) {
-            originalList.sortedByDescending { it.date }
-        } else {
-            originalList.sortedBy { it.date }
+        val sorted = when (sortBy) {
+            "recent" -> pendingList.sortedByDescending { "${it.reservedDate} ${it.startTime}" }
+            "oldest" -> pendingList.sortedBy { "${it.reservedDate} ${it.startTime}" }
+            else -> pendingList
         }
-        originalList = sortedList.toMutableList()
-        adapter.submitList(originalList.toList())
+
+        pendingList = sorted.toMutableList()
+        adapter.submitList(pendingList.toList())
     }
 
     override fun onDestroyView() {
