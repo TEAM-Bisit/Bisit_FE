@@ -12,8 +12,8 @@ import androidx.fragment.app.DialogFragment
 import com.example.bisit.R
 
 class SortOptionDialog(
-    private var isRecent: Boolean = true,
-    private val onSortSelected: ((Boolean) -> Unit)? = null
+    private var currentSort: String = "recent",
+    private val onSortSelected: ((String) -> Unit)? = null
 ) : DialogFragment() {
 
     override fun onCreateView(
@@ -29,18 +29,20 @@ class SortOptionDialog(
 
         updateUI(optionRecent, optionOldest)
 
+        // 최근순
         optionRecent.setOnClickListener {
-            isRecent = true
+            currentSort = "recent"
             updateUI(optionRecent, optionOldest)
         }
 
+        // 오래된순
         optionOldest.setOnClickListener {
-            isRecent = false
+            currentSort = "oldest"
             updateUI(optionRecent, optionOldest)
         }
 
         btnSave.setOnClickListener {
-            onSortSelected?.invoke(isRecent)
+            onSortSelected?.invoke(currentSort)
             dismiss()
         }
 
@@ -65,16 +67,22 @@ class SortOptionDialog(
         val selectedColor = "#4076FF".toColorInt()
         val unselectedColor = "#6D7583".toColorInt()
 
-        if (isRecent) {
-            recentView.setCompoundDrawablesWithIntrinsicBounds(null, null, checkBlue, null)
-            oldestView.setCompoundDrawablesWithIntrinsicBounds(null, null, checkGray, null)
-            recentView.setTextColor(selectedColor)
-            oldestView.setTextColor(unselectedColor)
-        } else {
-            recentView.setCompoundDrawablesWithIntrinsicBounds(null, null, checkGray, null)
-            oldestView.setCompoundDrawablesWithIntrinsicBounds(null, null, checkBlue, null)
-            recentView.setTextColor(unselectedColor)
-            oldestView.setTextColor(selectedColor)
-        }
+        val isRecentSelected = currentSort == "recent"
+
+        // recent UI
+        recentView.setCompoundDrawablesWithIntrinsicBounds(
+            null, null,
+            if (isRecentSelected) checkBlue else checkGray,
+            null
+        )
+        recentView.setTextColor(if (isRecentSelected) selectedColor else unselectedColor)
+
+        // oldest UI
+        oldestView.setCompoundDrawablesWithIntrinsicBounds(
+            null, null,
+            if (!isRecentSelected) checkBlue else checkGray,
+            null
+        )
+        oldestView.setTextColor(if (!isRecentSelected) selectedColor else unselectedColor)
     }
 }

@@ -9,7 +9,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <!-- 예약 상태 + 예약 번호 -->
+    <!-- 상태 + 예약번호 -->
     <LinearLayout
         android:orientation="vertical"
         android:layout_marginHorizontal="20dp"
@@ -19,20 +19,20 @@
         <TextView
             android:id="@+id/tvStatus"
             android:text="예약 확정"
-            android:textColor="#FE6B6B"
-            android:textSize="14sp"
+            android:textColor="#4076FF"
             android:textStyle="bold"
+            android:textSize="14sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
         <LinearLayout
             android:orientation="horizontal"
             android:layout_marginTop="4dp"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/labelReservationId"
+                android:id="@+id/tvReservationNumber"
                 android:text="예약 번호"
                 android:textColor="#9AA1AF"
                 android:textSize="13sp"
@@ -41,7 +41,7 @@
 
             <TextView
                 android:id="@+id/tvReservationId"
-                android:text="fhEheoqkr777"
+                android:text="123456"
                 android:textColor="#9AA1AF"
                 android:textSize="13sp"
                 android:layout_marginStart="6dp"
@@ -51,27 +51,28 @@
     </LinearLayout>
 
     <View
+        android:id="@+id/spacer"
         android:layout_marginHorizontal="20dp"
         android:layout_marginTop="10dp"
+        android:layout_marginBottom="12dp"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#F0F2F5" />
 
-    <!-- 시술명 / 시간 / 주소 -->
+    <!-- 시술명 / 날짜 / 고객 이름 -->
     <LinearLayout
         android:orientation="vertical"
         android:layout_marginHorizontal="20dp"
-        android:layout_marginTop="12dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <!-- 시술명 -->
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/labelProcedure"
                 android:text="@string/today_label_procedure"
                 android:textColor="#9AA1AF"
                 android:textSize="14sp"
@@ -88,6 +89,7 @@
                 android:layout_height="wrap_content" />
         </LinearLayout>
 
+        <!-- 날짜 -->
         <LinearLayout
             android:orientation="horizontal"
             android:layout_marginTop="12dp"
@@ -95,7 +97,6 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/labelDate"
                 android:text="@string/today_label_date"
                 android:textColor="#9AA1AF"
                 android:textSize="14sp"
@@ -112,6 +113,7 @@
                 android:layout_height="wrap_content" />
         </LinearLayout>
 
+        <!-- 이름 -->
         <LinearLayout
             android:orientation="horizontal"
             android:layout_marginTop="12dp"
@@ -119,7 +121,30 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/labelAddress"
+                android:text="이름"
+                android:textColor="#9AA1AF"
+                android:textSize="14sp"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/tvName"
+                android:text="김고객"
+                android:textColor="#222222"
+                android:textSize="14sp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- 주소 -->
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
                 android:text="@string/today_label_address"
                 android:textColor="#9AA1AF"
                 android:textSize="14sp"
@@ -128,7 +153,7 @@
 
             <TextView
                 android:id="@+id/tvAddress"
-                android:text="서울특별시 강남구 논현로 45길 12"
+                android:text="경상북도 경산시 하양읍 대학로 298길 20-9 롯데아파트 101동 111호"
                 android:textColor="#222222"
                 android:textSize="14sp"
                 android:layout_width="0dp"
@@ -137,16 +162,49 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- 상태 변경 버튼 -->
+    <!-- 승인/거절 버튼 (PENDING 탭 전용) -->
+    <LinearLayout
+        android:id="@+id/layoutPendingButtons"
+        android:orientation="horizontal"
+        android:layout_marginTop="20dp"
+        android:layout_marginHorizontal="20dp"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnReject"
+            android:text="거절하기"
+            android:textColor="#515965"
+            app:cornerRadius="8dp"
+            app:backgroundTint="#F0F2F5"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="48dp" />
+
+        <View
+            android:layout_width="12dp"
+            android:layout_height="1dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnApprove"
+            android:text="승인하기"
+            android:textColor="#FEFEFE"
+            app:cornerRadius="8dp"
+            app:backgroundTint="#4076FF"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="48dp" />
+    </LinearLayout>
+
+    <!-- 상태 변경 버튼 (CONFIRMED 탭 전용) -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnChangeStatus"
         android:text="상태 변경"
         android:stateListAnimator="@null"
-        android:textColor="#FE6B6B"
-        app:backgroundTint="#FEFEFE"
+        android:textColor="#4076FF"
+        app:backgroundTint="#EBF1FF"
         app:cornerRadius="8dp"
-        app:strokeColor="#D7DBDF"
-        app:strokeWidth="1dp"
         android:insetTop="0dp"
         android:insetBottom="0dp"
         android:layout_marginTop="23dp"
@@ -154,4 +212,5 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:textSize="15sp" />
+
 </LinearLayout>

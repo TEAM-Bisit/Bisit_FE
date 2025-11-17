@@ -32,7 +32,7 @@
         android:letterSpacing="-0.02"
         android:clickable="true"
         android:focusable="true"
-        app:drawableEndCompat="@drawable/ic_check_red"
+        app:drawableEndCompat="@drawable/ic_check_blue"
         tools:ignore="TouchTargetSizeCheck" />
 
     <TextView

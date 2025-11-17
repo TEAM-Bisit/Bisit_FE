@@ -70,5 +70,6 @@
         android:textColor="@android:color/white"
         android:stateListAnimator="@null"
         android:textSize="15sp"
-        android:background="@drawable/bg_button_red" />
+        android:gravity="center"
+        android:background="@drawable/bg_button_blue" />
 </LinearLayout>
