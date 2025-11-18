@@ -10,53 +10,66 @@
     android:paddingTop="14dp"
     android:paddingBottom="14dp">
 
-    <View
+    <ProgressBar
         android:id="@+id/step1_bar"
+        style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="0dp"
         android:layout_height="2dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:background="@color/stepper_line_color"
+        android:max="100"
+        android:progress="0"
+        android:progressDrawable="@drawable/progress_stepper_bar"
         app:layout_constraintBottom_toBottomOf="@id/step1_icon"
         app:layout_constraintEnd_toEndOf="@+id/step2_icon"
         app:layout_constraintStart_toStartOf="@+id/step1_icon"
         app:layout_constraintTop_toTopOf="@id/step1_icon" />
 
-    <View
+    <ProgressBar
         android:id="@+id/step2_bar"
+        style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="0dp"
         android:layout_height="2dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:background="@color/stepper_line_color"
+        android:max="100"
+        android:progress="0"
+        android:progressDrawable="@drawable/progress_stepper_bar"
         app:layout_constraintBottom_toBottomOf="@id/step1_icon"
         app:layout_constraintEnd_toEndOf="@+id/step3_icon"
         app:layout_constraintStart_toStartOf="@+id/step2_icon"
         app:layout_constraintTop_toTopOf="@id/step1_icon" />
 
-    <View
+    <ProgressBar
         android:id="@+id/step3_bar"
+        style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="0dp"
         android:layout_height="2dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:background="@color/stepper_line_color"
+        android:max="100"
+        android:progress="0"
+        android:progressDrawable="@drawable/progress_stepper_bar"
         app:layout_constraintBottom_toBottomOf="@id/step1_icon"
         app:layout_constraintEnd_toEndOf="@+id/step4_icon"
         app:layout_constraintStart_toStartOf="@+id/step3_icon"
         app:layout_constraintTop_toTopOf="@id/step1_icon" />
 
-    <View
+    <ProgressBar
         android:id="@+id/step4_bar"
+        style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="0dp"
         android:layout_height="2dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:background="@color/stepper_line_color"
+        android:max="100"
+        android:progress="0"
+        android:progressDrawable="@drawable/progress_stepper_bar"
         app:layout_constraintBottom_toBottomOf="@id/step1_icon"
         app:layout_constraintEnd_toEndOf="@+id/step5_icon"
         app:layout_constraintStart_toStartOf="@+id/step4_icon"
         app:layout_constraintTop_toTopOf="@id/step1_icon" />
+
 
     <TextView
         android:id="@+id/step1_text"
@@ -174,6 +187,5 @@
         app:layout_constraintStart_toStartOf="@+id/step5_text"
         app:layout_constraintTop_toTopOf="@id/step1_icon"
         tools:ignore="ContentDescription" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

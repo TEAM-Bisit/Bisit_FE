@@ -1,9 +1,11 @@
 package com.example.bisit.ui.signUp
 
+import android.animation.ObjectAnimator // ★ 애니메이션용 Import
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.DecelerateInterpolator // ★ 애니메이션용 Import
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.bisit.R
@@ -107,72 +109,77 @@ class OwnerOnboardingFragment : Fragment() {
         // 3. Stepper UI 업데이트
 
         // 리소스 가져오기
-        val passedDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.stepper_circle_passed) // 꽉 찬 파란원
-        val activeDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.stepper_circle_active) // 링 모양
-        val inactiveDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.stepper_circle_inactive) // 작은 회색원
+        val passedDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.stepper_circle_passed)
+        val activeDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.stepper_circle_active)
+        val inactiveDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.stepper_circle_inactive)
 
         val activeText = ContextCompat.getColor(requireContext(), R.color.stepper_text_active)
         val inactiveText = ContextCompat.getColor(requireContext(), R.color.stepper_text_inactive)
 
-        val barActiveColor = ContextCompat.getColor(requireContext(), R.color.stepper_bar_active)
-        val barInactiveColor = ContextCompat.getColor(requireContext(), R.color.stepper_bar_inactive)
-
         // 뷰 리스트
         val allIcons = listOf(stepperBinding.step1Icon, stepperBinding.step2Icon, stepperBinding.step3Icon, stepperBinding.step4Icon, stepperBinding.step5Icon)
         val allTexts = listOf(stepperBinding.step1Text, stepperBinding.step2Text, stepperBinding.step3Text, stepperBinding.step4Text, stepperBinding.step5Text)
+        // ★ ProgressBar 리스트 (XML에서 View -> ProgressBar로 변경했으므로 자동으로 인식됨)
         val allBars = listOf(stepperBinding.step1Bar, stepperBinding.step2Bar, stepperBinding.step3Bar, stepperBinding.step4Bar)
 
-        // ★ 사이즈 리소스 가져오기 (dimens.xml에서 정의된 18dp, 8dp)
+        // 사이즈 리소스 가져오기
         val activeSize = resources.getDimensionPixelSize(R.dimen.stepper_icon_size_active) // 18dp
         val inactiveSize = resources.getDimensionPixelSize(R.dimen.stepper_icon_size_inactive) // 8dp
-
-        // 비활성/지나온 단계 아이콘에 적용할 패딩 계산: (18dp - 8dp) / 2 = 5dp
         val paddingForSmallIcons = (activeSize - inactiveSize) / 2
 
-        // 루프를 돌며 상태에 따라 UI 업데이트
+        // [A] 아이콘 및 텍스트 업데이트
         for (i in allIcons.indices) {
             val stepNum = i + 1
             val icon = allIcons[i]
             val text = allTexts[i]
 
-            // ★ 중요: 뷰의 틀(Frame) 크기는 항상 '큰 사이즈(18dp)'로 고정하여 레이아웃 흔들림 방지
+            // 프레임 크기 고정 (흔들림 방지)
             icon.layoutParams.width = activeSize
             icon.layoutParams.height = activeSize
             icon.requestLayout()
 
             if (stepNum < currentStep) {
-                // [1] 지나온 단계 (Passed) -> 꽉 찬 파란원 (8dp)
-                // ★ 패딩을 주어 시각적으로만 8dp로 만듦
+                // [1] 지나온 단계 (Passed) -> 작은 사이즈(8dp)
                 icon.setPadding(paddingForSmallIcons, paddingForSmallIcons, paddingForSmallIcons, paddingForSmallIcons)
                 icon.setImageDrawable(passedDrawable)
                 text.setTextColor(activeText)
 
-                // 해당 단계 뒤의 바(Bar)도 파란색으로 변경
-                if (i < allBars.size) {
-                    allBars[i].setBackgroundColor(barActiveColor)
-                }
-
             } else if (stepNum == currentStep) {
-                // [2] 현재 단계 (Active) -> 링 모양 (18dp)
+                // [2] 현재 단계 (Active) -> 큰 사이즈(18dp)
                 icon.setPadding(0, 0, 0, 0) // 패딩 제거
                 icon.setImageDrawable(activeDrawable)
                 text.setTextColor(activeText)
 
-                // 현재 단계 뒤의 바는 아직 회색
-                if (i < allBars.size) {
-                    allBars[i].setBackgroundColor(barInactiveColor)
-                }
-
             } else {
-                // [3] 미래 단계 (Inactive) -> 작은 회색원 (8dp)
-                // ★ 패딩을 주어 시각적으로만 8dp로 만듦
+                // [3] 미래 단계 (Inactive) -> 작은 사이즈(8dp)
                 icon.setPadding(paddingForSmallIcons, paddingForSmallIcons, paddingForSmallIcons, paddingForSmallIcons)
                 icon.setImageDrawable(inactiveDrawable)
                 text.setTextColor(inactiveText)
+            }
+        }
 
-                if (i < allBars.size) {
-                    allBars[i].setBackgroundColor(barInactiveColor)
+        // [B] 구분선(Bar) 애니메이션 업데이트
+        for (i in allBars.indices) {
+            val bar = allBars[i]
+            // 해당 Bar가 채워져야 하는 목표 단계 (Bar 0은 Step 2가 될 때 채워짐)
+            val targetStep = i + 2
+
+            if (currentStep >= targetStep) {
+                // 채워져야 하는 상태
+                if (bar.progress < 100) {
+                    // 아직 안 채워져 있다면 애니메이션 실행 (스르륵~)
+                    ObjectAnimator.ofInt(bar, "progress", 0, 100).apply {
+                        duration = 500 // 0.5초 동안
+                        interpolator = DecelerateInterpolator()
+                        start()
+                    }
+                } else {
+                    // 이미 채워져 있다면 유지
+                    bar.progress = 100
                 }
+            } else {
+                // 비워져야 하는 상태 (뒤로가기 시)
+                bar.progress = 0
             }
         }
     }
