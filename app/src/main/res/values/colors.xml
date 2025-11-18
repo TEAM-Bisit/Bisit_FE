@@ -31,4 +31,11 @@
     <color name="stepper_text_inactive">#AAAAAA</color>
     <color name="stepper_line_color">#E0E0E0</color>
 
+    <color name="primary_blue">#3366FF</color> <color name="gray_text">#515965</color>
+    <color name="light_gray_background">#F5F5F5</color>
+    <color name="stepper_circle_active_color">@color/primary_blue</color>
+    <color name="stepper_circle_inactive_color">#E0E0E0</color>
+    <color name="stepper_bar_active">@color/primary_blue</color>
+    <color name="stepper_bar_inactive">#E0E0E0</color>
+
 </resources>

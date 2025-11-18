@@ -43,30 +43,26 @@ class OwnerOnboardingFragment : Fragment() {
             when (currentStep) {
                 1 -> {
                     // 1단계 -> 2단계(매장 등록)로 이동
-//                    replaceChildFragment(StoreInfoFragment.newInstance())
+                    replaceChildFragment(StoreInfoFragment.newInstance())
                     currentStep = 2
                 }
                 2 -> {
                     // 2단계 -> 3단계(매장 소개)로 이동
-                    // replaceChildFragment(StoreIntroFragment.newInstance()) // 3단계 Fragment
+                    // replaceChildFragment(StoreIntroFragment.newInstance())
                     // currentStep = 3
                 }
                 // ... (이후 4, 5단계)
             }
-            // 단계가 변경되었으므로 공통 UI(Stepper, 이전 버튼)를 업데이트
             updateCommonUI()
         }
 
         // 3. '이전으로' 버튼 리스너
         binding.btnPrevious.setOnClickListener {
-            // childFragmentManager의 백스택을 사용해 이전 프래그먼트로 돌아감
             if (childFragmentManager.backStackEntryCount > 0) {
                 childFragmentManager.popBackStack()
                 currentStep--
                 updateCommonUI()
             } else {
-                // 백스택에 아무것도 없으면 (1단계라는 의미)
-                // UserTypeFragment로 돌아가기
                 (activity as? SignUpActivity)?.onBackPressedDispatcher?.onBackPressed()
             }
         }
@@ -75,85 +71,114 @@ class OwnerOnboardingFragment : Fragment() {
         if (savedInstanceState == null) {
             childFragmentManager.beginTransaction()
                 .replace(R.id.owner_onboarding_nav_host, BusinessRegistrationFragment.newInstance())
-                // 첫 프래그먼트는 백스택에 추가하지 않음
                 .commit()
         }
 
-        // 5. 초기 UI 상태 업데이트 (1단계 기준)
+        // 5. 초기 UI 상태 업데이트
         updateCommonUI()
     }
 
-    /**
-     * 자식 프래그먼트를 교체하는 함수
-     */
     private fun replaceChildFragment(fragment: Fragment) {
         childFragmentManager.beginTransaction()
             .replace(R.id.owner_onboarding_nav_host, fragment)
-            .addToBackStack(null) // 뒤로가기를 위해 백스택에 추가
+            .addToBackStack(null)
             .commit()
     }
 
-    /**
-     * 자식 프래그먼트가 '다음' 버튼을 활성화/비활성화할 수 있도록 하는 공용 함수
-     */
     fun setNextButtonEnabled(isEnabled: Boolean) {
         binding.btnNextStep.isEnabled = isEnabled
     }
 
-    /**
-     * 현재 단계(currentStep)에 맞춰 공통 UI(Stepper, 이전 버튼)를 업데이트하는 함수
-     */
     private fun updateCommonUI() {
-        if (_binding == null || _stepperBinding == null) return // 뷰가 없을 땐 중단
+        if (_binding == null || _stepperBinding == null) return
 
-        // 1. '이전으로' 버튼 표시 여부 (1단계에선 숨김)
-        binding.btnPrevious.visibility = if (currentStep > 1) View.VISIBLE else View.GONE
+        // 1. '이전으로' 버튼 처리
+        if (currentStep > 1) {
+            binding.btnPrevious.visibility = View.VISIBLE
+            binding.btnPrevious.isEnabled = true
+        } else {
+            binding.btnPrevious.visibility = View.INVISIBLE
+            binding.btnPrevious.isEnabled = false
+        }
 
-        // 2. '다음 단계' 버튼은 항상 비활성화 (자식 프래그먼트가 직접 활성화해야 함)
+        // 2. '다음 단계' 버튼 초기화
         binding.btnNextStep.isEnabled = false
 
         // 3. Stepper UI 업데이트
 
         // 리소스 가져오기
-        val activeDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.stepper_circle_active)
-        val inactiveDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.stepper_circle_inactive)
+        val passedDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.stepper_circle_passed) // 꽉 찬 파란원
+        val activeDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.stepper_circle_active) // 링 모양
+        val inactiveDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.stepper_circle_inactive) // 작은 회색원
+
         val activeText = ContextCompat.getColor(requireContext(), R.color.stepper_text_active)
         val inactiveText = ContextCompat.getColor(requireContext(), R.color.stepper_text_inactive)
 
-        // 아이콘/텍스트 뷰 리스트
+        val barActiveColor = ContextCompat.getColor(requireContext(), R.color.stepper_bar_active)
+        val barInactiveColor = ContextCompat.getColor(requireContext(), R.color.stepper_bar_inactive)
+
+        // 뷰 리스트
         val allIcons = listOf(stepperBinding.step1Icon, stepperBinding.step2Icon, stepperBinding.step3Icon, stepperBinding.step4Icon, stepperBinding.step5Icon)
         val allTexts = listOf(stepperBinding.step1Text, stepperBinding.step2Text, stepperBinding.step3Text, stepperBinding.step4Text, stepperBinding.step5Text)
+        val allBars = listOf(stepperBinding.step1Bar, stepperBinding.step2Bar, stepperBinding.step3Bar, stepperBinding.step4Bar)
 
-        // 아이콘 크기 (dimens.xml에 정의됨)
-        val activeSize = resources.getDimensionPixelSize(R.dimen.stepper_icon_size_active)
-        val inactiveSize = resources.getDimensionPixelSize(R.dimen.stepper_icon_size_inactive)
+        // ★ 사이즈 리소스 가져오기 (dimens.xml에서 정의된 18dp, 8dp)
+        val activeSize = resources.getDimensionPixelSize(R.dimen.stepper_icon_size_active) // 18dp
+        val inactiveSize = resources.getDimensionPixelSize(R.dimen.stepper_icon_size_inactive) // 8dp
 
-        // 모든 아이콘과 텍스트를 우선 '비활성' 상태로 초기화
-        allIcons.forEach { icon ->
-            icon.setImageDrawable(inactiveDrawable)
-            icon.layoutParams.width = inactiveSize
-            icon.layoutParams.height = inactiveSize
+        // 비활성/지나온 단계 아이콘에 적용할 패딩 계산: (18dp - 8dp) / 2 = 5dp
+        val paddingForSmallIcons = (activeSize - inactiveSize) / 2
+
+        // 루프를 돌며 상태에 따라 UI 업데이트
+        for (i in allIcons.indices) {
+            val stepNum = i + 1
+            val icon = allIcons[i]
+            val text = allTexts[i]
+
+            // ★ 중요: 뷰의 틀(Frame) 크기는 항상 '큰 사이즈(18dp)'로 고정하여 레이아웃 흔들림 방지
+            icon.layoutParams.width = activeSize
+            icon.layoutParams.height = activeSize
             icon.requestLayout()
-        }
-        allTexts.forEach { text ->
-            text.setTextColor(inactiveText)
-        }
 
-        // 현재 단계(currentStep)에 해당하는 아이콘과 텍스트만 '활성' 상태로 변경
-        if (currentStep in 1..allIcons.size) {
-            val activeIcon = allIcons[currentStep - 1]
-            activeIcon.setImageDrawable(activeDrawable)
-            activeIcon.layoutParams.width = activeSize
-            activeIcon.layoutParams.height = activeSize
-            activeIcon.requestLayout()
+            if (stepNum < currentStep) {
+                // [1] 지나온 단계 (Passed) -> 꽉 찬 파란원 (8dp)
+                // ★ 패딩을 주어 시각적으로만 8dp로 만듦
+                icon.setPadding(paddingForSmallIcons, paddingForSmallIcons, paddingForSmallIcons, paddingForSmallIcons)
+                icon.setImageDrawable(passedDrawable)
+                text.setTextColor(activeText)
 
-            allTexts[currentStep - 1].setTextColor(activeText)
+                // 해당 단계 뒤의 바(Bar)도 파란색으로 변경
+                if (i < allBars.size) {
+                    allBars[i].setBackgroundColor(barActiveColor)
+                }
+
+            } else if (stepNum == currentStep) {
+                // [2] 현재 단계 (Active) -> 링 모양 (18dp)
+                icon.setPadding(0, 0, 0, 0) // 패딩 제거
+                icon.setImageDrawable(activeDrawable)
+                text.setTextColor(activeText)
+
+                // 현재 단계 뒤의 바는 아직 회색
+                if (i < allBars.size) {
+                    allBars[i].setBackgroundColor(barInactiveColor)
+                }
+
+            } else {
+                // [3] 미래 단계 (Inactive) -> 작은 회색원 (8dp)
+                // ★ 패딩을 주어 시각적으로만 8dp로 만듦
+                icon.setPadding(paddingForSmallIcons, paddingForSmallIcons, paddingForSmallIcons, paddingForSmallIcons)
+                icon.setImageDrawable(inactiveDrawable)
+                text.setTextColor(inactiveText)
+
+                if (i < allBars.size) {
+                    allBars[i].setBackgroundColor(barInactiveColor)
+                }
+            }
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        // 툴바 제목 원래대로 (예: "회원가입")
         (activity as? SignUpActivity)?.setToolbarTitle("회원가입")
         _stepperBinding = null
         _binding = null

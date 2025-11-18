@@ -10,6 +10,54 @@
     android:paddingTop="14dp"
     android:paddingBottom="14dp">
 
+    <View
+        android:id="@+id/step1_bar"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@color/stepper_line_color"
+        app:layout_constraintBottom_toBottomOf="@id/step1_icon"
+        app:layout_constraintEnd_toEndOf="@+id/step2_icon"
+        app:layout_constraintStart_toStartOf="@+id/step1_icon"
+        app:layout_constraintTop_toTopOf="@id/step1_icon" />
+
+    <View
+        android:id="@+id/step2_bar"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@color/stepper_line_color"
+        app:layout_constraintBottom_toBottomOf="@id/step1_icon"
+        app:layout_constraintEnd_toEndOf="@+id/step3_icon"
+        app:layout_constraintStart_toStartOf="@+id/step2_icon"
+        app:layout_constraintTop_toTopOf="@id/step1_icon" />
+
+    <View
+        android:id="@+id/step3_bar"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@color/stepper_line_color"
+        app:layout_constraintBottom_toBottomOf="@id/step1_icon"
+        app:layout_constraintEnd_toEndOf="@+id/step4_icon"
+        app:layout_constraintStart_toStartOf="@+id/step3_icon"
+        app:layout_constraintTop_toTopOf="@id/step1_icon" />
+
+    <View
+        android:id="@+id/step4_bar"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@color/stepper_line_color"
+        app:layout_constraintBottom_toBottomOf="@id/step1_icon"
+        app:layout_constraintEnd_toEndOf="@+id/step5_icon"
+        app:layout_constraintStart_toStartOf="@+id/step4_icon"
+        app:layout_constraintTop_toTopOf="@id/step1_icon" />
+
     <TextView
         android:id="@+id/step1_text"
         android:layout_width="wrap_content"
@@ -71,17 +119,6 @@
         app:layout_constraintStart_toEndOf="@+id/step4_text"
         app:layout_constraintTop_toTopOf="@id/step1_text" />
 
-    <View
-        android:id="@+id/stepper_line"
-        android:layout_width="0dp"
-        android:layout_height="2dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:background="@color/stepper_line_color"
-        app:layout_constraintBottom_toBottomOf="@id/step1_icon"
-        app:layout_constraintEnd_toEndOf="@id/step5_icon"
-        app:layout_constraintStart_toStartOf="@id/step1_icon"
-        app:layout_constraintTop_toTopOf="@id/step1_icon" />
 
     <ImageView
         android:id="@+id/step1_icon"
@@ -96,8 +133,8 @@
 
     <ImageView
         android:id="@+id/step2_icon"
-        android:layout_width="12dp"
-        android:layout_height="12dp"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
         android:src="@drawable/stepper_circle_inactive"
         app:layout_constraintBottom_toBottomOf="@id/step1_icon"
         app:layout_constraintEnd_toEndOf="@+id/step2_text"
@@ -107,8 +144,8 @@
 
     <ImageView
         android:id="@+id/step3_icon"
-        android:layout_width="12dp"
-        android:layout_height="12dp"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
         android:src="@drawable/stepper_circle_inactive"
         app:layout_constraintBottom_toBottomOf="@id/step1_icon"
         app:layout_constraintEnd_toEndOf="@+id/step3_text"
@@ -118,8 +155,8 @@
 
     <ImageView
         android:id="@+id/step4_icon"
-        android:layout_width="12dp"
-        android:layout_height="12dp"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
         android:src="@drawable/stepper_circle_inactive"
         app:layout_constraintBottom_toBottomOf="@id/step1_icon"
         app:layout_constraintEnd_toEndOf="@+id/step4_text"
@@ -129,13 +166,14 @@
 
     <ImageView
         android:id="@+id/step5_icon"
-        android:layout_width="12dp"
-        android:layout_height="12dp"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
         android:src="@drawable/stepper_circle_inactive"
         app:layout_constraintBottom_toBottomOf="@id/step1_icon"
         app:layout_constraintEnd_toEndOf="@+id/step5_text"
         app:layout_constraintStart_toStartOf="@+id/step5_text"
         app:layout_constraintTop_toTopOf="@id/step1_icon"
         tools:ignore="ContentDescription" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
