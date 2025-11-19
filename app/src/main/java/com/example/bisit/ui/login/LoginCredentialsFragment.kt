@@ -59,7 +59,19 @@ class LoginCredentialsFragment : Fragment() {
         viewModel.loginResult.observe(viewLifecycleOwner) { isSuccess ->
             if (isSuccess) {
                 Toast.makeText(context, "로그인 성공!", Toast.LENGTH_SHORT).show()
+
                 val intent = Intent(requireContext(), MainActivity::class.java)
+
+                // 임시로 id에 따른 분기처리
+                val inputId = binding.etId.text.toString()
+                val userType = when (inputId) {
+                    "rlatkwkd" -> "owner"
+                    "rlathssla" -> "customer"
+                    else -> "customer"
+                }
+
+                intent.putExtra("USER_TYPE", userType)
+
                 startActivity(intent)
                 requireActivity().finish()
             }
@@ -69,6 +81,7 @@ class LoginCredentialsFragment : Fragment() {
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
+
     private fun setupTextWatchers() {
         val textWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
