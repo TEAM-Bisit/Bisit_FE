@@ -22,59 +22,43 @@ class AddressSearchActivity : AppCompatActivity() {
 
         webView = findViewById(R.id.webView)
 
-        val s: WebSettings = webView.settings
-        s.javaScriptEnabled = true
-        s.domStorageEnabled = true
-        s.allowFileAccess = true
-        s.javaScriptCanOpenWindowsAutomatically = true
+        val settings = webView.settings
 
-        // WebViewClient / ChromeClient 반드시 기본값 설정!
+        // 기본
+        settings.javaScriptEnabled = true
+        settings.domStorageEnabled = true
+        settings.javaScriptCanOpenWindowsAutomatically = true
+
+        // asset + https 혼합 콘텐츠 허용
+        settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+
+        // asset에서 JS 로딩 허용
+        settings.allowFileAccess = true
+        settings.allowContentAccess = true
+        settings.allowFileAccessFromFileURLs = true
+        settings.allowUniversalAccessFromFileURLs = true
+
+        // 핵심
         webView.webViewClient = WebViewClient()
+
+        // 🔥 popup / window.open 지원 필수
         webView.webChromeClient = WebChromeClient()
 
-        // JS → Android 통신 브리지
-        webView.addJavascriptInterface(AndroidBridge(), "Android")
+        // 🔥 HTML과 동일한 이름으로 JS 인터페이스 등록
+        webView.addJavascriptInterface(AndroidBridge(), "AndroidBridge")
 
-        // 로컬 HTML 로드
-        webView.loadUrl("file:///android_asset/postcode_naver.html")
+        // HTML 로드
+        webView.loadUrl("file:///android_asset/daum_postcode.html")
     }
 
     inner class AndroidBridge {
         @JavascriptInterface
-        fun onAddressSelected(
-            display: String?,
-            lat: String?,
-            lng: String?,
-            road: String?,
-            jibun: String?
-        ) {
-            runOnUiThread {
-                val intent = Intent().apply {
-                    putExtra("selectedAddress", display ?: "")
-                    putExtra("lat", lat ?: "")
-                    putExtra("lng", lng ?: "")
-                    putExtra("roadAddress", road ?: "")
-                    putExtra("jibunAddress", jibun ?: "")
-                }
-                setResult(Activity.RESULT_OK, intent)
-                finish()
+        fun onAddressSelected(address: String?) {
+            val resultIntent = Intent().apply {
+                putExtra("selectedAddress", address ?: "")
             }
+            setResult(Activity.RESULT_OK, resultIntent)
+            finish()
         }
-    }
-
-    override fun onDestroy() {
-        try {
-            webView.removeJavascriptInterface("Android")
-            webView.stopLoading()
-
-            // null 대입 불가 → 빈 객체로 재등록
-            webView.webViewClient = WebViewClient()
-            webView.webChromeClient = WebChromeClient()
-
-            webView.destroy()
-        } catch (_: Exception) {
-        }
-
-        super.onDestroy()
     }
 }

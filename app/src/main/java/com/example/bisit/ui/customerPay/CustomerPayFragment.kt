@@ -23,13 +23,9 @@ class CustomerPayFragment : Fragment() {
         ActivityResultContracts.StartActivityForResult()
     ) { result: ActivityResult ->
         if (result.resultCode == Activity.RESULT_OK) {
-            val data = result.data
-            val addr = data?.getStringExtra("selectedAddress") ?: ""
-            val road = data?.getStringExtra("roadAddress") ?: ""
-            val jibun = data?.getStringExtra("jibunAddress") ?: ""
-
-            binding.tvSelectedAddress.text =
-                if (addr.isNotEmpty()) addr else (road.ifEmpty { jibun })
+            val addr = result.data?.getStringExtra("selectedAddress") ?: ""
+            binding.tvSelectedAddress.text = addr
+            binding.etDetailAddress.requestFocus()
         }
     }
 
@@ -69,23 +65,9 @@ class CustomerPayFragment : Fragment() {
     }
 
     private fun setupExpandableLayouts() {
-        setupExpandable(
-            header = binding.headerSellerInfo,
-            content = binding.contentSellerInfo,
-            arrow = binding.sellerArrow
-        )
-
-        setupExpandable(
-            header = binding.headerPrivacyInfo,
-            content = binding.contentPrivacyInfo,
-            arrow = binding.privacyArrow
-        )
-
-        setupExpandable(
-            header = binding.headerCancelRule,
-            content = binding.contentCancelRule,
-            arrow = binding.cancelArrow
-        )
+        setupExpandable(binding.headerSellerInfo, binding.contentSellerInfo, binding.sellerArrow)
+        setupExpandable(binding.headerPrivacyInfo, binding.contentPrivacyInfo, binding.privacyArrow)
+        setupExpandable(binding.headerCancelRule, binding.contentCancelRule, binding.cancelArrow)
     }
 
     private fun setupExpandable(header: View, content: View, arrow: ImageView) {
