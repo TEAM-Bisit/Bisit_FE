@@ -141,7 +141,23 @@
         android:id="@+id/customerReserveFragment"
         android:name="com.example.bisit.ui.customerReserve.CustomerReserveFragment"
         android:label="fragment_customer_reserve"
-        tools:layout="@layout/fragment_customer_reserve" />
+        tools:layout="@layout/fragment_customer_reserve" >
+
+    <action
+        android:id="@+id/action_customerReserveFragment_to_customerPayFragment"
+        app:destination="@id/customerPayFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/customerPayFragment"
+        android:name="com.example.bisit.ui.customerPay.CustomerPayFragment"
+        android:label="fragment_customer_pay"
+        tools:layout="@layout/fragment_customer_pay">
+
+        <action
+            android:id="@+id/action_customerPayFragment_to_customerPayCouponFragment"
+            app:destination="@+id/customerPayCouponFragment"/>
+    </fragment>
 
     <fragment
         android:id="@+id/todayReservFragment"
@@ -268,5 +284,12 @@
         android:name="com.example.bisit.ui.myPage.terms.MyPageTerm4Fragment"
         android:label="fragment_my_page_term4"
         tools:layout="@layout/fragment_my_page_term4" />
+
+    <fragment
+        android:id="@+id/customerPayCouponFragment"
+        android:name="com.example.bisit.ui.customerPay.CustomerPayCouponFragment"
+        android:label="fragment_customer_pay_coupon"
+        tools:layout="@layout/fragment_customer_pay_coupon"/>
+
 
 </navigation>

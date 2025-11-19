@@ -10,6 +10,7 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.example.bisit.R
 import com.example.bisit.databinding.FragmentCustomerReserveBinding
 import com.example.bisit.widget.StepProgressView
@@ -64,9 +65,11 @@ class CustomerReserveFragment : Fragment() {
         stepView.setCurrentStep(currentStep)
         stepView.setPadding(24, 20, 24, 20)
 
+        // ⭐ 다음 단계 버튼 누르면 CustomerPayFragment 로 이동 ⭐
         binding.btnNextStep.setOnClickListener {
-            currentStep = (currentStep + 1).coerceAtMost(stepLabels.size - 1)
-            stepView.setCurrentStep(currentStep)
+            findNavController().navigate(
+                R.id.action_customerReserveFragment_to_customerPayFragment
+            )
         }
     }
 
