@@ -52,13 +52,15 @@ class CustomerPayFragment : Fragment() {
         }
     }
 
+import androidx.core.content.ContextCompat
+
     private fun setupCheckBox() {
         binding.cbAgree.setOnCheckedChangeListener { _, isChecked ->
             binding.btnPay.apply {
                 isEnabled = isChecked
-                backgroundTintList = resources.getColorStateList(
-                    if (isChecked) R.color.blue_4076FF else R.color.gray,
-                    null
+                backgroundTintList = ContextCompat.getColorStateList(
+                    requireContext(),
+                    if (isChecked) R.color.blue_4076FF else R.color.gray
                 )
             }
         }
