@@ -134,6 +134,7 @@ class MyPageOwnerEditFragment : Fragment() {
                         binding.etPhone2.visibility = View.VISIBLE
                         binding.btnVerify2.visibility = View.VISIBLE
 
+                        binding.etPhone.isEnabled = false
                         binding.btnVerify.text = "발송됨"
                         binding.btnVerify.isEnabled = false
 
