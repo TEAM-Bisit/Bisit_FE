@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.bisit.R
@@ -36,6 +35,10 @@ class MyPageOwnerEditFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMyPageOwnerEditBinding.inflate(inflater, container, false)
+
+        binding.btnBook.isEnabled = false
+        binding.btnBook.backgroundTintList =
+            resources.getColorStateList(R.color.gray, null)
 
         binding.btnBack.setOnClickListener { findNavController().popBackStack() }
 
@@ -78,32 +81,24 @@ class MyPageOwnerEditFragment : Fragment() {
 
         phoneEt.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-
                 val phone = s.toString().trim()
                 Log.d("SMS_DEBUG", "전화번호 입력됨: $phone")
-
-                val isValid = phone.length >= 10 && phone.startsWith("0")
-                verifyBtn.isEnabled = isValid
+                verifyBtn.isEnabled = phone.length >= 10 && phone.startsWith("0")
             }
-
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
         verifyBtn.setOnClickListener {
             val phone = phoneEt.text.toString().trim()
-
             Log.d("SMS_DEBUG", "번호 인증 버튼 클릭됨. 보내는 번호 = $phone")
-
             sendSms(phone)
         }
 
         codeEt.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-                Log.d("SMS_DEBUG", "인증번호 입력: ${s.toString()}")
                 completeBtn.isEnabled = !s.isNullOrEmpty()
             }
-
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
@@ -111,9 +106,7 @@ class MyPageOwnerEditFragment : Fragment() {
         completeBtn.setOnClickListener {
             val phone = phoneEt.text.toString().trim()
             val code = codeEt.text.toString().trim()
-
             Log.d("SMS_DEBUG", "인증번호 확인 클릭됨. phone=$phone, code=$code")
-
             verifySms(phone, code)
         }
     }
@@ -122,21 +115,19 @@ class MyPageOwnerEditFragment : Fragment() {
 
         Log.d("SMS_DEBUG", "SMS 발송 요청: $phone")
 
-        val body = mapOf("phoneNumber" to phone)
+        smsApi.sendSms(mapOf("phoneNumber" to phone))
+            .enqueue(object : Callback<com.example.bisit.data.model.mypage.SmsResponse> {
 
-        smsApi.sendSms(body).enqueue(object :
-            Callback<com.example.bisit.data.model.mypage.SmsResponse> {
+                override fun onResponse(
+                    call: Call<com.example.bisit.data.model.mypage.SmsResponse>,
+                    response: Response<com.example.bisit.data.model.mypage.SmsResponse>
+                ) {
+                    Log.d(
+                        "SMS_DEBUG",
+                        "sendSms 응답 수신: code=${response.code()}, body=${response.body()}"
+                    )
 
-            override fun onResponse(
-                call: Call<com.example.bisit.data.model.mypage.SmsResponse>,
-                response: Response<com.example.bisit.data.model.mypage.SmsResponse>
-            ) {
-
-                Log.d("SMS_DEBUG", "sendSms 응답 수신: code=${response.code()}, body=${response.body()}")
-
-                if (response.isSuccessful) {
-
-                    if (response.body()?.success == true) {
+                    if (response.isSuccessful && response.body()?.success == true) {
 
                         Log.d("SMS_DEBUG", "SMS 발송 성공!")
 
@@ -147,31 +138,27 @@ class MyPageOwnerEditFragment : Fragment() {
                         binding.btnVerify.isEnabled = false
 
                     } else {
-                        Log.e("SMS_DEBUG", "SMS 발송 실패: success=false")
+                        Log.e("SMS_DEBUG", "SMS 발송 실패: ${response.errorBody()?.string()}")
                     }
-
-                } else {
-                    Log.e("SMS_DEBUG", "sendSms 응답 실패: ${response.errorBody()?.string()}")
                 }
-            }
 
-            override fun onFailure(
-                call: Call<com.example.bisit.data.model.mypage.SmsResponse>,
-                t: Throwable
-            ) {
-                Log.e("SMS_DEBUG", "sendSms 통신 오류: ${t.message}")
-            }
-        })
+                override fun onFailure(
+                    call: Call<com.example.bisit.data.model.mypage.SmsResponse>,
+                    t: Throwable
+                ) {
+                    Log.e("SMS_DEBUG", "sendSms 통신 오류: ${t.message}")
+                }
+            })
     }
 
     private fun verifySms(phone: String, code: String) {
 
-        val body = mapOf(
-            "phoneNumber" to phone,
-            "code" to code
-        )
-
-        smsApi.verifySms(body).enqueue(object :
+        smsApi.verifySms(
+            mapOf(
+                "phoneNumber" to phone,
+                "code" to code
+            )
+        ).enqueue(object :
             Callback<com.example.bisit.data.model.mypage.SmsVerifyResponse> {
 
             override fun onResponse(
@@ -179,7 +166,10 @@ class MyPageOwnerEditFragment : Fragment() {
                 response: Response<com.example.bisit.data.model.mypage.SmsVerifyResponse>
             ) {
 
-                Log.d("SMS_DEBUG", "verifySms 응답: code=${response.code()}, body=${response.body()}")
+                Log.d(
+                    "SMS_DEBUG",
+                    "verifySms 응답: code=${response.code()}, body=${response.body()}"
+                )
 
                 if (response.isSuccessful && response.body()?.data?.verified == true) {
 

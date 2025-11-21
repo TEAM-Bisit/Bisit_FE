@@ -11,7 +11,7 @@
         android:layout_height="56dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:layout_marginTop="14dp"
+        android:layout_marginTop="24dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -168,13 +168,13 @@
         android:layout_width="0dp"
         android:layout_height="56dp"
         android:layout_margin="16dp"
-        android:backgroundTint="#4076FF"
+        android:backgroundTint="#BDBDBD"
+        android:enabled="false"
         android:text="저장하기"
         android:textColor="@color/white"
         android:textSize="16sp"
         app:cornerRadius="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
+        app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

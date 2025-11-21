@@ -10,7 +10,6 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.bisit.databinding.FragmentMyPageEditBinding
 import com.example.bisit.data.api.RetrofitClient
-import com.example.bisit.data.api.SMSApiService
 import com.example.bisit.data.model.mypage.SmsResponse
 import com.example.bisit.data.model.mypage.SmsVerifyResponse
 import retrofit2.Call
@@ -130,8 +129,8 @@ class MyPageEditFragment : Fragment() {
                         binding.btnBook.isEnabled = true
                         binding.btnBook.backgroundTintList =
                             resources.getColorStateList(com.example.bisit.R.color.blue_4076FF, null)
-
-                    } else {
+                    }
+                    else {
                         Log.e("SMS_DEBUG", "인증 실패 또는 verified=false")
                     }
                 }
