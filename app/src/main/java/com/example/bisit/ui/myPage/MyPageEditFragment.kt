@@ -127,8 +127,12 @@ class MyPageEditFragment : Fragment() {
                         binding.etPhone2.isEnabled = false
 
                         binding.btnBook.isEnabled = true
+import androidx.core.content.ContextCompat
+
+// ... (other code)
+
                         binding.btnBook.backgroundTintList =
-                            resources.getColorStateList(com.example.bisit.R.color.blue_4076FF, null)
+                            ContextCompat.getColorStateList(requireContext(), com.example.bisit.R.color.blue_4076FF)
                     }
                     else {
                         Log.e("SMS_DEBUG", "인증 실패 또는 verified=false")
