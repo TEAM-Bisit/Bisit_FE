@@ -30,7 +30,6 @@ class MainActivity : AppCompatActivity() {
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
 
-        // NavGraph 불러오기
         val navGraph = navController.navInflater.inflate(R.navigation.nav_graph)
 
         if (userType == "owner") {
@@ -41,7 +40,6 @@ class MainActivity : AppCompatActivity() {
 
         navController.graph = navGraph
 
-        // BottomNavigation과 NavController 연결
         NavigationUI.setupWithNavController(binding.bottomNavView, navController)
     }
 

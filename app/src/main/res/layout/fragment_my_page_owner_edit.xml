@@ -14,7 +14,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/btnBook"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -222,7 +223,8 @@
         android:layout_width="0dp"
         android:layout_height="56dp"
         android:layout_margin="16dp"
-        android:backgroundTint="#4076FF"
+        android:backgroundTint="#BDBDBD"
+        android:enabled="false"
         android:text="저장하기"
         android:textColor="@color/white"
         android:textSize="16sp"
@@ -230,5 +232,4 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

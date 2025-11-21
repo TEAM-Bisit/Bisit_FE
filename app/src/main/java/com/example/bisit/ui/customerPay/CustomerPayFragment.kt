@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.bisit.R
@@ -52,7 +53,6 @@ class CustomerPayFragment : Fragment() {
         }
     }
 
-import androidx.core.content.ContextCompat
 
     private fun setupCheckBox() {
         binding.cbAgree.setOnCheckedChangeListener { _, isChecked ->

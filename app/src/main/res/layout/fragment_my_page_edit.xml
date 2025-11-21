@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@color/white">
 
     <LinearLayout
+        android:id="@+id/topBar"
         android:layout_width="match_parent"
         android:layout_height="56dp"
+        android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:layout_marginTop="14dp">
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <ImageButton
             android:id="@+id/btn_back"
@@ -29,112 +34,147 @@
     </LinearLayout>
 
     <View
-        android:layout_width="match_parent"
+        android:id="@+id/divider"
+        android:layout_width="0dp"
         android:layout_height="1dp"
-        android:background="#EAEAEA" />
+        android:background="#EAEAEA"
+        app:layout_constraintTop_toBottomOf="@id/topBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="이름"
-        android:textSize="14sp"
-        android:layout_marginTop="20dp"
-        android:layout_marginStart="18dp"
-        android:layout_marginBottom="8dp"/>
+    <ScrollView
+        android:id="@+id/contentScroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/divider"
+        app:layout_constraintBottom_toTopOf="@id/btnBook"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <EditText
-        android:id="@+id/et_name"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@drawable/bg_edittext"
-        android:layout_marginStart="18dp"
-        android:layout_marginEnd="18dp"
-        android:paddingStart="14dp"
-        android:text="김비짓" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="이메일"
-        android:textSize="14sp"
-        android:layout_marginTop="20dp"
-        android:layout_marginStart="18dp"
-        android:layout_marginBottom="8dp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="이름"
+                android:textSize="14sp"
+                android:layout_marginTop="20dp"
+                android:layout_marginStart="18dp"
+                android:layout_marginBottom="8dp"/>
 
-    <EditText
-        android:id="@+id/et_email"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@drawable/bg_edittext"
-        android:layout_marginStart="18dp"
-        android:layout_marginEnd="18dp"
-        android:paddingStart="14dp"
-        android:text="bisitbisit123@naver.com" />
+            <EditText
+                android:id="@+id/et_name"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_edittext"
+                android:layout_marginStart="18dp"
+                android:layout_marginEnd="18dp"
+                android:paddingStart="14dp"
+                android:text="김비짓" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="연락처"
-        android:textSize="14sp"
-        android:layout_marginTop="20dp"
-        android:layout_marginStart="18dp"
-        android:layout_marginBottom="8dp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="이메일"
+                android:textSize="14sp"
+                android:layout_marginTop="20dp"
+                android:layout_marginStart="18dp"
+                android:layout_marginBottom="8dp"/>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:orientation="horizontal">
+            <EditText
+                android:id="@+id/et_email"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_edittext"
+                android:layout_marginStart="18dp"
+                android:layout_marginEnd="18dp"
+                android:paddingStart="14dp"
+                android:text="bisitbisit123@naver.com" />
 
-        <EditText
-            android:id="@+id/et_phone"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:background="@drawable/bg_edittext"
-            android:layout_marginStart="18dp"
-            android:paddingStart="14dp"
-            android:hint="010-0000-0000" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="연락처"
+                android:textSize="14sp"
+                android:layout_marginTop="20dp"
+                android:layout_marginStart="18dp"
+                android:layout_marginBottom="8dp" />
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btn_verify"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginStart="6dp"
-            android:layout_marginEnd="18dp"
-            android:text="번호 인증"
-            android:enabled="false"
-            android:textColor="@color/text_my_page_phone_selector"
-            android:background="@drawable/bg_my_page_phone_selector"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:orientation="horizontal">
 
-    </LinearLayout>
+                <EditText
+                    android:id="@+id/et_phone"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_edittext"
+                    android:layout_marginStart="18dp"
+                    android:paddingStart="14dp"
+                    android:hint="010-0000-0000" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:orientation="horizontal"
-        android:layout_marginTop="8dp">
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btn_verify"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="18dp"
+                    android:text="번호 인증"
+                    android:enabled="false"
+                    android:textColor="@color/text_my_page_phone_selector"
+                    android:background="@drawable/bg_my_page_phone_selector"/>
+            </LinearLayout>
 
-        <EditText
-            android:id="@+id/et_phone2"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:background="@drawable/bg_edittext"
-            android:layout_marginStart="18dp"
-            android:paddingStart="14dp"
-            android:visibility="gone"
-            android:hint="인증 번호 입력"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btn_verify2"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginStart="6dp"
-            android:layout_marginEnd="18dp"
-            android:text="완료"
-            android:visibility="gone"
-            android:enabled="false"
-            android:textColor="@color/text_my_page_phone_selector"
-            android:background="@drawable/bg_my_page_phone_selector"/>
-    </LinearLayout>
-</LinearLayout>
+                <EditText
+                    android:id="@+id/et_phone2"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_edittext"
+                    android:layout_marginStart="18dp"
+                    android:paddingStart="14dp"
+                    android:visibility="gone"
+                    android:hint="인증 번호 입력"/>
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btn_verify2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="18dp"
+                    android:text="완료"
+                    android:visibility="gone"
+                    android:enabled="false"
+                    android:textColor="@color/text_my_page_phone_selector"
+                    android:background="@drawable/bg_my_page_phone_selector"/>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <Button
+        android:id="@+id/btnBook"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_margin="16dp"
+        android:backgroundTint="#BDBDBD"
+        android:enabled="false"
+        android:text="저장하기"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:cornerRadius="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>
