@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.view.Window
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.example.bisit.BuildConfig
 import com.example.bisit.R
 import com.example.bisit.data.api.RetrofitClient
 import com.example.bisit.data.api.SMSApiService
@@ -26,8 +27,11 @@ class MyPageOwnerEditFragment : Fragment() {
 
     private var isPhoneVerified = false
 
-    private val smsApi: SMSApiService by lazy {
-        Log.d("SMS_DEBUG", "smsApi 초기화됨. BASE_SERVER_URL = ${RetrofitClient.BASE_SERVER_URL}")
+    private val smsApi by lazy {
+        Log.d(
+            "SMS_DEBUG",
+            "smsApi 초기화됨. BASE_SERVER_URL = ${BuildConfig.BASE_SERVER_URL}"
+        )
         RetrofitClient.getSmsApi(requireContext())
     }
 

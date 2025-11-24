@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.example.bisit.BuildConfig
 import com.example.bisit.databinding.FragmentMyPageEditBinding
 import com.example.bisit.data.api.RetrofitClient
 import com.example.bisit.data.model.mypage.SmsResponse
@@ -26,11 +27,10 @@ class MyPageEditFragment : Fragment() {
     private val smsApi by lazy {
         Log.d(
             "SMS_DEBUG",
-            "smsApi 초기화됨. BASE_SERVER_URL = ${RetrofitClient.BASE_SERVER_URL}"
+            "smsApi 초기화됨. BASE_SERVER_URL = ${BuildConfig.BASE_SERVER_URL}"
         )
         RetrofitClient.getSmsApi(requireContext())
     }
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,26 +55,19 @@ class MyPageEditFragment : Fragment() {
 
         binding.btnVerify.setOnClickListener {
             val phone = binding.etPhone.text.toString()
-
             Log.d("SMS_DEBUG", "번호 인증 버튼 클릭됨. 보내는 번호 = $phone")
 
             smsApi.sendSms(mapOf("phoneNumber" to phone))
                 .enqueue(object : Callback<SmsResponse> {
-
                     override fun onResponse(
                         call: Call<SmsResponse>, response: Response<SmsResponse>
                     ) {
                         Log.d("SMS_DEBUG", "sendSms 응답 수신: code=${response.code()}, body=${response.body()}")
-
                         if (response.isSuccessful) {
-                            Log.d("SMS_DEBUG", "sendSms 성공 상태")
-
                             if (response.body()?.success == true) {
                                 Log.d("SMS_DEBUG", "SMS 발송 성공!")
-
                                 binding.etPhone2.visibility = View.VISIBLE
                                 binding.btnVerify2.visibility = View.VISIBLE
-
                                 binding.btnVerify.text = "발송됨"
                                 binding.btnVerify.isEnabled = false
                             } else {
@@ -97,10 +90,8 @@ class MyPageEditFragment : Fragment() {
         }
 
         binding.btnVerify2.setOnClickListener {
-
             val phone = binding.etPhone.text.toString()
             val code = binding.etPhone2.text.toString()
-
             Log.d("SMS_DEBUG", "인증번호 확인 클릭됨. phone=$phone, code=$code")
 
             smsApi.verifySms(
@@ -109,29 +100,21 @@ class MyPageEditFragment : Fragment() {
                     "code" to code
                 )
             ).enqueue(object : Callback<SmsVerifyResponse> {
-
                 override fun onResponse(
                     call: Call<SmsVerifyResponse>,
                     response: Response<SmsVerifyResponse>
                 ) {
                     Log.d("SMS_DEBUG", "verifySms 응답: code=${response.code()}, body=${response.body()}")
-
                     if (response.isSuccessful && response.body()?.data?.verified == true) {
-
                         Log.d("SMS_DEBUG", "인증 성공!")
-
                         isPhoneVerified = true
-
                         binding.btnVerify2.text = "인증됨"
                         binding.btnVerify2.isEnabled = false
                         binding.etPhone2.isEnabled = false
-
                         binding.btnBook.isEnabled = true
-
                         binding.btnBook.backgroundTintList =
                             resources.getColorStateList(com.example.bisit.R.color.blue_4076FF, null)
-                    }
-                    else {
+                    } else {
                         Log.e("SMS_DEBUG", "인증 실패 또는 verified=false")
                     }
                 }
