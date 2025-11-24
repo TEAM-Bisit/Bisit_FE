@@ -1,61 +1,54 @@
 package com.example.bisit.ui.home
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.bisit.data.model.store.StoreItem
+import com.example.bisit.data.model.category.CategoryShopItem
 import com.example.bisit.databinding.ItemHomeStoreBinding
 
 class HomeListAdapter(
-    private val items: List<StoreItem>,
-    private val onItemClick: (StoreItem) -> Unit
-) : RecyclerView.Adapter<HomeListAdapter.StoreViewHolder>() {
+    private var items: List<CategoryShopItem>,
+    private val onClick: (CategoryShopItem) -> Unit
+) : RecyclerView.Adapter<HomeListAdapter.ViewHolder>() {
 
-    inner class StoreViewHolder(val binding: ItemHomeStoreBinding) : RecyclerView.ViewHolder(binding.root)
+    inner class ViewHolder(val binding: ItemHomeStoreBinding) :
+        RecyclerView.ViewHolder(binding.root)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StoreViewHolder {
-        val binding = ItemHomeStoreBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return StoreViewHolder(binding)
-    }
-
-    override fun onBindViewHolder(holder: StoreViewHolder, position: Int) {
-        val item = items[position]
-
-        holder.binding.imgRecycler.apply {
-            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-            adapter = HomeListImageAdapter(item.images, item.hasVisitService)
-        }
-
-        holder.binding.tvName.text = item.name
-        holder.binding.tvCategory.text = item.category
-        holder.binding.tvRating.text = "★ ${item.rating}"
-        holder.binding.tvReviewCount.text = "(${item.reviewCount})"
-        holder.binding.tvOpenStatus.text = if (item.isOpen) "영업중" else "영업종료"
-        holder.binding.tvBusinessHours.text = item.businessHours
-        holder.binding.imgOpenStatus.setImageResource(
-            if (item.isOpen) com.example.bisit.R.drawable.ic_open else com.example.bisit.R.drawable.ic_close
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val binding = ItemHomeStoreBinding.inflate(
+            LayoutInflater.from(parent.context), parent, false
         )
 
-        holder.binding.bottomDivider?.visibility = if (position == items.lastIndex) View.VISIBLE else View.GONE
+        binding.imgRecycler.layoutManager =
+            LinearLayoutManager(parent.context, LinearLayoutManager.HORIZONTAL, false)
 
-        holder.binding.chipGroup.removeAllViews()
-        val inflater = LayoutInflater.from(holder.itemView.context)
-        item.tags.forEach { tag ->
-            val chip = inflater.inflate(com.example.bisit.R.layout.item_home_list_tag, holder.binding.chipGroup, false) as TextView
-            chip.text = tag
-            holder.binding.chipGroup.addView(chip)
-        }
+        return ViewHolder(binding)
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val item = items[position]
+
+        holder.binding.tvName.text = item.shopName
+        holder.binding.tvCategory.text = item.category
+        holder.binding.tvRating.text = item.averageRating.toString()
+        holder.binding.tvReviewCount.text = "(${item.reviewCount})"
+        holder.binding.tvBusinessHours.text = item.businessHours ?: ""
+
+        val imageAdapter =
+            HomeListImageAdapter(item.photos, item.hasVisitService ?: false)
+
+        holder.binding.imgRecycler.adapter = imageAdapter
 
         holder.itemView.setOnClickListener {
-            val pos = holder.bindingAdapterPosition
-            if (pos != RecyclerView.NO_POSITION) {
-                onItemClick(items[pos])
-            }
+            onClick(item)
         }
     }
 
     override fun getItemCount() = items.size
+
+    fun updateData(newList: List<CategoryShopItem>) {
+        items = newList
+        notifyDataSetChanged()
+    }
 }

@@ -18,7 +18,7 @@ object RetrofitClient {
         .readTimeout(20, TimeUnit.SECONDS)
         .addInterceptor { chain ->
             val request = chain.request().newBuilder()
-                .addHeader("X-NCP-APIGW-API-KEY-ID", BuildConfig.NCP_ACCESS_KEY_ID)
+                .addHeader("X-NCP-APIGW-API-KEY-ID", BuildConfig.NCP_KEY_ID)
                 .addHeader("X-NCP-APIGW-API-KEY", BuildConfig.NCP_SECRET_KEY)
                 .build()
             chain.proceed(request)
@@ -81,4 +81,8 @@ object RetrofitClient {
 
     fun getReviewApi(context: Context) =
         getServerRetrofit(context).create(ReviewApiService::class.java)
+
+    fun getShopApi(context: Context) =
+        getServerRetrofit(context).create(CategoryApiService::class.java)
+
 }
