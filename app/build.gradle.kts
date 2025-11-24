@@ -1,4 +1,5 @@
 import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
     alias(libs.plugins.android.application)
@@ -7,9 +8,14 @@ plugins {
 }
 
 val localProps = Properties()
-localProps.load(project.rootProject.file("local.properties").inputStream())
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProps.load(FileInputStream(localPropertiesFile))
+}
 
-val BASE_SERVER_URL: String = localProps.getProperty("BASE_SERVER_URL") ?: ""
+val ncpKeyId = localProps.getProperty("ncp.access.key.id") ?: ""
+val ncpSecretKey = localProps.getProperty("ncp.secret.key") ?: ""
+val baseServerUrl = localProps.getProperty("server.base.url") ?: ""
 
 android {
     namespace = "com.example.bisit"
@@ -22,20 +28,13 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        buildConfigField(
-            "String",
-            "NCP_ACCESS_KEY_ID",
-            "\"${project.findProperty("NCP_ACCESS_KEY_ID") ?: ""}\""
-        )
-        buildConfigField(
-            "String",
-            "NCP_SECRET_KEY",
-            "\"${project.findProperty("NCP_SECRET_KEY") ?: ""}\""
-        )
-
-        buildConfigField("String", "BASE_SERVER_URL", "\"$BASE_SERVER_URL\"")
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "NCP_KEY_ID", "\"$ncpKeyId\"")
+        buildConfigField("String", "NCP_SECRET_KEY", "\"$ncpSecretKey\"")
+        buildConfigField("String", "BASE_SERVER_URL", "\"$baseServerUrl\"")
+
+        manifestPlaceholders["NAVER_CLIENT_ID"] = ncpKeyId
     }
 
     buildTypes {
@@ -62,7 +61,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -74,6 +72,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -82,22 +81,26 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    // Navigation
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
+
+    // Material Design (중복 제거 후 최신 버전 유지)
     implementation("com.google.android.material:material:1.12.0")
 
-    implementation ("com.naver.maps:map-sdk:3.23.0")
-    implementation ("com.google.android.gms:play-services-location:21.3.0")
+    // Naver Maps & Location
+    implementation("com.naver.maps:map-sdk:3.23.0")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 
+    // Retrofit & Gson
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation ("com.google.code.gson:gson:2.8.9")
+    implementation("com.google.code.gson:gson:2.8.9")
 
-    implementation ("com.google.android.material:material:1.9.0")
-    implementation ("androidx.recyclerview:recyclerview:1.3.0")
+    // RecyclerView
+    implementation("androidx.recyclerview:recyclerview:1.3.0")
 
-    implementation ("com.github.tosspayments:payment-sdk-android:0.1.21")
-
-
+    // Toss Payments
+    implementation("com.github.tosspayments:payment-sdk-android:0.1.21")
 }
