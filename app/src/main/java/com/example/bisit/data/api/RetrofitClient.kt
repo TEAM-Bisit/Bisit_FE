@@ -9,14 +9,16 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
+
     private const val NAVER_BASE_URL = "https://naveropenapi.apigw.ntruss.com/"
+    private const val TAG = "RetrofitClient"
 
     private val naverClient = OkHttpClient.Builder()
         .connectTimeout(20, TimeUnit.SECONDS)
         .readTimeout(20, TimeUnit.SECONDS)
         .addInterceptor { chain ->
             val request = chain.request().newBuilder()
-                .addHeader("X-NCP-APIGW-API-KEY-ID", BuildConfig.NCP_KEY_ID)
+                .addHeader("X-NCP-APIGW-API-KEY-ID", BuildConfig.NCP_ACCESS_KEY_ID)
                 .addHeader("X-NCP-APIGW-API-KEY", BuildConfig.NCP_SECRET_KEY)
                 .build()
             chain.proceed(request)
@@ -32,13 +34,19 @@ object RetrofitClient {
             .create(NaverGeocodingApiService::class.java)
     }
 
-    val BASE_SERVER_URL = BuildConfig.BASE_SERVER_URL
+
+    val BASE_SERVER_URL: String = BuildConfig.BASE_SERVER_URL
 
     private var serverRetrofit: Retrofit? = null
 
+
+    init {
+        Log.d(TAG, "BASE_SERVER_URL = $BASE_SERVER_URL")
+    }
+
     private fun getServerRetrofit(context: Context): Retrofit {
-        val safeUrl = if (BASE_SERVER_URL.isNullOrBlank() || BASE_SERVER_URL == "null") {
-            Log.e("RetrofitClient", "BASE_SERVER_URL이 설정되지 않았습니다. local.properties를 확인하세요.")
+        val safeUrl = if (BASE_SERVER_URL.isBlank() || BASE_SERVER_URL == "null") {
+            Log.e(TAG, "BASE_SERVER_URL이 설정되지 않았습니다. local.properties 확인하세요.")
             "http://localhost/"
         } else {
             BASE_SERVER_URL
@@ -57,21 +65,20 @@ object RetrofitClient {
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(client)
                 .build()
-
-            Log.d("RetrofitClient", "서버 Retrofit 연결됨: $safeUrl")
         }
+
         return serverRetrofit!!
     }
 
-    fun getAuthApi(context: Context): AuthApiService {
-        return getServerRetrofit(context).create(AuthApiService::class.java)
-    }
+    fun getAuthApi(context: Context) =
+        getServerRetrofit(context).create(AuthApiService::class.java)
 
-    fun getTodayReservationApi(context: Context): TodayReservationApiService {
-        return getServerRetrofit(context).create(TodayReservationApiService::class.java)
-    }
+    fun getTodayReservationApi(context: Context) =
+        getServerRetrofit(context).create(TodayReservationApiService::class.java)
 
-    fun getSmsApi(context: Context): SMSApiService {
-        return getServerRetrofit(context).create(SMSApiService::class.java)
-    }
+    fun getSmsApi(context: Context) =
+        getServerRetrofit(context).create(SMSApiService::class.java)
+
+    fun getReviewApi(context: Context) =
+        getServerRetrofit(context).create(ReviewApiService::class.java)
 }

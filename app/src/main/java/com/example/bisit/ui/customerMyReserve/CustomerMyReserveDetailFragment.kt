@@ -5,13 +5,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.example.bisit.data.api.RetrofitClient
+import com.example.bisit.data.model.review.ReviewRequest
+import com.example.bisit.data.model.review.ReviewResponse
 import com.example.bisit.databinding.DialogCustomerMyReserveReviewBinding
 import com.example.bisit.databinding.FragmentCustomerMyReserveDetailBinding
 import com.example.bisit.databinding.ItemCustomerMyReserveDetailHeaderBinding
 import com.example.bisit.databinding.ItemCustomerMyReserveDetailBodyBinding
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class CustomerMyReserveDetailFragment : Fragment() {
 
@@ -90,8 +97,50 @@ class CustomerMyReserveDetailFragment : Fragment() {
             dialogBinding.tvTextCount.text = "$textLength/30자"
         }
 
+        // --- 별점 로직 시작 ---
+        val stars = listOf(
+            dialogBinding.star1, dialogBinding.star2, dialogBinding.star3,
+            dialogBinding.star4, dialogBinding.star5
+        )
+        var currentScore = 5
+
+        fun updateStars(score: Int) {
+            currentScore = score
+            stars.forEachIndexed { index, imageView ->
+                if (index < score) {
+                    imageView.alpha = 1.0f // 활성화
+                } else {
+                    imageView.alpha = 0.3f // 비활성화 (흐리게)
+                }
+            }
+        }
+
+        stars.forEachIndexed { index, imageView ->
+            imageView.setOnClickListener { updateStars(index + 1) }
+        }
+        // --- 별점 로직 끝 ---
+
         dialogBinding.btnSummit.setOnClickListener {
-            dialog.dismiss()
+            val content = dialogBinding.etReview.text.toString()
+            val reservationId = "shtydlqslek" // 실제로는 Fragment argument 등으로 받아온 값을 사용해야 합니다.
+
+            val request = ReviewRequest(reservationId, currentScore, content)
+
+            RetrofitClient.getReviewApi(requireContext()).writeReview(request)
+                .enqueue(object : Callback<ReviewResponse> {
+                    override fun onResponse(call: Call<ReviewResponse>, response: Response<ReviewResponse>) {
+                        if (response.isSuccessful && response.body()?.success == true) {
+                            Toast.makeText(requireContext(), "리뷰가 등록되었습니다.", Toast.LENGTH_SHORT).show()
+                            dialog.dismiss()
+                        } else {
+                            Toast.makeText(requireContext(), "리뷰 등록 실패: ${response.code()}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    override fun onFailure(call: Call<ReviewResponse>, t: Throwable) {
+                        Toast.makeText(requireContext(), "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                    }
+                })
         }
 
         dialog.show()
