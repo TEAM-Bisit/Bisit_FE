@@ -11,20 +11,32 @@ import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.example.bisit.data.model.shop.ServiceItem
-import com.example.bisit.data.model.shop.ReviewItem
-import com.example.bisit.data.model.shop.ShopDetailItem
-import com.example.bisit.databinding.FragmentCustomerShopBinding
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bisit.R
+import com.example.bisit.data.model.customerShop.BusinessHourItem
+import com.example.bisit.data.model.shop.ReviewItem
+import com.example.bisit.data.model.shop.ServiceItem
+import com.example.bisit.data.model.shop.ShopDetailItem
+import com.example.bisit.data.repository.customerShop.CustomerShopRepository
+import com.example.bisit.databinding.FragmentCustomerShopBinding
 
 class CustomerShopFragment : Fragment() {
+
     private var _binding: FragmentCustomerShopBinding? = null
     private val binding get() = _binding!!
 
+    private val viewModel: CustomerShopViewModel by viewModels {
+        CustomerShopViewModelFactory(CustomerShopRepository(requireContext()))
+    }
+
+    private lateinit var adapter: CustomerShopDetailAdapter
+    private var shopId: Long = -1L
+
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentCustomerShopBinding.inflate(inflater, container, false)
@@ -34,54 +46,95 @@ class CustomerShopFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val dummyDetailList = listOf(
-            ShopDetailItem(
-                name = "장미헤어",
-                category = "미용실 · 뷰티케어",
-                review = "리뷰 9개",
-                rating = "4.8",
-                summary = "샵 한 줄 소개입니다. 한줄소개. 샵 한 줄 소개입니다. 한줄소개",
-                address = "대구 중구 관덕정길 6-11 1층",
-                openInfo = "영업중 09:00 ~ 18:00",
-                phone = "010-0000-0000",
-                notice = "내일은 휴무입니다",
-                noticeTime = "4시간 전",
-                weeklyOpenHours = listOf(
-                    "월 09:00 ~ 18:00",
-                    "화 09:00 ~ 18:00",
-                    "수 09:00 ~ 18:00",
-                    "목 09:00 ~ 18:00",
-                    "금 09:00 ~ 18:00",
-                    "토 09:00 ~ 18:00",
-                    "일 휴무"
-                )
-            )
-        )
-
-        val services = listOf(
-            listOf(
-                ServiceItem("모니터 수리", "모니터 브랜드 모두 취급합니다.", "60분", "50,000원"),
-                ServiceItem("열펌", "뿌리 볼륨을 살릴 수 있는 펌", "70분", "80,000원"),
-                ServiceItem("볼륨매직", "방문 서비스 가능", "80분", "100,000원")
-            )
-        )
-
-        val reviews = listOf(
-            listOf(
-                ReviewItem("김승현", "아이맥도 잘 고쳐주셨어요. 방문해주셔서 덕분에 잘 사용 중입니다. ㅠㅠ", "2025.09.12"),
-                ReviewItem("임*형", "오늘도 마음에 듭니다~ 최고세요", "2025.09.12")
-            )
-        )
+        shopId = arguments?.getLong("shopId") ?: 1L
 
         binding.rvShopDetail.layoutManager = LinearLayoutManager(requireContext())
-        binding.rvShopDetail.adapter = CustomerShopDetailAdapter(dummyDetailList, services, reviews)
+        adapter = CustomerShopDetailAdapter(emptyList(), emptyList(), emptyList())
+        binding.rvShopDetail.adapter = adapter
 
-        // 뒤로가기
-        binding.shopBack.setOnClickListener {
-            parentFragmentManager.popBackStack()
-        }
+        binding.shopBack.setOnClickListener { parentFragmentManager.popBackStack() }
         binding.btnBook.setOnClickListener {
             findNavController().navigate(R.id.action_customerShopFragment_to_shopDesignerFragment)
+        }
+
+        viewModel.shopData.observe(viewLifecycleOwner) { data ->
+            renderShop(data, viewModel.introduceData.value, viewModel.noticeRelativeTime.value)
+        }
+
+        viewModel.introduceData.observe(viewLifecycleOwner) { intro ->
+            renderShop(viewModel.shopData.value, intro, viewModel.noticeRelativeTime.value)
+        }
+
+        viewModel.noticeRelativeTime.observe(viewLifecycleOwner) { rel ->
+            renderShop(viewModel.shopData.value, viewModel.introduceData.value, rel)
+        }
+
+        viewModel.errorMsg.observe(viewLifecycleOwner) { err ->
+            err?.let { Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show() }
+        }
+
+        viewModel.loadShop(requireContext(), shopId)
+        viewModel.loadShopIntroduce(requireContext(), shopId)
+    }
+
+    private fun renderShop(
+        data: com.example.bisit.data.model.customerShop.CustomerShopDetailItem?,
+        introData: com.example.bisit.data.model.customerShop.CustomerShopIntroduceData?,
+        noticeRel: String?
+    ) {
+        if (data == null) return
+
+        val weeklyList = data.weeklyBusinessHours?.mapNotNull { convertBusinessHourToString(it) } ?: emptyList()
+
+        val shopDetailItem = com.example.bisit.data.model.customerShop.CustomerShopUiItem(
+            name = data.shopName ?: "",
+            category = data.category ?: "",
+            review = "리뷰 ${data.reviewCount ?: 0}개",
+            rating = (data.averageRating?.toString() ?: "0.0"),
+            summary = data.shortIntro ?: "",
+            address = "${data.address ?: ""} ${data.detailAddress ?: ""}".trim(),
+            openInfo = data.todayBusinessHours ?: "",
+            phone = data.phone ?: "",
+            notice = data.latestNotice?.title ?: "",
+            noticeTime = noticeRel ?: "",
+            weeklyOpenHours = weeklyList,
+            intro = introData?.intro,
+            photos = introData?.photos?.map { it.url }
+        )
+
+        val services = listOf<List<ServiceItem>>(
+            emptyList()
+        )
+
+        val reviews = listOf<List<ReviewItem>>(
+            emptyList()
+        )
+
+        adapter = CustomerShopDetailAdapter(listOf(shopDetailItem), services, reviews)
+        binding.rvShopDetail.adapter = adapter
+    }
+
+    private fun convertBusinessHourToString(item: BusinessHourItem): String? {
+        val dayKr = when (item.day) {
+            "MONDAY" -> "월"
+            "TUESDAY" -> "화"
+            "WEDNESDAY" -> "수"
+            "THURSDAY" -> "목"
+            "FRIDAY" -> "금"
+            "SATURDAY" -> "토"
+            "SUNDAY" -> "일"
+            else -> item.day ?: ""
+        }
+
+        return if (item.isClosed == true) {
+            "$dayKr 휴무"
+        } else {
+            val openFrom = item.openFrom ?: ""
+            val openTo = item.openTo ?: ""
+            val breakPart = if (!item.breakFrom.isNullOrBlank() && !item.breakTo.isNullOrBlank()) {
+                " (브레이크 ${item.breakFrom} ~ ${item.breakTo})"
+            } else ""
+            "$dayKr $openFrom ~ $openTo$breakPart"
         }
     }
 
@@ -104,10 +157,7 @@ class CustomerShopFragment : Fragment() {
             dialog.dismiss()
         }
 
-        btnClose.setOnClickListener {
-            dialog.dismiss()
-        }
-
+        btnClose.setOnClickListener { dialog.dismiss() }
         dialog.show()
     }
 

@@ -15,12 +15,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.R
 import com.example.bisit.data.model.shop.ServiceItem
 import com.example.bisit.data.model.shop.ReviewItem
-import com.example.bisit.data.model.shop.ShopDetailItem
+import com.example.bisit.data.model.customerShop.CustomerShopUiItem
 import com.example.bisit.databinding.DialogCopyAddressBinding
 import com.example.bisit.databinding.ItemShopDetailBinding
 
 class CustomerShopDetailAdapter(
-    private val items: List<ShopDetailItem>,
+    private val items: List<CustomerShopUiItem>,
     private val servicesLists: List<List<ServiceItem>> = emptyList(),
     private val reviewsLists: List<List<ReviewItem>> = emptyList()
 ) : RecyclerView.Adapter<CustomerShopDetailAdapter.ShopDetailViewHolder>() {
@@ -30,7 +30,7 @@ class CustomerShopDetailAdapter(
     inner class ShopDetailViewHolder(val binding: ItemShopDetailBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: ShopDetailItem, pos: Int) {
+        fun bind(item: CustomerShopUiItem, pos: Int) {
             binding.tvName.text = item.name
             binding.tvCategory.text = item.category
             binding.tvReview.text = item.review
