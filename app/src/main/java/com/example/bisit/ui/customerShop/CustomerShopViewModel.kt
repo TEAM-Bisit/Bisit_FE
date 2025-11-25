@@ -1,6 +1,7 @@
 package com.example.bisit.ui.customerShop
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.*
 import com.example.bisit.data.model.customerShop.CustomerShopDetailItem
 import com.example.bisit.data.repository.customerShop.CustomerShopRepository
@@ -36,19 +37,24 @@ class CustomerShopViewModel(
 
         viewModelScope.launch {
             try {
+                Log.d("CustomerShopVM", "Loading shop detail for shopId: $shopId")
                 val resp = repo.getShopDetail(context, shopId)
 
                 if (resp.isSuccessful) {
                     val body = resp.body()
+                    Log.d("CustomerShopVM", "Shop detail response: success=${body?.success}, data=${body?.data}")
                     _shopData.value = body?.data
 
                     val createdAt = body?.data?.latestNotice?.createdAt
+                    Log.d("CustomerShopVM", "Notice createdAt: $createdAt")
                     _noticeRelativeTime.value = TimeUtil.toRelativeTimeKorean(createdAt)
                 } else {
+                    Log.e("CustomerShopVM", "Shop detail failed: ${resp.code()} - ${resp.message()}")
                     _errorMsg.value = "서버 오류: ${resp.code()}"
                     _shopData.value = null
                 }
             } catch (e: Exception) {
+                Log.e("CustomerShopVM", "Shop detail error", e)
                 _errorMsg.value = "네트워크 오류: ${e.message}"
                 _shopData.value = null
             } finally {
@@ -60,12 +66,17 @@ class CustomerShopViewModel(
     fun loadShopIntroduce(context: Context, shopId: Long) {
         viewModelScope.launch {
             try {
+                Log.d("CustomerShopVM", "Loading shop introduce for shopId: $shopId")
                 val resp = repo.getShopIntroduce(context, shopId)
                 if (resp.isSuccessful) {
-                    _introduceData.value = resp.body()?.data
+                    val body = resp.body()
+                    Log.d("CustomerShopVM", "Shop introduce response: success=${body?.success}, data=${body?.data}")
+                    _introduceData.value = body?.data
+                } else {
+                    Log.e("CustomerShopVM", "Shop introduce failed: ${resp.code()} - ${resp.message()}")
                 }
             } catch (e: Exception) {
-                // Ignore for now
+                Log.e("CustomerShopVM", "Shop introduce error", e)
             }
         }
     }

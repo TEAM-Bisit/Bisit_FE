@@ -57,6 +57,16 @@ object RetrofitClient {
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)
+                .addInterceptor { chain ->
+                    val request = chain.request()
+                    Log.d(TAG, "🌐 API Request: ${request.method} ${request.url}")
+                    val response = chain.proceed(request)
+                    Log.d(TAG, "📡 API Response: ${response.code} ${request.url}")
+                    if (!response.isSuccessful) {
+                        Log.e(TAG, "❌ API Error: ${response.code} - ${response.message}")
+                    }
+                    response
+                }
                 .addInterceptor(AuthInterceptor(context))
                 .build()
 

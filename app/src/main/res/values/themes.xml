@@ -3,6 +3,10 @@
 
     <style name="Base.Theme.Bisit" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorControlHighlight">#1FFFFFFF</item>
+        <!-- 상태바 배경 흰색 -->
+        <item name="android:statusBarColor">@android:color/white</item>
+        <!-- 상태바 아이콘 어둡게 (API 23+) -->
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
     </style>
 
     <style name="Theme.Bisit" parent="Base.Theme.Bisit" />

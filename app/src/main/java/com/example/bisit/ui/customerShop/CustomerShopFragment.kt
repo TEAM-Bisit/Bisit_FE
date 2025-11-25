@@ -5,6 +5,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -46,7 +47,10 @@ class CustomerShopFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        shopId = arguments?.getLong("shopId") ?: 1L
+        // 상태바 높이만큼 padding 추가
+        applyStatusBarPadding()
+
+        shopId = arguments?.getLong("shopId") ?: 3L
 
         binding.rvShopDetail.layoutManager = LinearLayoutManager(requireContext())
         adapter = CustomerShopDetailAdapter(emptyList(), emptyList(), emptyList())
@@ -73,8 +77,30 @@ class CustomerShopFragment : Fragment() {
             err?.let { Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show() }
         }
 
+        Log.d("CustomerShopFragment", "Starting to load shop with id: $shopId")
         viewModel.loadShop(requireContext(), shopId)
         viewModel.loadShopIntroduce(requireContext(), shopId)
+    }
+
+    private fun applyStatusBarPadding() {
+        val statusBarHeight = getStatusBarHeight()
+        binding.coordinatorLayout.setPadding(0, statusBarHeight, 0, 0)
+        
+        // topBar에도 marginTop 적용
+        val topBarParams = binding.topBar.layoutParams as android.widget.FrameLayout.LayoutParams
+        topBarParams.topMargin = statusBarHeight
+        binding.topBar.layoutParams = topBarParams
+        
+        Log.d("CustomerShopFragment", "Applied status bar padding: $statusBarHeight px")
+    }
+
+    private fun getStatusBarHeight(): Int {
+        var result = 0
+        val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
+        if (resourceId > 0) {
+            result = resources.getDimensionPixelSize(resourceId)
+        }
+        return result
     }
 
     private fun renderShop(
@@ -82,9 +108,14 @@ class CustomerShopFragment : Fragment() {
         introData: com.example.bisit.data.model.customerShop.CustomerShopIntroduceData?,
         noticeRel: String?
     ) {
-        if (data == null) return
+        Log.d("CustomerShopFragment", "renderShop called - data: $data, introData: $introData, noticeRel: $noticeRel")
+        if (data == null) {
+            Log.w("CustomerShopFragment", "data is null, returning")
+            return
+        }
 
         val weeklyList = data.weeklyBusinessHours?.mapNotNull { convertBusinessHourToString(it) } ?: emptyList()
+        Log.d("CustomerShopFragment", "weeklyList size: ${weeklyList.size}")
 
         val shopDetailItem = com.example.bisit.data.model.customerShop.CustomerShopUiItem(
             name = data.shopName ?: "",
@@ -102,6 +133,8 @@ class CustomerShopFragment : Fragment() {
             photos = introData?.photos?.map { it.url }
         )
 
+        Log.d("CustomerShopFragment", "shopDetailItem created: ${shopDetailItem.name}")
+
         val services = listOf<List<ServiceItem>>(
             emptyList()
         )
@@ -112,6 +145,7 @@ class CustomerShopFragment : Fragment() {
 
         adapter = CustomerShopDetailAdapter(listOf(shopDetailItem), services, reviews)
         binding.rvShopDetail.adapter = adapter
+        Log.d("CustomerShopFragment", "Adapter set with ${adapter.itemCount} items")
     }
 
     private fun convertBusinessHourToString(item: BusinessHourItem): String? {

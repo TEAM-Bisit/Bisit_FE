@@ -35,6 +35,8 @@ class HomeListAdapter(
         holder.binding.tvReviewCount.text = "(${item.reviewCount})"
         holder.binding.tvBusinessHours.text = item.businessHours ?: ""
 
+        android.util.Log.d("HomeListAdapter", "Binding shop: ${item.shopName}, photos: ${item.photos}")
+
         val imageAdapter =
             HomeListImageAdapter(item.photos, item.hasVisitService ?: false)
 
