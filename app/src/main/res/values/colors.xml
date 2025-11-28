@@ -24,5 +24,7 @@
     <color name="main_red">#F06B66</color>
     <color name="main_red_light">#FFEDED</color>
     <color name="outline_gray">#E6E9EB</color>
+    <color name="gray_E0E0E0">#E0E0E0</color>
+    <color name="gray_CCCCCC">#CCCCCC</color>
 
 </resources>

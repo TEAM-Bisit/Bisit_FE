@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingVertical="8dp">
+
+    <View
+        android:id="@+id/viewSelection"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@drawable/bg_calendar_selected"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvDay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1"
+        android:textColor="#222222"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="@+id/viewSelection"
+        app:layout_constraintEnd_toEndOf="@+id/viewSelection"
+        app:layout_constraintStart_toStartOf="@+id/viewSelection"
+        app:layout_constraintTop_toTopOf="@+id/viewSelection" />
+
+    <TextView
+        android:id="@+id/tvToday"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="오늘"
+        android:textColor="#4076FF"
+        android:textSize="10sp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/viewSelection" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
