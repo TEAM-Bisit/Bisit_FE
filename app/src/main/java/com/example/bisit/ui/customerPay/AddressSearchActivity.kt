@@ -20,34 +20,30 @@ class AddressSearchActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_address_search)
 
+        window.statusBarColor = android.graphics.Color.WHITE
+        window.decorView.systemUiVisibility = android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+
         webView = findViewById(R.id.webView)
 
         val settings = webView.settings
 
-        // 기본
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
         settings.javaScriptCanOpenWindowsAutomatically = true
 
-        // asset + https 혼합 콘텐츠 허용
         settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
 
-        // asset에서 JS 로딩 허용
         settings.allowFileAccess = true
         settings.allowContentAccess = true
         settings.allowFileAccessFromFileURLs = true
         settings.allowUniversalAccessFromFileURLs = true
 
-        // 핵심
         webView.webViewClient = WebViewClient()
 
-        // 🔥 popup / window.open 지원 필수
         webView.webChromeClient = WebChromeClient()
 
-        // 🔥 HTML과 동일한 이름으로 JS 인터페이스 등록
         webView.addJavascriptInterface(AndroidBridge(), "AndroidBridge")
 
-        // HTML 로드
         webView.loadUrl("file:///android_asset/daum_postcode.html")
     }
 

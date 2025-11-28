@@ -67,6 +67,13 @@ class CustomerReserveFragment : Fragment() {
         return binding!!.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        // 상태바 색상을 흰색으로 설정
+        activity?.window?.statusBarColor = android.graphics.Color.WHITE
+        activity?.window?.decorView?.systemUiVisibility = android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+    }
+
     override fun onDestroyView() {
         binding?.scrollView?.viewTreeObserver?.removeOnScrollChangedListener(scrollChangedListener)
         scrollChangedListener = null
@@ -112,15 +119,25 @@ class CustomerReserveFragment : Fragment() {
 
             val scrollY = bind.scrollView.scrollY
 
+            // Force step 0 at the very top
+            if (scrollY == 0) {
+                if (currentStep != 0) {
+                    currentStep = 0
+                    (bind.stepProgressView as? StepProgressView)?.setCurrentStep(currentStep)
+                }
+                return@OnScrollChangedListener
+            }
+
             val serviceSectionTop = bind.layoutServiceMenuSection.top
             val visitSectionTop = bind.radioGroupVisitType.top
 
             if (serviceSectionTop == 0 || visitSectionTop == 0) return@OnScrollChangedListener
 
+            // Adjusted thresholds to be more responsive
             val step = when {
-                scrollY >= visitSectionTop - 600 -> 3
-                scrollY >= serviceSectionTop - 400 -> 2
-                scrollY >= 300 -> 1
+                scrollY >= visitSectionTop - 300 -> 3
+                scrollY >= serviceSectionTop - 300 -> 2
+                scrollY >= 200 -> 1
                 else -> 0
             }
 
@@ -210,7 +227,47 @@ class CustomerReserveFragment : Fragment() {
         val morningTimes = listOf("09:00", "09:30", "10:00", "10:30", "11:00", "11:30")
         val afternoonTimes =
             listOf("12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "16:00", "16:30", "17:00", "17:30")
-        val disabledTimes = setOf("10:00", "13:30", "15:00")
+        
+        // Basic disabled times (e.g. lunch time)
+        val baseDisabledTimes = setOf("10:00", "13:30", "15:00")
+        val disabledTimes = HashSet<String>(baseDisabledTimes)
+
+        // Check if selected date is today
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val selectedDateVal = dateFormat.parse(date)
+        val today = Calendar.getInstance()
+        
+        // Reset today to start of day for comparison
+        val todayDate = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        
+        val selectedCal = Calendar.getInstance().apply {
+            if (selectedDateVal != null) {
+                time = selectedDateVal
+            }
+        }
+
+        if (isSameDay(selectedCal, today)) {
+            val currentHour = today.get(Calendar.HOUR_OF_DAY)
+            val currentMinute = today.get(Calendar.MINUTE)
+            val currentTimeVal = currentHour * 60 + currentMinute
+
+            val allTimes = morningTimes + afternoonTimes
+            for (time in allTimes) {
+                val parts = time.split(":")
+                val hour = parts[0].toInt()
+                val minute = parts[1].toInt()
+                val timeVal = hour * 60 + minute
+
+                if (timeVal <= currentTimeVal) {
+                    disabledTimes.add(time)
+                }
+            }
+        }
 
         bind.layoutTimeSlots.removeAllViews()
 
@@ -395,12 +452,19 @@ class CustomerReserveFragment : Fragment() {
         cardView.strokeWidth = 0
     }
 
+    private fun isSameDay(cal1: Calendar, cal2: Calendar): Boolean {
+        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+                cal1.get(Calendar.MONTH) == cal2.get(Calendar.MONTH) &&
+                cal1.get(Calendar.DAY_OF_MONTH) == cal2.get(Calendar.DAY_OF_MONTH)
+    }
+
     private fun updateStepProgress() {
         val bind = binding ?: return
+        // Move to the NEXT step immediately after selection
         val newStep = when {
             selectedVisitType != null -> 3
-            selectedServiceCard != null -> 2
-            selectedTime != null -> 1
+            selectedServiceCard != null -> 3 // Go to Visit (Step 3)
+            selectedTime != null -> 2 // Go to Service (Step 2)
             else -> 0
         }
 
@@ -429,7 +493,7 @@ class CustomerReserveFragment : Fragment() {
         }
 
         bind.btnNextStep.text = if (isComplete) {
-            "예약하기 (${formatPrice(selectedServicePrice)})"
+            "예약하기"
         } else {
             "모든 항목을 선택해주세요"
         }

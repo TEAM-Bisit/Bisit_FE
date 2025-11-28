@@ -18,6 +18,8 @@ val ncpKeyId = localProps.getProperty("ncp.access.key.id") ?: ""
 val ncpSecretKey = localProps.getProperty("ncp.secret.key") ?: ""
 val baseServerUrl = localProps.getProperty("server.base.url") ?: ""
 
+val tossClientKey = localProps.getProperty("TOSS_CLIENT_KEY") ?: ""
+
 android {
     namespace = "com.example.bisit"
     compileSdk = 36
@@ -35,6 +37,8 @@ android {
         buildConfigField("String", "NCP_SECRET_KEY", "\"$ncpSecretKey\"")
         buildConfigField("String", "BASE_SERVER_URL", "\"$baseServerUrl\"")
 
+        buildConfigField("String", "TOSS_CLIENT_KEY", "\"$tossClientKey\"")
+
         manifestPlaceholders["NAVER_CLIENT_ID"] = ncpKeyId
     }
 
@@ -47,13 +51,16 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
     kotlinOptions {
         jvmTarget = "17"
     }
+
     buildFeatures {
         compose = true
         viewBinding = true
@@ -62,6 +69,7 @@ android {
 }
 
 dependencies {
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -87,7 +95,7 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
 
-    // Material Design (중복 제거 후 최신 버전 유지)
+    // Material Design
     implementation("com.google.android.material:material:1.12.0")
 
     // Naver Maps & Location
@@ -102,9 +110,10 @@ dependencies {
     // RecyclerView
     implementation("androidx.recyclerview:recyclerview:1.3.0")
 
+    // Glide
     implementation("com.github.bumptech.glide:glide:4.16.0")
     kapt("com.github.bumptech.glide:compiler:4.16.0")
 
-    // Toss Payments
+    // Toss Payments SDK
     implementation("com.github.tosspayments:payment-sdk-android:0.1.21")
 }
