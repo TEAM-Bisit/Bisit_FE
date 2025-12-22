@@ -50,8 +50,8 @@ class OwnerOnboardingFragment : Fragment() {
                 }
                 2 -> {
                     // 2단계 -> 3단계(매장 소개)로 이동
-                    // replaceChildFragment(StoreIntroFragment.newInstance())
-                    // currentStep = 3
+                    replaceChildFragment(StoreIntroFragment.newInstance()) // ★ 주석 해제
+                    currentStep = 3
                 }
                 // ... (이후 4, 5단계)
             }
