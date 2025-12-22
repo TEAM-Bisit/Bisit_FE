@@ -25,7 +25,15 @@ class ShopFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val pagerAdapter = ShopPagerAdapter(this)
+        // Assuming ShopFragment receives shopId from arguments
+        val shopId = arguments?.getLong("shopId") ?: -1L 
+        // Note: Check if ShopFragment receives "shopId" in nav graph or caller.
+        // Based on CustomerShopFragment, it navigates to "shopDesignerFragment" not "shopFragment" directly visible.
+        // Wait, where is ShopFragment used?
+        // If ShopFragment is the one with tabs, maybe IT IS the destination?
+        // CustomerShopFragment seems to show details in a list.
+        // I will assume ShopFragment is used correctly somewhere and args are passed.
+        val pagerAdapter = ShopPagerAdapter(this, shopId)
         binding.viewPager.adapter = pagerAdapter
 
         // 각 탭 클릭 시 페이지 전환

@@ -11,15 +11,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.R
 
 class CustomerMyReserveAdapter(
-    private val onDetailClick: () -> Unit
+    private val onDetailClick: (MyReserveItem) -> Unit
 ) : RecyclerView.Adapter<CustomerMyReserveAdapter.ViewHolder>() {
 
-    private var items: List<Int> = listOf()
-    private var itemCount = 5 // 각 탭에서 보여줄 아이템 수
+    private var items: List<MyReserveItem> = listOf()
 
-    // 레이아웃 리소스 설정
-    fun setItems(layoutRes: Int) {
-        items = List(itemCount) { layoutRes }
+    // 데이터 설정
+    fun setItems(newItems: List<MyReserveItem>) {
+        items = newItems
         notifyDataSetChanged()
     }
 
@@ -29,24 +28,34 @@ class CustomerMyReserveAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(holder.itemView.context)
+        holder.bind(items[position])
     }
 
     override fun getItemCount(): Int = items.size
 
-    override fun getItemViewType(position: Int): Int = items[position]
+    override fun getItemViewType(position: Int): Int {
+        // Return layout resource based on status for now, or use the one passed previously?
+        // To query simple, I'll map status to layout R.
+        return when (items[position].status) {
+            "예약" -> R.layout.item_customer_my_reserve_wait
+            "완료" -> R.layout.item_customer_my_reserve_completed
+            "취소" -> R.layout.item_customer_my_reserve_canceled
+            else -> R.layout.item_customer_my_reserve_wait
+        }
+    }
 
-    class ViewHolder(itemView: View, private val onDetailClick: () -> Unit) : RecyclerView.ViewHolder(itemView) {
+    class ViewHolder(itemView: View, private val onDetailClick: (MyReserveItem) -> Unit) : RecyclerView.ViewHolder(itemView) {
 
-        fun bind(context: Context) {
+        fun bind(item: MyReserveItem) {
+            val context = itemView.context
             val btnDoneDetail = itemView.findViewById<Button>(R.id.btn_done_detail)
             btnDoneDetail?.setOnClickListener {
-                onDetailClick()
+                onDetailClick(item)
             }
 
             val btnCancelDetail = itemView.findViewById<Button>(R.id.btn_cancel_detail)
             btnCancelDetail?.setOnClickListener {
-                onDetailClick()
+                onDetailClick(item)
             }
 
             val btnInquire = itemView.findViewById<Button>(R.id.btn_wait_inquire)

@@ -7,10 +7,13 @@ import android.widget.RadioButton
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.R
-import com.example.bisit.data.model.customerReserve.PayCoupon
+import com.example.bisit.data.model.coupon.ApplicableCoupon
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class CustomerPayCouponAdapter(
-    private val items: List<PayCoupon>
+    private val coupons: List<ApplicableCoupon>,
+    private val onCouponClick: (ApplicableCoupon) -> Unit
 ) : RecyclerView.Adapter<CustomerPayCouponAdapter.CouponViewHolder>() {
 
     private var selectedPosition = -1
@@ -23,12 +26,32 @@ class CustomerPayCouponAdapter(
         val dday: TextView = itemView.findViewById(R.id.tv_coupon_meta_dday)
         val date: TextView = itemView.findViewById(R.id.tv_coupon_meta)
 
-        fun bind(item: PayCoupon, position: Int) {
-            percent.text = item.percent
-            title.text = item.title
-            desc.text = item.desc
-            dday.text = item.dday
-            date.text = item.date
+        fun bind(item: ApplicableCoupon, position: Int) {
+            
+            if (item.type == "PERCENT") {
+               percent.text = "${item.percent}%"
+            } else {
+               percent.text = "${item.amount}원"
+            }
+            
+            title.text = item.name
+            desc.text = item.description
+            
+             // Format Date and D-Day
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+            val outputFormat = SimpleDateFormat("yyyy년 MM월 dd일까지 사용 가능", Locale.KOREA)
+            try {
+                val parsedDate = inputFormat.parse(item.validTo)
+                date.text = if (parsedDate != null) outputFormat.format(parsedDate) else item.validTo
+                 if (parsedDate != null) {
+                    val diff = parsedDate.time - System.currentTimeMillis()
+                    val days = diff / (1000 * 60 * 60 * 24)
+                   dday.text = if (days >= 0) "${days}일 남음" else "만료됨"
+                }
+
+            } catch (e: Exception) {
+                date.text = item.validTo
+            }
 
             // 단일 선택 처리
             radio.isChecked = (selectedPosition == position)
@@ -36,11 +59,13 @@ class CustomerPayCouponAdapter(
             itemView.setOnClickListener {
                 selectedPosition = position
                 notifyDataSetChanged()
+                onCouponClick(item)
             }
 
             radio.setOnClickListener {
                 selectedPosition = position
                 notifyDataSetChanged()
+                onCouponClick(item)
             }
         }
     }
@@ -52,8 +77,8 @@ class CustomerPayCouponAdapter(
     }
 
     override fun onBindViewHolder(holder: CouponViewHolder, position: Int) {
-        holder.bind(items[position], position)
+        holder.bind(coupons[position], position)
     }
 
-    override fun getItemCount(): Int = items.size
+    override fun getItemCount(): Int = coupons.size
 }

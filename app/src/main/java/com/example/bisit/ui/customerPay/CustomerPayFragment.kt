@@ -5,22 +5,42 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.bisit.R
+import com.example.bisit.data.api.RetrofitClient
+import com.example.bisit.data.model.reservation.ReservationRequest
 import com.example.bisit.databinding.FragmentCustomerPayBinding
+import com.example.bisit.data.model.coupon.ApplicableCoupon
+import kotlinx.coroutines.launch
 
 class CustomerPayFragment : Fragment() {
 
     private var _binding: FragmentCustomerPayBinding? = null
     private val binding get() = _binding!!
+
+    // Reservation data from previous screen
+    private var shopId: Long = -1L
+    private var staffId: Long = -1L
+    private var treatmentId: Long = -1L
+    private var selectedDate: String = ""
+    private var selectedTime: String = ""
+    private var visitType: String = ""
+    private var totalPrice: Int = 0
+    private var serviceName: String = ""
+    private var staffName: String = ""
+    private var shopName: String = ""
 
     // State variables to preserve form data
     private var savedName: String = ""
@@ -28,6 +48,9 @@ class CustomerPayFragment : Fragment() {
     private var savedAddress: String = ""
     private var savedDetailAddress: String = ""
     private var savedCheckboxState: Boolean = false
+    
+    // Selected Coupon
+    private var selectedCoupon: ApplicableCoupon? = null
 
     private val addressLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -50,19 +73,20 @@ class CustomerPayFragment : Fragment() {
             val orderId = result.data?.getStringExtra(TossPayActivity.RESULT_ORDER_ID) ?: ""
             
             if (paymentSuccess) {
-                android.widget.Toast.makeText(
+                // Payment successful, now create reservation
+                Toast.makeText(
                     requireContext(),
-                    "결제가 완료되었습니다!\nPaymentKey: $paymentKey",
-                    android.widget.Toast.LENGTH_LONG
+                    "결제가 완료되었습니다! 예약을 생성하는 중...",
+                    Toast.LENGTH_SHORT
                 ).show()
-                // TODO: 결제 완료 후 예약 완료 화면으로 이동
-                findNavController().popBackStack()
+                
+                createReservation(paymentKey, orderId)
             }
         } else {
-            android.widget.Toast.makeText(
+            Toast.makeText(
                 requireContext(),
                 "결제가 취소되었습니다",
-                android.widget.Toast.LENGTH_SHORT
+                Toast.LENGTH_SHORT
             ).show()
         }
     }
@@ -73,9 +97,24 @@ class CustomerPayFragment : Fragment() {
     ): View {
         _binding = FragmentCustomerPayBinding.inflate(inflater, container, false)
 
+        // Get reservation data from arguments
+        arguments?.let {
+            shopId = it.getLong("shopId", -1L)
+            staffId = it.getLong("staffId", -1L)
+            treatmentId = it.getLong("treatmentId", -1L)
+            selectedDate = it.getString("selectedDate", "")
+            selectedTime = it.getString("selectedTime", "")
+            visitType = it.getString("visitType", "")
+            totalPrice = it.getInt("totalPrice", 0)
+            serviceName = it.getString("serviceName", "")
+            staffName = it.getString("staffName", "")
+            shopName = it.getString("shopName", "")
+        }
+
         // Restore saved state
         restoreSavedState(savedInstanceState)
 
+        setupReservationInfo()
         setupBackButton()
         setupCouponClick()
         setupCheckBox()
@@ -83,6 +122,13 @@ class CustomerPayFragment : Fragment() {
         setupPayButton()
         setupAddressSearch()
         setupTextWatchers()
+
+        // Check for returned couponResult
+        findNavController().currentBackStackEntry?.savedStateHandle?.getLiveData<ApplicableCoupon>("selectedCoupon")
+            ?.observe(viewLifecycleOwner) { coupon ->
+                selectedCoupon = coupon
+                updatePriceWithCoupon()
+            }
 
         return binding.root
     }
@@ -136,9 +182,40 @@ class CustomerPayFragment : Fragment() {
 
     private fun setupCouponClick() {
         binding.layoutCoupon.setOnClickListener {
+             val bundle = Bundle().apply {
+                putInt("treatmentPrice", totalPrice)
+             }
             findNavController().navigate(
-                R.id.action_customerPayFragment_to_customerPayCouponFragment
+                R.id.action_customerPayFragment_to_customerPayCouponFragment,
+                bundle
             )
+        }
+
+        // Initialize pricing views
+        binding.tvProductPrice.text = "${java.text.NumberFormat.getNumberInstance(java.util.Locale.US).format(totalPrice)}원"
+        binding.tvTotalPrice.text = "${java.text.NumberFormat.getNumberInstance(java.util.Locale.US).format(totalPrice)}원"
+    }
+
+    private fun updatePriceWithCoupon() {
+        if (selectedCoupon != null) {
+            val discount = selectedCoupon?.expectedDiscount ?: 0
+            val finalPrice = totalPrice - discount
+             binding.tvDiscount.text = "-${java.text.NumberFormat.getNumberInstance(java.util.Locale.US).format(discount)}원"
+             binding.tvTotalPrice.text = "${java.text.NumberFormat.getNumberInstance(java.util.Locale.US).format(finalPrice)}원"
+             
+             // Update coupon name text and color
+             binding.tvCouponSelect.text = selectedCoupon?.name
+             binding.tvCouponSelect.setTextColor(ContextCompat.getColor(requireContext(), R.color.blue_4076FF))
+             
+             // Hide coupon count if coupon is selected (optional, adjusting based on typical UI pattern)
+             binding.tvCouponSelectCount.visibility = View.GONE
+        } else {
+             // Reset UI
+             binding.tvDiscount.text = "0원"
+             binding.tvTotalPrice.text = "${java.text.NumberFormat.getNumberInstance(java.util.Locale.US).format(totalPrice)}원"
+             binding.tvCouponSelect.text = "적용 가능한 쿠폰"
+             binding.tvCouponSelect.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_515965)) // Assuming a gray color exists or use hex
+             binding.tvCouponSelectCount.visibility = View.VISIBLE
         }
     }
 
@@ -169,11 +246,17 @@ class CustomerPayFragment : Fragment() {
         val detailAddress = binding.etDetailAddress.text.toString().trim()
         val isChecked = binding.cbAgree.isChecked
         
-        // All fields must be filled and checkbox must be checked
+        // VISIT requires address, SHOP does not
+        val isVisit = visitType == "방문 서비스"
+        val addressValid = if (isVisit) {
+            address != "주소를 선택해주세요" && detailAddress.isNotEmpty()
+        } else {
+            true // Address is optional for SHOP
+        }
+        
         val isValid = name.isNotEmpty() &&
                 phone.isNotEmpty() &&
-                address != "주소를 선택해주세요" &&
-                detailAddress.isNotEmpty() &&
+                addressValid &&
                 isChecked
         
         binding.btnPay.apply {
@@ -210,17 +293,98 @@ class CustomerPayFragment : Fragment() {
 
     private fun setupPayButton() {
         binding.btnPay.setOnClickListener {
-            // 더미 데이터로 결제 테스트
-            val dummyAmount = 10000
-            val dummyOrderId = "TEST_ORDER_${System.currentTimeMillis()}"
-            val dummyOrderName = "테스트 결제"
+            // Start payment flow directly
+            val orderId = "ORD-${System.currentTimeMillis()}"
+            val orderName = serviceName
             
             val intent = Intent(requireContext(), TossPayActivity::class.java).apply {
-                putExtra(TossPayActivity.EXTRA_AMOUNT, dummyAmount)
-                putExtra(TossPayActivity.EXTRA_ORDER_ID, dummyOrderId)
-                putExtra(TossPayActivity.EXTRA_ORDER_NAME, dummyOrderName)
+                putExtra(TossPayActivity.EXTRA_AMOUNT, totalPrice)
+                putExtra(TossPayActivity.EXTRA_ORDER_ID, orderId)
+                putExtra(TossPayActivity.EXTRA_ORDER_NAME, orderName)
             }
             paymentLauncher.launch(intent)
+        }
+    }
+
+    private fun createReservation(paymentKey: String, orderId: String) {
+        val name = binding.etName.text.toString().trim()
+        val phone = binding.etPhone.text.toString().trim()
+        val address = binding.tvSelectedAddress.text.toString()
+        val detailAddress = binding.etDetailAddress.text.toString().trim()
+        
+        // Map visitType to serviceChannel
+        val serviceChannel = when (visitType) {
+            "직접 방문" -> "SHOP"
+            "방문 서비스" -> "VISIT"
+            else -> "SHOP"
+        }
+        
+        // Prepare address fields (optional for SHOP, required for VISIT)
+        val addressLine = if (address != "주소를 선택해주세요") address else null
+        val addressDetail = if (detailAddress.isNotEmpty()) detailAddress else null
+        
+        val request = ReservationRequest(
+            shopId = shopId,
+            treatmentId = treatmentId,
+            staffId = staffId,
+            reservedDate = selectedDate,
+            startTime = selectedTime,
+            serviceChannel = serviceChannel,
+            customerName = name,
+            customerPhone = phone,
+            visitAddressLine = addressLine,
+            visitAddressDetail = addressDetail,
+            termsAgreed = true,
+            couponIssueId = selectedCoupon?.couponIssueId
+        )
+        
+        lifecycleScope.launch {
+            try {
+                binding.btnPay.isEnabled = false
+                val api = RetrofitClient.getReservationApi(requireContext())
+                val response = api.createReservation(request)
+                
+                if (response.isSuccessful && response.body() != null) {
+                    val reservationResponse = response.body()!!
+                    if (reservationResponse.success && reservationResponse.data != null) {
+                        val reservation = reservationResponse.data
+                        Log.d("CustomerPayFragment", "Reservation created: ${reservation.reservationId}")
+                        
+                        Toast.makeText(
+                            requireContext(),
+                            "예약이 완료되었습니다!\n예약번호: ${reservation.reservationId}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        
+                        // Navigate back to home or reservation list
+                        findNavController().popBackStack()
+                    } else {
+                        Log.e("CustomerPayFragment", "Reservation creation failed: ${reservationResponse.message}")
+                        Toast.makeText(
+                            requireContext(),
+                            "예약 생성 실패: ${reservationResponse.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        binding.btnPay.isEnabled = true
+                    }
+                } else {
+                    Log.e("CustomerPayFragment", "API call failed: ${response.code()}")
+                    Toast.makeText(
+                        requireContext(),
+                        "예약 생성에 실패했습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    binding.btnPay.isEnabled = true
+                }
+            } catch (e: Exception) {
+                Log.e("CustomerPayFragment", "Error creating reservation", e)
+                Toast.makeText(
+                    requireContext(),
+                    "네트워크 오류가 발생했습니다.",
+                    Toast.LENGTH_SHORT
+                ).show()
+                binding.btnPay.isEnabled = true
+            }
         }
     }
 
@@ -248,6 +412,44 @@ class CustomerPayFragment : Fragment() {
         savedCheckboxState = binding.cbAgree.isChecked
         
         _binding = null
+    }
+
+    private fun setupReservationInfo() {
+        val reservationInfo = binding.layoutReservationInfo
+        
+        // Set shop name
+        reservationInfo.tvMachineName.text = shopName.ifEmpty { "매장명 없음" }
+        
+        // Format and set schedule (date and time)
+        val formattedSchedule = formatScheduleText(selectedDate, selectedTime)
+        reservationInfo.tvSchedule.text = formattedSchedule
+        
+        // Set service name
+        reservationInfo.tvServiceInfo.text = serviceName.ifEmpty { "서비스 정보 없음" }
+        
+        // Set visit type
+        reservationInfo.tvUseMethod.text = visitType.ifEmpty { "이용 방법 없음" }
+    }
+    
+    private fun formatScheduleText(date: String, time: String): String {
+        return try {
+            // Parse date: "yyyy-MM-dd" -> "M.d (E)"
+            val inputFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+            val outputFormat = java.text.SimpleDateFormat("M.d (E)", java.util.Locale.KOREAN)
+            val parsedDate = inputFormat.parse(date)
+            val formattedDate = if (parsedDate != null) outputFormat.format(parsedDate) else date
+            
+            // Format time: remove seconds if present (HH:mm:ss -> HH:mm)
+            val formattedTime = if (time.length > 5 && time.count { it == ':' } == 2) {
+                time.substring(0, 5)
+            } else {
+                time
+            }
+            
+            "$formattedDate • $formattedTime"
+        } catch (e: Exception) {
+            "$date • $time"
+        }
     }
 }
 

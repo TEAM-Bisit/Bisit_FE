@@ -58,7 +58,11 @@ class CustomerShopFragment : Fragment() {
 
         binding.shopBack.setOnClickListener { parentFragmentManager.popBackStack() }
         binding.btnBook.setOnClickListener {
-            findNavController().navigate(R.id.action_customerShopFragment_to_shopDesignerFragment)
+            val bundle = Bundle().apply {
+                putLong("shopId", shopId)
+                putString("shopName", viewModel.shopData.value?.shopName ?: "")
+            }
+            findNavController().navigate(R.id.action_customerShopFragment_to_shopDesignerFragment, bundle)
         }
 
         viewModel.shopData.observe(viewLifecycleOwner) { data ->

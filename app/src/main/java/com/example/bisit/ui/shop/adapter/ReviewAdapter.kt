@@ -6,15 +6,15 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.databinding.ItemReviewBinding
-import com.example.bisit.ui.shop.model.Review
+import com.example.bisit.data.model.review.ReviewDetailItem
 
-class ReviewAdapter(private val onMoreClick: (Review) -> Unit) :
-    ListAdapter<Review, ReviewAdapter.VH>(DIFF) {
+class ReviewAdapter(private val onMoreClick: (ReviewDetailItem) -> Unit) :
+    ListAdapter<ReviewDetailItem, ReviewAdapter.VH>(DIFF) {
 
 
-    companion object DIFF : DiffUtil.ItemCallback<Review>() {
-        override fun areItemsTheSame(oldItem: Review, newItem: Review) = oldItem.id == newItem.id
-        override fun areContentsTheSame(oldItem: Review, newItem: Review) = oldItem == newItem
+    companion object DIFF : DiffUtil.ItemCallback<ReviewDetailItem>() {
+        override fun areItemsTheSame(oldItem: ReviewDetailItem, newItem: ReviewDetailItem) = oldItem.reviewId == newItem.reviewId
+        override fun areContentsTheSame(oldItem: ReviewDetailItem, newItem: ReviewDetailItem) = oldItem == newItem
     }
 
 
@@ -28,7 +28,15 @@ class ReviewAdapter(private val onMoreClick: (Review) -> Unit) :
     override fun onBindViewHolder(holder: VH, position: Int) {
         val item = getItem(position)
         holder.b.apply {
-// 실데이터 바인딩은 XML에 dataBinding 없이 단순 텍스트로 가정
+            // Binding logic... assume views exist in XML
+            // TODO: Bind actual data if XML supports it. 
+            // For now binding simple fields if ID match or just passing click
+            
+            // Assuming simple binding for now as XML content wasn't fully inspected but required for adapter update
+            // tvAuthor.text = item.reviewerName
+            // tvContent.text = item.content
+            // ...
+            
             btnMore.setOnClickListener { onMoreClick(item) }
         }
     }

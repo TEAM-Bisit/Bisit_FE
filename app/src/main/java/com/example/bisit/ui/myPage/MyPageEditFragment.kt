@@ -17,6 +17,8 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+import com.example.bisit.data.model.member.MyProfileResponse
+
 class MyPageEditFragment : Fragment() {
 
     private var _binding: FragmentMyPageEditBinding? = null
@@ -42,6 +44,9 @@ class MyPageEditFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Fetch Profile Info
+        fetchMyProfile()
 
         binding.btnBack.setOnClickListener {
             findNavController().popBackStack()
@@ -131,5 +136,27 @@ class MyPageEditFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+    private fun fetchMyProfile() {
+        RetrofitClient.getMemberApi(requireContext()).getMyProfile()
+            .enqueue(object : Callback<MyProfileResponse> {
+                override fun onResponse(
+                    call: Call<MyProfileResponse>,
+                    response: Response<MyProfileResponse>
+                ) {
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        val data = response.body()?.data
+                        binding.etName.setText(data?.name)
+                        binding.etEmail.setText(data?.email)
+                         if (!data?.phone.isNullOrEmpty()) {
+                            binding.etPhone.setText(data?.phone)
+                        }
+                    }
+                }
+
+                override fun onFailure(call: Call<MyProfileResponse>, t: Throwable) {
+                    // Handle failure
+                }
+            })
     }
 }

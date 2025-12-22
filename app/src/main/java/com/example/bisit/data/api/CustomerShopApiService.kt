@@ -2,6 +2,7 @@ package com.example.bisit.data.api
 
 import com.example.bisit.data.model.customerShop.CustomerShopResponse
 import com.example.bisit.data.model.customerShop.CustomerShopIntroduceResponse
+import com.example.bisit.data.model.customerShop.StaffListResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -17,4 +18,9 @@ interface CustomerShopApiService {
     suspend fun getShopIntroduce(
         @Path("shopId") shopId: Long
     ): Response<CustomerShopIntroduceResponse>
+
+    @GET("/api/shops/{shopId}/staff/list")
+    suspend fun getStaffList(
+        @Path("shopId") shopId: Long
+    ): Response<StaffListResponse>
 }
