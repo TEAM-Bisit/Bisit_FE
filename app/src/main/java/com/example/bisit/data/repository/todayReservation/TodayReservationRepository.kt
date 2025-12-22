@@ -38,42 +38,4 @@ class TodayReservationRepository(
     ): CommonResponse<TodayReservationStatusData> {
         return api.approveReservation(reservationId)
     }
-
-    // 결제 전 예약 정보 확인
-    suspend fun confirmReservation(
-        customerId: Long,
-        body: ConfirmReservationRequest
-    ): CommonResponse<ConfirmReservationData> {
-        return api.confirmReservation(customerId, body)
-    }
-
-    // 고객 예정된 예약 조회
-    suspend fun getScheduledReservations(
-        customerId: Long,
-        page: Int,
-        size: Int,
-        sortDirection: String
-    ): CommonResponse<TodayReservationListPageData> {
-        return api.getScheduledReservations(customerId, page, size, sortDirection)
-    }
-
-    // 고객 완료 예약 조회
-    suspend fun getCompletedReservations(
-        customerId: Long,
-        page: Int,
-        size: Int,
-        sortDirection: String
-    ): CommonResponse<TodayReservationListPageData> {
-        return api.getCompletedReservations(customerId, page, size, sortDirection)
-    }
-
-    // 고객 취소 예약 조회
-    suspend fun getCanceledReservations(
-        customerId: Long,
-        page: Int,
-        size: Int,
-        sortDirection: String
-    ): CommonResponse<TodayReservationListPageData> {
-        return api.getCanceledReservations(customerId, page, size, sortDirection)
-    }
 }
