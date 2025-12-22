@@ -18,7 +18,7 @@ import androidx.fragment.app.DialogFragment
 import com.example.bisit.R
 
 class ChangeReasonDialog(
-    private val onRejectConfirmed: (() -> Unit)? = null
+    private val onRejectConfirmed: (String) -> Unit
 ) : DialogFragment() {
 
     override fun onCreateView(
@@ -54,11 +54,12 @@ class ChangeReasonDialog(
         })
 
         btnSubmit.setOnClickListener {
-            dismiss()
+            val reason = etReason.text.toString()
 
+            dismiss()
             RejectCompleteDialog().show(parentFragmentManager, "reject_complete")
 
-            onRejectConfirmed?.invoke()
+            onRejectConfirmed(reason)
         }
 
         return view
