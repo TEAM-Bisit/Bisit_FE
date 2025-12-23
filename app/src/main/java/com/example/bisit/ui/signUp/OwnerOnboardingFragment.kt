@@ -53,7 +53,12 @@ class OwnerOnboardingFragment : Fragment() {
                     replaceChildFragment(StoreIntroFragment.newInstance()) // ★ 주석 해제
                     currentStep = 3
                 }
-                // ... (이후 4, 5단계)
+                3 -> {
+                    // 3단계(매장 소개) -> 4단계(업종 등록)로 이동
+                    replaceChildFragment(StoreCategoryFragment.newInstance()) // 새 프래그먼트 호출
+                    currentStep = 4
+                }
+                // ... 4단계 이후 로직
             }
             updateCommonUI()
         }
