@@ -2,11 +2,17 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Base.Theme.Bisit" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorControlHighlight">#1FFFFFFF</item>
+
+        <item name="popupMenuStyle">@style/MyPopupMenuStyle</item>
     </style>
 
     <style name="Theme.Bisit" parent="Base.Theme.Bisit" />
 
     <style name="Theme.Splash" parent="Base.Theme.Bisit">
         <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <style name="MyPopupMenuStyle" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:popupBackground">@drawable/bg_day_selection_selector</item>
     </style>
 </resources>

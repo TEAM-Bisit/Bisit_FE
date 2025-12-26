@@ -58,7 +58,10 @@ class OwnerOnboardingFragment : Fragment() {
                     replaceChildFragment(StoreCategoryFragment.newInstance()) // 새 프래그먼트 호출
                     currentStep = 4
                 }
-                // ... 4단계 이후 로직
+                4 -> {
+                    replaceChildFragment(StoreHoursFragment.newInstance())
+                    currentStep = 5
+                }
             }
             updateCommonUI()
         }
