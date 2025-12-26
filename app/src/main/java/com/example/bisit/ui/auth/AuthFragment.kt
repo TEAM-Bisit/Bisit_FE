@@ -36,7 +36,10 @@ class AuthFragment : Fragment(), UserTypeDialog.UserTypeDialogListener {
         }
 
         binding.signupText.setOnClickListener {
-            val intent = Intent(requireContext(), SignUpActivity::class.java)
+            val intent = Intent(requireContext(), SignUpActivity::class.java).apply {
+                // 유형 선택을 건너뛰고 정보 입력 화면으로 가라는 신호 전달
+                putExtra("START_DESTINATION", "INFO")
+            }
             startActivity(intent)
         }
 
