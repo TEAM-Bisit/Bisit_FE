@@ -102,5 +102,6 @@ object RetrofitClient {
     fun getCustomerShopApi(context: Context) =
         getServerRetrofit(context).create(CustomerShopApiService::class.java)
 
-
+    fun getStaffManageApi(context: Context) =
+        getServerRetrofit(context).create(StaffManageApiService::class.java)
 }
