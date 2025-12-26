@@ -19,12 +19,6 @@ class MainActivity : AppCompatActivity() {
 
         binding.bottomNavView.menu.clear()
 
-        if (userType == "owner") {
-            binding.bottomNavView.inflateMenu(R.menu.bottom_nav_menu_owner)
-        } else {
-            binding.bottomNavView.inflateMenu(R.menu.bottom_nav_menu)
-        }
-
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
@@ -42,7 +36,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         navController.graph = navGraph
-
         NavigationUI.setupWithNavController(binding.bottomNavView, navController)
     }
 }

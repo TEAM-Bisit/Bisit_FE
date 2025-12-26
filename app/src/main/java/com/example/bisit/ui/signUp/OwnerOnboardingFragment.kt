@@ -62,6 +62,10 @@ class OwnerOnboardingFragment : Fragment() {
                     replaceChildFragment(StoreHoursFragment.newInstance())
                     currentStep = 5
                 }
+                5 -> {
+                    replaceChildFragment(StoreRegistrationCompleteFragment.newInstance())
+                    currentStep = 6 // 완료 단계
+                }
             }
             updateCommonUI()
         }
@@ -101,6 +105,14 @@ class OwnerOnboardingFragment : Fragment() {
 
     private fun updateCommonUI() {
         if (_binding == null || _stepperBinding == null) return
+
+        if (currentStep == 6) {
+            binding.stepper.root.visibility = View.GONE
+            binding.btnPrevious.visibility = View.GONE
+            binding.btnNextStep.visibility = View.GONE
+            (activity as? SignUpActivity)?.findViewById<View>(R.id.toolbar)?.visibility = View.GONE
+            return
+        }
 
         // 1. '이전으로' 버튼 처리
         if (currentStep > 1) {
