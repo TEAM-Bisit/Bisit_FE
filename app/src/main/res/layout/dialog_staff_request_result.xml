@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 직원 삭제 완료 모달 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:background="@drawable/bg_card_white"
+    android:padding="15dp">
+
+    <TextView
+        android:id="@+id/tvMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="직원 요청이 승인되었습니다."
+        android:textColor="#222222"
+        android:textSize="16sp"
+        android:letterSpacing="0"
+        android:layout_marginTop="17dp"
+        android:layout_marginBottom="20dp" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnClose"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="닫기"
+        android:textColor="#6D7583"
+        android:textSize="14sp"
+        android:background="@drawable/bg_button_gray_light"
+        android:stateListAnimator="@null"
+        android:gravity="center"
+        android:enabled="true" />
+</LinearLayout>
