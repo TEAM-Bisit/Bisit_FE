@@ -120,7 +120,7 @@
             android:id="@+id/btnApprove"
             android:text="@string/today_button_approve"
             android:textColor="#FFFFFF"
-            app:backgroundTint="#FE6B6B"
+            app:backgroundTint="#4076FF"
             android:stateListAnimator="@null"
             app:cornerRadius="8dp"
             android:insetTop="0dp"

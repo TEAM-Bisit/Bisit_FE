@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity() {
         val userType = intent.getStringExtra("USER_TYPE")
 
         binding.bottomNavView.menu.clear()
+
         if (userType == "owner") {
             binding.bottomNavView.inflateMenu(R.menu.bottom_nav_menu_owner)
         } else {
@@ -45,7 +46,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         navController.graph = navGraph
-
         NavigationUI.setupWithNavController(binding.bottomNavView, navController)
     }
 

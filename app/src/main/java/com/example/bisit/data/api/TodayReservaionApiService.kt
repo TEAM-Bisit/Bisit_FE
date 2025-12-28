@@ -35,42 +35,4 @@ interface TodayReservationApiService {
     suspend fun approveReservation(
         @Path("reservationId") reservationId: Long
     ): CommonResponse<TodayReservationStatusData>
-
-
-    // 결제 전 예약 정보 확인
-    @POST("/api/reservations/confirm")
-    suspend fun confirmReservation(
-        @Query("customerId") customerId: Long,
-        @Body body: ConfirmReservationRequest
-    ): CommonResponse<ConfirmReservationData>
-
-
-    // 고객 예정된 예약 조회
-    @GET("/api/reservations/customers/{customerId}/scheduled")
-    suspend fun getScheduledReservations(
-        @Path("customerId") customerId: Long,
-        @Query("page") page: Int = 0,
-        @Query("size") size: Int = 10,
-        @Query("sortDirection") sortDirection: String = "desc"
-    ): CommonResponse<TodayReservationListPageData>
-
-
-    // 고객 완료 예약 조회
-    @GET("/api/reservations/customers/{customerId}/completed")
-    suspend fun getCompletedReservations(
-        @Path("customerId") customerId: Long,
-        @Query("page") page: Int = 0,
-        @Query("size") size: Int = 10,
-        @Query("sortDirection") sortDirection: String = "desc"
-    ): CommonResponse<TodayReservationListPageData>
-
-
-    // 고객 취소 예약 조회
-    @GET("/api/reservations/customers/{customerId}/canceled")
-    suspend fun getCanceledReservations(
-        @Path("customerId") customerId: Long,
-        @Query("page") page: Int = 0,
-        @Query("size") size: Int = 10,
-        @Query("sortDirection") sortDirection: String = "desc"
-    ): CommonResponse<TodayReservationListPageData>
 }

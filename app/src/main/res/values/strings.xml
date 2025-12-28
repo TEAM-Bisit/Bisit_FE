@@ -225,4 +225,7 @@
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
 
+    <!--직원 삭제-->
+    <string name="delete_underlined"><u>삭제</u></string>
+
 </resources>

@@ -3,7 +3,30 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph_sign_up"
-    app:startDestination="@id/signUpInfoFragment">
+    app:startDestination="@id/userTypeFragment">
+
+    <fragment
+    android:id="@+id/userTypeFragment"
+    android:name="com.example.bisit.ui.signUp.UserTypeFragment"
+    android:label="UserTypeFragment"
+    tools:layout="@layout/fragment_user_type">
+    <action
+        android:id="@+id/action_userTypeFragment_to_signUpInfoFragment"
+        app:destination="@id/signUpInfoFragment"
+        app:popUpTo="@id/userTypeFragment"
+        app:popUpToInclusive="true" />
+
+    <action
+        android:id="@+id/action_userTypeFragment_to_ownerOnboardingFragment"
+        app:destination="@id/ownerOnboardingFragment" />
+</fragment>
+
+    <fragment
+        android:id="@+id/ownerOnboardingFragment"
+        android:name="com.example.bisit.ui.signUp.OwnerOnboardingFragment"
+        android:label="OwnerOnboardingFragment"
+        tools:layout="@layout/fragment_owner_onboarding" >
+    </fragment>
 
     <fragment
         android:id="@+id/signUpInfoFragment"
@@ -23,14 +46,6 @@
         android:name="com.example.bisit.ui.signUp.TermsDetailFragment"
         android:label="fragment_terms_detail"
         tools:layout="@layout/fragment_terms_detail">
-        <argument
-            android:name="termTitle"
-            app:argType="string"
-            android:defaultValue="약관 상세" />
-        <argument
-            android:name="termContent"
-            app:argType="string"
-            android:defaultValue="약관 내용" />
     </fragment>
 
     <fragment
@@ -47,6 +62,13 @@
         android:id="@+id/signUpCompleteFragment"
         android:name="com.example.bisit.ui.signUp.SignUpCompleteFragment"
         android:label="fragment_sign_up_complete"
-        tools:layout="@layout/fragment_sign_up_complete" />
+        tools:layout="@layout/fragment_sign_up_complete">
+
+        <action
+            android:id="@+id/action_signUpCompleteFragment_to_userTypeFragment"
+            app:destination="@id/userTypeFragment"
+            app:popUpTo="@id/nav_graph_sign_up"
+            app:popUpToInclusive="true" />
+    </fragment>
 
 </navigation>

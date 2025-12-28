@@ -115,4 +115,7 @@ object RetrofitClient {
     fun getCouponApi(context: Context): CouponApiService {
         return getServerRetrofit(context).create(CouponApiService::class.java)
     }
+    
+    fun getStaffManageApi(context: Context) =
+        getServerRetrofit(context).create(StaffManageApiService::class.java)
 }

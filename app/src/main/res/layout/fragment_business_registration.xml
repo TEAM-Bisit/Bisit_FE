@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp"
+    android:clipToPadding="false"
+    android:fillViewport="true"
+    tools:context=".ui.signUp.BusinessRegistrationFragment"
+    android:background="@color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="대표자 성명을 입력해주세요."
+            android:textSize="18sp"
+            android:textColor="@color/black" />
+
+        <EditText
+            android:id="@+id/et_owner_name"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_edit_box"
+            android:hint="성함을 입력해주세요"
+            android:inputType="textPersonName"
+            android:imeOptions="actionDone"
+            android:paddingHorizontal="12dp"
+            android:textSize="14sp"
+            android:maxLines="1" />
+
+        <LinearLayout
+            android:id="@+id/layout_opening_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="24dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="개업 일자를 입력해주세요."
+                android:textSize="18sp"
+                android:textColor="@color/black" />
+
+            <EditText
+                android:id="@+id/et_opening_date"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_edit_box"
+                android:hint="YYYY - MM - DD"
+                android:imeOptions="actionDone"
+                android:paddingHorizontal="12dp"
+                android:textSize="14sp"
+                android:maxLines="1"
+                android:inputType="phone" />
+        </LinearLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layout_business_number"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                android:id="@+id/tv_label_business_number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="사업자 등록 번호를 입력해 주세요."
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_check_business"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_button_verify_selector"
+                android:enabled="false"
+                android:paddingHorizontal="16dp"
+                android:stateListAnimator="@null"
+                android:text="확인하기"
+                android:textColor="@color/text_color_verify_selector"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_label_business_number"
+                app:layout_constraintBottom_toBottomOf="@id/et_business_number" />
+
+            <EditText
+                android:id="@+id/et_business_number"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/bg_edit_box"
+                android:hint="000-00-00000"
+                android:imeOptions="actionDone"
+                android:inputType="phone"
+                android:maxLength="12"
+                android:paddingHorizontal="12dp"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toStartOf="@id/btn_check_business"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_label_business_number" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </LinearLayout>
+</ScrollView>
