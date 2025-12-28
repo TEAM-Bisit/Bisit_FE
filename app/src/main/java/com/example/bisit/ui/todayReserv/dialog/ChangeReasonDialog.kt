@@ -13,12 +13,13 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import com.example.bisit.R
 
-class ChangeReasonDialog : DialogFragment() {
+class ChangeReasonDialog(
+    private val onRejectConfirmed: (String) -> Unit
+) : DialogFragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -32,36 +33,33 @@ class ChangeReasonDialog : DialogFragment() {
         val tvCharCount = view.findViewById<TextView>(R.id.tvCharCount)
         val btnClose = view.findViewById<ImageView>(R.id.btnClose)
 
-        // 🔸 X 버튼 클릭 → 모달 닫기
         btnClose.setOnClickListener {
             dismiss()
         }
 
         etReason.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val input = s.toString()
                 tvCharCount.text = "${input.length}/50자"
 
-                if (input.length >= 8) {
-                    btnSubmit.isEnabled = true
-                    btnSubmit.setTextColor(Color.WHITE)
-                } else {
-                    btnSubmit.isEnabled = false
-                    val disabledTextColor = ContextCompat.getColor(requireContext(), R.color.gray)
-                    btnSubmit.setTextColor(disabledTextColor)
-                }
+                btnSubmit.isEnabled = input.length >= 8
+                btnSubmit.setTextColor(
+                    if (btnSubmit.isEnabled) Color.WHITE
+                    else ContextCompat.getColor(requireContext(), R.color.gray)
+                )
             }
 
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun afterTextChanged(s: Editable?) {}
         })
 
         btnSubmit.setOnClickListener {
-            val text = etReason.text.toString()
-            Toast.makeText(requireContext(), "입력한 사유: $text", Toast.LENGTH_SHORT).show()
+            val reason = etReason.text.toString()
+
             dismiss()
             RejectCompleteDialog().show(parentFragmentManager, "reject_complete")
+
+            onRejectConfirmed(reason)
         }
 
         return view
@@ -73,19 +71,16 @@ class ChangeReasonDialog : DialogFragment() {
             setBackgroundDrawableResource(android.R.color.transparent)
 
             val screenWidth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                val windowMetrics = requireActivity().windowManager.currentWindowMetrics
-                val insets = windowMetrics.windowInsets.getInsets(WindowInsets.Type.systemBars())
-                windowMetrics.bounds.width() - insets.left - insets.right
+                val metrics = requireActivity().windowManager.currentWindowMetrics
+                val insets = metrics.windowInsets.getInsets(WindowInsets.Type.systemBars())
+                metrics.bounds.width() - insets.left - insets.right
             } else {
                 @Suppress("DEPRECATION")
-                val displayMetrics = resources.displayMetrics
-                @Suppress("DEPRECATION")
-                displayMetrics.widthPixels
+                resources.displayMetrics.widthPixels
             }
 
             val width = (screenWidth * 0.806f).toInt()
-            val height = ViewGroup.LayoutParams.WRAP_CONTENT
-            setLayout(width, height)
+            setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT)
         }
     }
 }

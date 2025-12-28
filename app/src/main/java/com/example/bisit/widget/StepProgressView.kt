@@ -23,10 +23,10 @@ class StepProgressView @JvmOverloads constructor(
     private var textActiveColor = ContextCompat.getColor(context, R.color.sp_active)
     private var textInactiveColor = ContextCompat.getColor(context, R.color.sp_text_inactive)
 
-    private var circleRadiusPx = dpToPx(4f)
+    private var circleRadiusPx = dpToPx(5f)
     private var circleOuterRadiusPx = dpToPx(8f)
     private var lineStrokePx = dpToPx(2f)
-    private var textSizePx = spToPx(8f)
+    private var textSizePx = spToPx(10f)
     private var textMarginPx = dpToPx(6f)
 
     private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -61,7 +61,27 @@ class StepProgressView @JvmOverloads constructor(
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val desiredHeight = (paddingTop + paddingBottom + circleOuterRadiusPx * 2 + textMarginPx + textSizePx * 1.2f).toInt()
+        // Calculate required horizontal padding for text
+        var maxTextWidth = 0f
+        if (labels.isNotEmpty()) {
+            // Check first and last labels specifically as they are most prone to clipping
+            val firstWidth = textPaint.measureText(labels.first())
+            val lastWidth = textPaint.measureText(labels.last())
+            maxTextWidth = max(firstWidth, lastWidth)
+        }
+
+        // Ensure enough space for the text at the edges
+        // We need at least half the text width at the start and end
+        val minSidePadding = (maxTextWidth / 2).toInt() + dpToPx(8f).toInt()
+
+        // Update padding if needed (respecting original padding if it's larger)
+        val safePaddingLeft = max(paddingLeft, minSidePadding)
+        val safePaddingRight = max(paddingRight, minSidePadding)
+
+        // We don't actually change the view's padding property, but we'll use these values in onDraw
+        // However, for onMeasure, we just need to ensure height is correct
+        val desiredHeight = (paddingTop + paddingBottom + circleOuterRadiusPx * 2 + textMarginPx + textSizePx * 1.5f).toInt()
+
         val h = resolveSize(desiredHeight, heightMeasureSpec)
         val w = resolveSize(suggestedMinimumWidth, widthMeasureSpec)
         setMeasuredDimension(w, h)
@@ -71,19 +91,28 @@ class StepProgressView @JvmOverloads constructor(
         super.onDraw(canvas)
         if (stepCount <= 1) return
 
-        val availableW = width - paddingLeft - paddingRight
-        val spacing = availableW.toFloat() / (stepCount - 1).toFloat()
+        // Calculate safe drawing area to avoid text clipping
+        val firstLabelWidth = if (labels.isNotEmpty()) textPaint.measureText(labels[0]) else 0f
+        val lastLabelWidth = if (labels.isNotEmpty()) textPaint.measureText(labels[labels.size - 1]) else 0f
+
+        val sideMargin = max(circleOuterRadiusPx, max(firstLabelWidth, lastLabelWidth) / 2f)
+
+        val drawStart = paddingLeft + sideMargin
+        val drawEnd = width - paddingRight - sideMargin
+        val availableW = drawEnd - drawStart
+
+        val spacing = if (stepCount > 1) availableW / (stepCount - 1) else 0f
         val centerY = paddingTop + circleOuterRadiusPx
 
         // inactive full line
         linePaint.color = inactiveColor
-        canvas.drawLine(paddingLeft.toFloat(), centerY, (width - paddingRight).toFloat(), centerY, linePaint)
+        canvas.drawLine(drawStart, centerY, drawEnd, centerY, linePaint)
 
         // active segments
         linePaint.color = activeColor
         for (i in 0 until stepCount - 1) {
-            val startX = paddingLeft + i * spacing
-            val endX = paddingLeft + (i + 1) * spacing
+            val startX = drawStart + i * spacing
+            val endX = drawStart + (i + 1) * spacing
             if (i < currentStep) {
                 canvas.drawLine(startX, centerY, endX, centerY, linePaint)
             }
@@ -92,7 +121,7 @@ class StepProgressView @JvmOverloads constructor(
         // circles and labels
         textPaint.textSize = textSizePx
         for (i in 0 until stepCount) {
-            val cx = paddingLeft + i * spacing
+            val cx = drawStart + i * spacing
 
             when {
                 i < currentStep -> {

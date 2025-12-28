@@ -7,7 +7,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:layout_marginTop="24dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -49,11 +50,11 @@
                 android:textSize="12sp"
                 android:textColor="#333333"
                 android:background="@drawable/bg_my_page_edit"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
+                android:elevation="0dp"
+                android:translationZ="0dp"
+                android:stateListAnimator="@null"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="2dp" />
-
         </LinearLayout>
 
         <LinearLayout

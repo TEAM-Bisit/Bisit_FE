@@ -1,13 +1,17 @@
 package com.example.bisit.ui.login
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
-import android.text.TextWatcher // TextWatcher 임포트
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.example.bisit.MainActivity // 메인 액티비티 임포트
 import com.example.bisit.R
 import com.example.bisit.databinding.FragmentLoginCredentialsBinding
 
@@ -15,6 +19,7 @@ class LoginCredentialsFragment : Fragment() {
 
     private var _binding: FragmentLoginCredentialsBinding? = null
     private val binding get() = _binding!!
+    private val viewModel: LoginViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -28,12 +33,17 @@ class LoginCredentialsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupClickListeners()
-        setupTextWatchers() // 텍스트 변경 리스너 설정 추가
+        setupTextWatchers()
+        observeViewModel()
     }
 
     private fun setupClickListeners() {
         binding.btnLogin.setOnClickListener {
-            // TODO: 로그인 로직 구현 (ViewModel 호출)
+            val id = binding.etId.text.toString()
+            val pw = binding.etPassword.text.toString()
+
+            // ViewModel에 로그인 요청
+            viewModel.login(requireContext(), id, pw)
         }
 
         binding.tvFindId.setOnClickListener {
@@ -41,39 +51,54 @@ class LoginCredentialsFragment : Fragment() {
         }
 
         binding.tvFindPassword.setOnClickListener {
-            // 비밀번호 찾기 Fragment로 이동
             findNavController().navigate(R.id.action_loginCredentialsFragment_to_findPasswordFragment)
         }
     }
 
-    // 텍스트 변경 리스너 설정 메서드
-    private fun setupTextWatchers() {
-        // 아이디와 비밀번호 EditText에 동일한 TextWatcher를 적용
-        val textWatcher = object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+    private fun observeViewModel() {
+        viewModel.loginResult.observe(viewLifecycleOwner) { isSuccess ->
+            if (isSuccess) {
+                Toast.makeText(context, "로그인 성공!", Toast.LENGTH_SHORT).show()
 
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                // 텍스트가 변경될 때마다 버튼 활성화 상태를 업데이트
-                updateLoginButtonState()
+                val intent = Intent(requireContext(), MainActivity::class.java)
+
+                // 임시로 id에 따른 분기처리
+                val inputId = binding.etId.text.toString()
+                val userType = when (inputId) {
+                    "rlatkwkd" -> "owner"
+                    "rlathssla" -> "customer"
+                    else -> "customer"
+                }
+
+                intent.putExtra("USER_TYPE", userType)
+
+                startActivity(intent)
+                requireActivity().finish()
             }
-
-            override fun afterTextChanged(s: Editable?) {}
         }
 
+        viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun setupTextWatchers() {
+        val textWatcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                updateLoginButtonState()
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        }
         binding.etId.addTextChangedListener(textWatcher)
         binding.etPassword.addTextChangedListener(textWatcher)
     }
 
-    // 로그인 버튼 활성화 상태 업데이트 메서드
     private fun updateLoginButtonState() {
-        // 아이디와 비밀번호 필드가 모두 비어있지 않은지 확인
         val isIdValid = binding.etId.text.isNullOrBlank().not()
         val isPasswordValid = binding.etPassword.text.isNullOrBlank().not()
-
-        // 두 조건이 모두 충족되면 버튼을 활성화
         binding.btnLogin.isEnabled = isIdValid && isPasswordValid
     }
-
 
     override fun onDestroyView() {
         super.onDestroyView()

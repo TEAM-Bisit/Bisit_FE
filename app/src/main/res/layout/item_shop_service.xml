@@ -49,7 +49,7 @@
 
     <TextView
         android:id="@+id/tvServiceTime"
-        android:layout_width="56dp"
+        android:layout_width="60dp"
         android:layout_height="26dp"
         android:gravity="center"
         android:padding="4dp"

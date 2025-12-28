@@ -15,12 +15,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.R
 import com.example.bisit.data.model.shop.ServiceItem
 import com.example.bisit.data.model.shop.ReviewItem
-import com.example.bisit.data.model.shop.ShopDetailItem
+import com.example.bisit.data.model.customerShop.CustomerShopUiItem
 import com.example.bisit.databinding.DialogCopyAddressBinding
 import com.example.bisit.databinding.ItemShopDetailBinding
 
 class CustomerShopDetailAdapter(
-    private val items: List<ShopDetailItem>,
+    private val items: List<CustomerShopUiItem>,
     private val servicesLists: List<List<ServiceItem>> = emptyList(),
     private val reviewsLists: List<List<ReviewItem>> = emptyList()
 ) : RecyclerView.Adapter<CustomerShopDetailAdapter.ShopDetailViewHolder>() {
@@ -30,7 +30,7 @@ class CustomerShopDetailAdapter(
     inner class ShopDetailViewHolder(val binding: ItemShopDetailBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: ShopDetailItem, pos: Int) {
+        fun bind(item: CustomerShopUiItem, pos: Int) {
             binding.tvName.text = item.name
             binding.tvCategory.text = item.category
             binding.tvReview.text = item.review
@@ -42,7 +42,6 @@ class CustomerShopDetailAdapter(
             binding.tvNoticeText.text = item.notice
             binding.tvNoticeTime.text = item.noticeTime
 
-            // 오픈 시간 리스트
             val marginInPx = (2 * binding.root.context.resources.displayMetrics.density).toInt()
             binding.layoutOpenHourDetail.removeAllViews()
             item.weeklyOpenHours.forEach { hour ->
@@ -62,7 +61,6 @@ class CustomerShopDetailAdapter(
                 binding.layoutOpenHourDetail.addView(tv)
             }
 
-            // expand/collapse
             val isExpanded = expandedPositions.contains(pos)
             binding.layoutOpenHourDetail.visibility = if (isExpanded) View.VISIBLE else View.GONE
             binding.btnExpandHour.rotation = if (isExpanded) 180f else 0f
@@ -72,12 +70,10 @@ class CustomerShopDetailAdapter(
                 notifyItemChanged(pos)
             }
 
-            // 주소 클릭 → 복사
             binding.layoutAddress.setOnClickListener {
                 showCopyAddressDialog(binding.root.context, item.address)
             }
 
-            // 서비스/리뷰
             val inflater = LayoutInflater.from(binding.root.context)
             binding.containerServiceItems.removeAllViews()
             binding.containerReviewItems.removeAllViews()
@@ -101,7 +97,6 @@ class CustomerShopDetailAdapter(
                 binding.containerReviewItems.addView(view)
             }
 
-            // 탭 클릭
             binding.tabService.setOnClickListener {
                 binding.containerServiceItems.visibility = View.VISIBLE
                 binding.containerReviewItems.visibility = View.GONE
@@ -120,7 +115,6 @@ class CustomerShopDetailAdapter(
                 binding.tabReview.setBackgroundResource(R.drawable.bg_tab_selected)
             }
 
-            // 초기 상태
             binding.containerServiceItems.visibility = View.VISIBLE
             binding.containerReviewItems.visibility = View.GONE
             binding.tabService.apply {

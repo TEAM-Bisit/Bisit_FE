@@ -1,26 +1,43 @@
 package com.example.bisit.ui.todayReserv
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.bisit.data.api.RetrofitClient
+import com.example.bisit.data.model.todayReservation.RejectReservationRequest
+import com.example.bisit.data.model.todayReservation.ReservationItem
+import com.example.bisit.data.repository.todayReservation.TodayReservationRepository
 import com.example.bisit.databinding.FragmentPendingReservBinding
-import com.example.bisit.ui.todayReserv.adapter.Reservation
-import com.example.bisit.ui.todayReserv.adapter.ReservationAdapter
+import com.example.bisit.ui.todayReserv.adapter.TodayReservationAdapter
 import com.example.bisit.ui.todayReserv.dialog.ApproveCompleteDialog
 import com.example.bisit.ui.todayReserv.dialog.ChangeReasonDialog
+import kotlinx.coroutines.launch
 
 class PendingReservFragment : Fragment(), SortableFragment {
+
+    companion object {
+        private const val TAG = "PendingReserv"
+    }
+
     private var _binding: FragmentPendingReservBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var adapter: ReservationAdapter
-    private var originalList = mutableListOf<Reservation>()
+    private lateinit var adapter: TodayReservationAdapter
+    private var pendingList = mutableListOf<ReservationItem>()
+
+    private var sortBy: String = "recent"
+
+    private lateinit var repository: TodayReservationRepository
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
         _binding = FragmentPendingReservBinding.inflate(inflater, container, false)
         return binding.root
@@ -29,25 +46,73 @@ class PendingReservFragment : Fragment(), SortableFragment {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        originalList = mutableListOf(
-            Reservation("id1", "볼륨 매직", "2025.10.07 13:00", "서울 강남구 논현로 45길 12"),
-            Reservation("id2", "염색 & 클리닉", "2025.10.08 10:30", "서울 마포구 연남로 22길 8"),
-            Reservation("id3", "컷트 & 스타일링", "2025.10.09 17:20", "서울 서초구 서초대로 78길 4"),
-            Reservation("id4", "헤드 스파", "2025.10.10 14:00", "서울 용산구 한남대로 12길 21"),
-            Reservation("id5", "남성 커트", "2025.10.11 11:10", "서울 송파구 백제고분로 33길 19")
+        Log.d(TAG, "Fragment 진입")
+
+        sortBy = arguments?.getString("sortBy") ?: "recent"
+        Log.d(TAG, "초기 sortBy: $sortBy")
+
+        // Repository 초기화
+        repository = TodayReservationRepository(
+            RetrofitClient.getTodayReservationApi(requireContext())
         )
 
-        adapter = ReservationAdapter(
-            onReject = { item ->
-                ChangeReasonDialog().show(parentFragmentManager, "reject")
-                originalList.remove(item)
-                adapter.submitList(originalList.toList())
-            },
+        adapter = TodayReservationAdapter(
+            currentTab = "pending",
+
+            // ✅ 승인
             onApprove = { item ->
-                ApproveCompleteDialog().show(parentFragmentManager, "approve")
-                originalList.remove(item)
-                adapter.submitList(originalList.toList())
-            }
+                lifecycleScope.launch {
+                    try {
+                        Log.d(TAG, "승인 요청: id=${item.reservationId}")
+
+                        repository.approveReservation(item.reservationId)
+
+                        Log.d(TAG, "승인 성공")
+
+                        ApproveCompleteDialog().show(
+                            parentFragmentManager,
+                            "approve_complete"
+                        )
+
+                        // 승인 후 다시 조회
+                        fetchPendingReservations()
+
+                    } catch (e: Exception) {
+                        Log.e(TAG, "승인 실패", e)
+                    }
+                }
+            },
+
+            // ✅ 거절 (사유 포함)
+            onReject = { item ->
+                ChangeReasonDialog { reason ->
+                    lifecycleScope.launch {
+                        try {
+                            Log.d(
+                                TAG,
+                                "거절 요청: id=${item.reservationId}, reason=$reason"
+                            )
+
+                            repository.rejectReservation(
+                                reservationId = item.reservationId,
+                                body = RejectReservationRequest(
+                                    rejectionReason = reason
+                                )
+                            )
+
+                            Log.d(TAG, "거절 성공")
+
+                            // 거절 후 다시 조회
+                            fetchPendingReservations()
+
+                        } catch (e: Exception) {
+                            Log.e(TAG, "거절 실패", e)
+                        }
+                    }
+                }.show(parentFragmentManager, "reject_reason")
+            },
+
+            onChangeStatus = {}
         )
 
         binding.rvPendingList.apply {
@@ -55,18 +120,49 @@ class PendingReservFragment : Fragment(), SortableFragment {
             adapter = this@PendingReservFragment.adapter
         }
 
-        adapter.submitList(originalList.toList())
+        // 최초 진입 시 조회
+        fetchPendingReservations()
     }
 
+    /**
+     * 정렬 변경 시 호출
+     */
+    override fun sort(sortBy: String) {
+        this.sortBy = sortBy
+        Log.d(TAG, "정렬 변경 요청: $sortBy")
+        fetchPendingReservations()
+    }
 
-    override fun sort(isRecent: Boolean) {
-        val sortedList = if (isRecent) {
-            originalList.sortedByDescending { it.date }
-        } else {
-            originalList.sortedBy { it.date }
+    /**
+     * Pending 예약 조회 API
+     */
+    private fun fetchPendingReservations() {
+        lifecycleScope.launch {
+            try {
+                Log.d(TAG, "Pending 예약 조회 API 호출")
+
+                val response = repository.getTodayReservations(
+                    shopId = 1L,   // TODO 실제 shopId
+                    tab = "pending",
+                    sortBy = sortBy
+                )
+
+                Log.d(TAG, "조회 성공: ${response.data}")
+
+                val reservations = response.data.reservations
+                pendingList = reservations.toMutableList()
+
+                adapter.submitList(pendingList.toList())
+
+                Log.d(
+                    TAG,
+                    "RecyclerView 갱신 완료 (size=${pendingList.size})"
+                )
+
+            } catch (e: Exception) {
+                Log.e(TAG, "조회 실패", e)
+            }
         }
-        originalList = sortedList.toMutableList()
-        adapter.submitList(originalList.toList())
     }
 
     override fun onDestroyView() {

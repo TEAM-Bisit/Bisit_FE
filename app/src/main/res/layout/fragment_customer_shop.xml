@@ -1,20 +1,18 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/white">
 
-    <!-- CoordinatorLayout: AppBar + RecyclerView + Bottom Button -->
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/coordinatorLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- AppBarLayout + CollapsingToolbar -->
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/appBarLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fitsSystemWindows="true"
             android:background="@android:color/transparent">
 
             <com.google.android.material.appbar.CollapsingToolbarLayout
@@ -30,11 +28,9 @@
                     android:layout_height="248dp"
                     android:scaleType="centerCrop"
                     android:src="@drawable/img_example"
-                    android:fitsSystemWindows="true"
                     app:layout_collapseMode="parallax"
                     android:layout_marginTop="56dp" />
 
-                <!-- 방문 서비스 Chip -->
                 <LinearLayout
                     android:id="@+id/chipVisitService"
                     android:layout_width="wrap_content"
@@ -70,7 +66,6 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
-                <!-- 공유 버튼 배지 -->
                 <LinearLayout
                     android:id="@+id/badge_available"
                     android:layout_width="wrap_content"
@@ -103,7 +98,6 @@
             </com.google.android.material.appbar.CollapsingToolbarLayout>
         </com.google.android.material.appbar.AppBarLayout>
 
-        <!-- RecyclerView -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvShopDetail"
             android:layout_width="match_parent"
@@ -113,7 +107,6 @@
             android:paddingBottom="60dp"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-        <!-- 하단 버튼 -->
         <LinearLayout
             android:id="@+id/linearLayout"
             android:layout_width="match_parent"
@@ -131,7 +124,7 @@
                 android:id="@+id/btnBook"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
-                android:backgroundTint="#FE6B6B"
+                android:backgroundTint="#4076FF"
                 android:text="예약하기"
                 android:textColor="@color/white"
                 android:textSize="16sp"
@@ -140,7 +133,6 @@
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <!-- 최상단 TopBar -->
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
@@ -148,7 +140,6 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:background="@color/white"
-        android:elevation="4dp"
         android:paddingStart="18dp"
         android:paddingEnd="16dp">
 

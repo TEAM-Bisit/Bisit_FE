@@ -27,8 +27,8 @@ class ShopReviewsFragment : Fragment() {
         Review(2, "2025.09.10", "셋팅펌", "박*민", 4, "친절했습니다.")
     )
 
-    // 현재 정렬 상태 (true = 최신순)
-    private var isRecentSort = true
+    // 현재 정렬 상태: "recent" 또는 "oldest"
+    private var currentSort: String = "recent"
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,29 +43,27 @@ class ShopReviewsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = ReviewAdapter(onMoreClick = { review ->
-            // BottomActionSheet 표시
             BottomActionSheet().show(parentFragmentManager, "actions")
 
-            // 결과 리스너 등록
             parentFragmentManager.setFragmentResultListener(
                 BottomActionSheet.REQUEST_KEY,
                 viewLifecycleOwner
             ) { _, bundle ->
                 when (bundle.getString(BottomActionSheet.RESULT_ACTION)) {
+
                     BottomActionSheet.ACTION_DELETE -> {
                         ConfirmDialog(
                             message = "삭제하시겠어요?",
                             okText = "삭제하기",
                             onOk = {
                                 data.removeAll { it.id == review.id }
-                                sortReviews(isRecentSort)
+                                sortReviews(currentSort)
                             }
                         ).show(parentFragmentManager, "confirm")
                     }
 
                     BottomActionSheet.ACTION_EDIT -> {
                         // TODO: 리뷰 수정 로직
-                        // AddReviewDialog(prefill = review) { updated -> ... }
                     }
                 }
             }
@@ -73,24 +71,30 @@ class ShopReviewsFragment : Fragment() {
 
         binding.rvReviews.layoutManager = LinearLayoutManager(requireContext())
         binding.rvReviews.adapter = adapter
-        adapter.submitList(data.toList())
+
+        // 초기 정렬 반영
+        sortReviews(currentSort)
 
         // 정렬 옵션 다이얼로그
         binding.tvSortLabel.setOnClickListener {
-            SortOptionDialog(isRecentSort) { selectedRecent ->
-                isRecentSort = selectedRecent
-                sortReviews(selectedRecent)
+            SortOptionDialog(currentSort) { selectedSort ->
+                currentSort = selectedSort
+                binding.tvSortLabel.text =
+                    if (selectedSort == "recent") "최근 순으로" else "오래된 순으로"
+
+                sortReviews(selectedSort)
             }.show(parentFragmentManager, "sort_option")
         }
     }
 
-    private fun sortReviews(isRecent: Boolean) {
+    private fun sortReviews(sortBy: String) {
         val sdf = SimpleDateFormat("yyyy.MM.dd", Locale.KOREA)
-        val sorted = if (isRecent) {
-            data.sortedByDescending { sdf.parse(it.date) }
-        } else {
-            data.sortedBy { sdf.parse(it.date) }
+
+        val sorted = when (sortBy) {
+            "recent" -> data.sortedByDescending { sdf.parse(it.date) }
+            else -> data.sortedBy { sdf.parse(it.date) }
         }
+
         adapter.submitList(sorted)
     }
 

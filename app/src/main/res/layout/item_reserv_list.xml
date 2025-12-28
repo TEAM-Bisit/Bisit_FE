@@ -30,25 +30,25 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="예약 확정"
-                android:textColor="#FE6B6B"
+                android:textColor="#4076FF"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
-            <!-- 구분선 | -->
-            <View
-                android:layout_width="1dp"
-                android:layout_height="8dp"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="6dp"
-                android:background="#D7DBDF" />
+<!--            &lt;!&ndash; 구분선 | &ndash;&gt;-->
+<!--            <View-->
+<!--                android:layout_width="1dp"-->
+<!--                android:layout_height="8dp"-->
+<!--                android:layout_marginStart="10dp"-->
+<!--                android:layout_marginEnd="6dp"-->
+<!--                android:background="#D7DBDF" />-->
 
-            <TextView
-                android:id="@+id/tvProcedureStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="시술 전"
-                android:textColor="#9AA1AF"
-                android:textSize="14sp" />
+<!--            <TextView-->
+<!--                android:id="@+id/tvProcedureStatus"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="시술 전"-->
+<!--                android:textColor="#9AA1AF"-->
+<!--                android:textSize="14sp" />-->
         </LinearLayout>
 
         <TextView
