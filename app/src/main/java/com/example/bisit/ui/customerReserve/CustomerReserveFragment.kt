@@ -86,6 +86,9 @@ class CustomerReserveFragment : Fragment() {
         if (staffId == -1L || shopId == -1L) {
             Log.e("CustomerReserveFragment", "Missing staffId or shopId")
             Toast.makeText(requireContext(), "잘못된 접근입니다.", Toast.LENGTH_SHORT).show()
+            findNavController().popBackStack()
+            // Return empty root since we are popping back stack anyway
+            return binding!!.root
         }
 
         setupDesignerInfo()
@@ -205,7 +208,15 @@ class CustomerReserveFragment : Fragment() {
             val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             val dateStr = dateFormat.format(date.time)
             loadStaffAvailability(staffId, dateStr)
-            if (isFirstSelection) smoothScrollToView(binding?.layoutTimeSlots ?: return@CalendarAdapter)
+        if (isFirstSelection) {
+                // Scroll to the calendar card instead of time slots to keep calendar visible
+                val calendarCard = binding?.rvCalendar?.parent?.parent as? View
+                if (calendarCard != null) {
+                    smoothScrollToView(calendarCard)
+                } else {
+                    smoothScrollToView(binding?.layoutTimeSlots ?: return@CalendarAdapter)
+                }
+            }
             updateStepProgress()
         }
 
@@ -216,6 +227,7 @@ class CustomerReserveFragment : Fragment() {
         }
 
         updateCalendarDays()
+        loadShopDetails(shopId)
 
         binding?.btnPrevMonth?.setOnClickListener {
             currentCalendar.add(Calendar.MONTH, -1)
@@ -225,6 +237,50 @@ class CustomerReserveFragment : Fragment() {
         binding?.btnNextMonth?.setOnClickListener {
             currentCalendar.add(Calendar.MONTH, 1)
             updateCalendarDays()
+        }
+    }
+
+    private fun loadShopDetails(shopId: Long) {
+        lifecycleScope.launch {
+            try {
+                val api = RetrofitClient.getCustomerShopApi(requireContext())
+                val response = api.getShopDetail(shopId)
+                
+                if (response.isSuccessful && response.body() != null) {
+                    val shopData = response.body()!!.data
+                    val closedDays = mutableSetOf<Int>()
+                    
+                    shopData?.weeklyBusinessHours?.forEach { hour ->
+                        if (hour.isClosed == true) {
+                            val dayConstant = mapDayToCalendar(hour.day)
+                            if (dayConstant != -1) {
+                                closedDays.add(dayConstant)
+                            }
+                        }
+                    }
+                    
+                    if (closedDays.isNotEmpty()) {
+                        Log.d("CustomerReserveFragment", "Closed days: $closedDays")
+                        calendarAdapter.setClosedDays(closedDays)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("CustomerReserveFragment", "Error loading shop details", e)
+            }
+        }
+    }
+
+    private fun mapDayToCalendar(day: String?): Int {
+        if (day == null) return -1
+        return when (day.uppercase(Locale.ROOT)) {
+            "SUNDAY", "SUN", "일", "일요일" -> Calendar.SUNDAY
+            "MONDAY", "MON", "월", "월요일" -> Calendar.MONDAY
+            "TUESDAY", "TUE", "화", "화요일" -> Calendar.TUESDAY
+            "WEDNESDAY", "WED", "수", "수요일" -> Calendar.WEDNESDAY
+            "THURSDAY", "THU", "목", "목요일" -> Calendar.THURSDAY
+            "FRIDAY", "FRI", "금", "금요일" -> Calendar.FRIDAY
+            "SATURDAY", "SAT", "토", "토요일" -> Calendar.SATURDAY
+            else -> -1
         }
     }
 
@@ -265,11 +321,16 @@ class CustomerReserveFragment : Fragment() {
     private fun loadStaffAvailability(staffId: Long, date: String) {
         lifecycleScope.launch {
             try {
+                Log.d("CustomerReserveFragment", "Requesting availability -> staffId: $staffId, date: $date")
                 val api = RetrofitClient.getReservationApi(requireContext())
                 val response = api.getStaffAvailability(staffId, date)
 
+                Log.d("CustomerReserveFragment", "API Response Code: ${response.code()}")
+                
                 if (response.isSuccessful && response.body() != null) {
                     val availabilityResponse = response.body()!!
+                    Log.d("CustomerReserveFragment", "Response Body: $availabilityResponse")
+                    
                     if (availabilityResponse.success && availabilityResponse.data != null) {
                         val data = availabilityResponse.data
                         staffName = data.staffName
@@ -281,18 +342,19 @@ class CustomerReserveFragment : Fragment() {
 
                         Log.d("CustomerReserveFragment", "Loaded ${availableTimes.size} time slots and ${treatments.size} treatments")
                     } else {
-                        Log.w("CustomerReserveFragment", "Empty availability data")
-                        Toast.makeText(requireContext(), "예약 가능한 시간이 없습니다.", Toast.LENGTH_SHORT).show()
+                        Log.w("CustomerReserveFragment", "Empty availability data or success=false")
+                        Toast.makeText(requireContext(), "예약 가능한 시간이 없습니다 (데이터 없음).", Toast.LENGTH_SHORT).show()
                         clearTimeSlots()
                         clearTreatments()
                     }
                 } else {
-                    Log.e("CustomerReserveFragment", "API call failed: ${response.code()}")
-                    Toast.makeText(requireContext(), "예약 정보를 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("CustomerReserveFragment", "API call failed: ${response.code()}, Body: $errorBody")
+                    Toast.makeText(requireContext(), "예약 정보를 불러오는데 실패했습니다: ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Log.e("CustomerReserveFragment", "Error loading availability", e)
-                Toast.makeText(requireContext(), "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "오류 발생: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -301,9 +363,20 @@ class CustomerReserveFragment : Fragment() {
         val bind = binding ?: return
         bind.layoutTimeSlots.removeAllViews()
 
-        if (times.isEmpty()) {
+        // Filter out past times if the selected date is today
+        val now = Calendar.getInstance()
+        val todayStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(now.time)
+        val currentHourMinute = SimpleDateFormat("HH:mm", Locale.getDefault()).format(now.time)
+
+        val filteredTimes = if (date == todayStr) {
+            times.filter { it > currentHourMinute }
+        } else {
+            times
+        }
+
+        if (filteredTimes.isEmpty()) {
             val emptyText = TextView(requireContext()).apply {
-                text = "예약 가능한 시간이 없습니다."
+                text = "예약 가능한 시간이 없습니다. (마감)"
                 textSize = 14f
                 setTextColor(Color.parseColor("#999999"))
                 setPadding(0, dpToPx(16), 0, dpToPx(16))
@@ -312,8 +385,8 @@ class CustomerReserveFragment : Fragment() {
             return
         }
 
-        val morningTimes = times.filter { it < "12:00" }
-        val afternoonTimes = times.filter { it >= "12:00" }
+        val morningTimes = filteredTimes.filter { it < "12:00" }
+        val afternoonTimes = filteredTimes.filter { it >= "12:00" }
 
         if (morningTimes.isNotEmpty()) {
             addSectionTitle("오전")

@@ -21,4 +21,25 @@ interface ReservationApiService {
     suspend fun createReservation(
         @Body request: ReservationRequest
     ): Response<ReservationResponse>
+
+    @GET("/api/reservations/customers/scheduled")
+    suspend fun getScheduledReservations(
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 10,
+        @Query("sortDirection") sortDirection: String = "asc"
+    ): Response<com.example.bisit.data.model.reservation.ReservationListResponse>
+
+    @GET("/api/reservations/customers/completed")
+    suspend fun getCompletedReservations(
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 10,
+        @Query("sortDirection") sortDirection: String = "desc"
+    ): Response<com.example.bisit.data.model.reservation.ReservationListResponse>
+
+    @GET("/api/reservations/customers/canceled")
+    suspend fun getCanceledReservations(
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 10,
+        @Query("sortDirection") sortDirection: String = "desc"
+    ): Response<com.example.bisit.data.model.reservation.ReservationListResponse>
 }

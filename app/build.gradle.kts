@@ -17,6 +17,7 @@ if (localPropertiesFile.exists()) {
 val ncpKeyId = localProps.getProperty("ncp.access.key.id") ?: ""
 val ncpSecretKey = localProps.getProperty("ncp.secret.key") ?: ""
 val baseServerUrl = localProps.getProperty("server.base.url") ?: ""
+val naverMapClientId = localProps.getProperty("naver.maps.client.id") ?: ""
 
 val tossClientKey = localProps.getProperty("TOSS_CLIENT_KEY") ?: ""
 
@@ -39,7 +40,7 @@ android {
 
         buildConfigField("String", "TOSS_CLIENT_KEY", "\"$tossClientKey\"")
 
-        manifestPlaceholders["NAVER_CLIENT_ID"] = ncpKeyId
+        manifestPlaceholders["NAVER_CLIENT_ID"] = naverMapClientId
     }
 
     buildTypes {

@@ -48,6 +48,25 @@ class CustomerMyReserveAdapter(
 
         fun bind(item: MyReserveItem) {
             val context = itemView.context
+            
+            // Bind common fields
+            itemView.findViewById<TextView>(R.id.tv_wait_reserv_no)?.text = "예약 번호  ${item.orderId ?: item.reservationId}"
+            itemView.findViewById<TextView>(R.id.tv_wait_shop)?.text = item.shopName
+            itemView.findViewById<TextView>(R.id.tv_wait_datetime)?.text = formatDateTime(item.reservedDate)
+            itemView.findViewById<TextView>(R.id.tv_wait_service)?.text = "${item.treatmentName}  ${formatPrice(item.price)}원"
+            
+            // For completed layout
+            itemView.findViewById<TextView>(R.id.tv_done_reserv_no)?.text = "예약 번호  ${item.orderId ?: item.reservationId}"
+            itemView.findViewById<TextView>(R.id.tv_done_shop)?.text = item.shopName
+            itemView.findViewById<TextView>(R.id.tv_done_datetime)?.text = formatDateTime(item.reservedDate)
+            itemView.findViewById<TextView>(R.id.tv_done_service)?.text = "${item.treatmentName}  ${formatPrice(item.price)}원"
+            
+            // For canceled layout
+            itemView.findViewById<TextView>(R.id.tv_cancel_reserv_no)?.text = "예약 번호  ${item.orderId ?: item.reservationId}"
+            itemView.findViewById<TextView>(R.id.tv_cancel_shop)?.text = item.shopName
+            itemView.findViewById<TextView>(R.id.tv_cancel_datetime)?.text = formatDateTime(item.reservedDate)
+            itemView.findViewById<TextView>(R.id.tv_cancel_service)?.text = "${item.treatmentName}  ${formatPrice(item.price)}원"
+            
             val btnDoneDetail = itemView.findViewById<Button>(R.id.btn_done_detail)
             btnDoneDetail?.setOnClickListener {
                 onDetailClick(item)
@@ -62,6 +81,21 @@ class CustomerMyReserveAdapter(
             btnInquire?.setOnClickListener {
                 showInquireDialog(context)
             }
+        }
+        
+        private fun formatDateTime(dateStr: String): String {
+            return try {
+                val inputFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                val outputFormat = java.text.SimpleDateFormat("yyyy.MM.dd", java.util.Locale.getDefault())
+                val date = inputFormat.parse(dateStr)
+                if (date != null) outputFormat.format(date) else dateStr
+            } catch (e: Exception) {
+                dateStr
+            }
+        }
+        
+        private fun formatPrice(price: Int): String {
+            return java.text.NumberFormat.getNumberInstance(java.util.Locale.US).format(price)
         }
 
         private fun showInquireDialog(context: Context) {

@@ -11,4 +11,7 @@ interface MemberApiService {
 
     @GET("/api/members/my-profile")
     fun getMyProfile(): Call<MyProfileResponse>
+
+    @retrofit2.http.PATCH("/api/members/my-profile")
+    fun updateMyProfile(@retrofit2.http.Body request: com.example.bisit.data.model.member.MemberUpdateRequest): Call<com.example.bisit.data.model.member.MemberUpdateResponse>
 }

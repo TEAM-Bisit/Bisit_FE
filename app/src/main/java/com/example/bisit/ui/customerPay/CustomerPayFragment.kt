@@ -69,25 +69,26 @@ class CustomerPayFragment : Fragment() {
     ) { result: ActivityResult ->
         if (result.resultCode == Activity.RESULT_OK) {
             val paymentSuccess = result.data?.getBooleanExtra(TossPayActivity.RESULT_PAYMENT_SUCCESS, false) ?: false
-            val paymentKey = result.data?.getStringExtra(TossPayActivity.RESULT_PAYMENT_KEY) ?: ""
-            val orderId = result.data?.getStringExtra(TossPayActivity.RESULT_ORDER_ID) ?: ""
             
             if (paymentSuccess) {
-                // Payment successful, now create reservation
+                // Payment successful (server confirmed it)
                 Toast.makeText(
                     requireContext(),
-                    "결제가 완료되었습니다! 예약을 생성하는 중...",
-                    Toast.LENGTH_SHORT
+                    "결제 및 예약이 완료되었습니다!",
+                    Toast.LENGTH_LONG
                 ).show()
                 
-                createReservation(paymentKey, orderId)
+                // Navigate back
+                findNavController().popBackStack()
             }
         } else {
             Toast.makeText(
                 requireContext(),
-                "결제가 취소되었습니다",
+                "결제가 취소되었습니다. 예약이 대기 상태로 남을 수 있습니다.",
                 Toast.LENGTH_SHORT
             ).show()
+            // Reset button to allow retry
+            binding.btnPay.isEnabled = true
         }
     }
 
@@ -293,20 +294,14 @@ class CustomerPayFragment : Fragment() {
 
     private fun setupPayButton() {
         binding.btnPay.setOnClickListener {
-            // Start payment flow directly
-            val orderId = "ORD-${System.currentTimeMillis()}"
-            val orderName = serviceName
-            
-            val intent = Intent(requireContext(), TossPayActivity::class.java).apply {
-                putExtra(TossPayActivity.EXTRA_AMOUNT, totalPrice)
-                putExtra(TossPayActivity.EXTRA_ORDER_ID, orderId)
-                putExtra(TossPayActivity.EXTRA_ORDER_NAME, orderName)
-            }
-            paymentLauncher.launch(intent)
+            // Validate first
+            validateForm()
+            // Create reservation (PENDING) first, then pay
+            createReservation()
         }
     }
 
-    private fun createReservation(paymentKey: String, orderId: String) {
+    private fun createReservation() {
         val name = binding.etName.text.toString().trim()
         val phone = binding.etPhone.text.toString().trim()
         val address = binding.tvSelectedAddress.text.toString()
@@ -323,12 +318,16 @@ class CustomerPayFragment : Fragment() {
         val addressLine = if (address != "주소를 선택해주세요") address else null
         val addressDetail = if (detailAddress.isNotEmpty()) detailAddress else null
         
+        val safeDate = selectedDate.trim()
+        val safeTime = selectedTime.trim()
+        val formattedTime = if (safeTime.length == 5) "$safeTime:00" else safeTime
+
         val request = ReservationRequest(
             shopId = shopId,
             treatmentId = treatmentId,
             staffId = staffId,
-            reservedDate = selectedDate,
-            startTime = selectedTime,
+            reservedDate = safeDate,
+            startTime = formattedTime,
             serviceChannel = serviceChannel,
             customerName = name,
             customerPhone = phone,
@@ -337,6 +336,8 @@ class CustomerPayFragment : Fragment() {
             termsAgreed = true,
             couponIssueId = selectedCoupon?.couponIssueId
         )
+
+        Log.d("CustomerPayFragment", "Retry Reservation Request: $request")
         
         lifecycleScope.launch {
             try {
@@ -348,16 +349,18 @@ class CustomerPayFragment : Fragment() {
                     val reservationResponse = response.body()!!
                     if (reservationResponse.success && reservationResponse.data != null) {
                         val reservation = reservationResponse.data
-                        Log.d("CustomerPayFragment", "Reservation created: ${reservation.reservationId}")
                         
-                        Toast.makeText(
-                            requireContext(),
-                            "예약이 완료되었습니다!\n예약번호: ${reservation.reservationId}",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        // Now launch payment with orderId provided by backend
+                        val orderId = reservation.orderId
+                        val orderName = serviceName
                         
-                        // Navigate back to home or reservation list
-                        findNavController().popBackStack()
+                        val intent = Intent(requireContext(), TossPayActivity::class.java).apply {
+                            putExtra(TossPayActivity.EXTRA_AMOUNT, reservation.finalAmount)
+                            putExtra(TossPayActivity.EXTRA_ORDER_ID, orderId)
+                            putExtra(TossPayActivity.EXTRA_ORDER_NAME, orderName)
+                        }
+                        paymentLauncher.launch(intent)
+                        
                     } else {
                         Log.e("CustomerPayFragment", "Reservation creation failed: ${reservationResponse.message}")
                         Toast.makeText(
@@ -368,10 +371,11 @@ class CustomerPayFragment : Fragment() {
                         binding.btnPay.isEnabled = true
                     }
                 } else {
-                    Log.e("CustomerPayFragment", "API call failed: ${response.code()}")
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("CustomerPayFragment", "API call failed: ${response.code()}, Body: $errorBody")
                     Toast.makeText(
                         requireContext(),
-                        "예약 생성에 실패했습니다.",
+                        "예약 생성에 실패했습니다: ${response.code()}",
                         Toast.LENGTH_SHORT
                     ).show()
                     binding.btnPay.isEnabled = true
@@ -380,7 +384,7 @@ class CustomerPayFragment : Fragment() {
                 Log.e("CustomerPayFragment", "Error creating reservation", e)
                 Toast.makeText(
                     requireContext(),
-                    "네트워크 오류가 발생했습니다.",
+                    "네트워크 오류가 발생했습니다: ${e.message}",
                     Toast.LENGTH_SHORT
                 ).show()
                 binding.btnPay.isEnabled = true

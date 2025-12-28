@@ -88,6 +88,43 @@ class TossPayActivity : AppCompatActivity() {
                 val url = request?.url?.toString() ?: return false
                 Log.d(TAG, "URL Loading: $url")
 
+                if (url.startsWith("intent:")) {
+                    try {
+                        val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
+                        val packageManager = view?.context?.packageManager
+                        if (intent.resolveActivity(packageManager!!) != null) {
+                            startActivity(intent)
+                            return true
+                        }
+                        
+                        // Fallback to Play Store if app not installed
+                        val fallbackUrl = intent.getStringExtra("browser_fallback_url")
+                        if (fallbackUrl != null) {
+                            view.loadUrl(fallbackUrl)
+                            return true
+                        }
+                        
+                        val packageName = intent.`package`
+                        if (packageName != null) {
+                           startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName")))
+                           return true
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Bad URI: $url", e)
+                    }
+                    return true
+                }
+                
+                if (url.startsWith("market://")) {
+                    try {
+                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                         startActivity(intent)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Market URL error", e)
+                    }
+                    return true
+                }
+
                 return when {
                     url.startsWith("tosspayments://success") -> {
                         handlePaymentSuccess(url)
@@ -96,6 +133,17 @@ class TossPayActivity : AppCompatActivity() {
                     url.startsWith("tosspayments://fail") -> {
                         handlePaymentFailure(url)
                         true
+                    }
+                    !url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("javascript:") -> {
+                        // Handle other custom schemes
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                            startActivity(intent)
+                            true
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Unknown scheme error", e)
+                            true // Block unknown schemes to prevent crash
+                        }
                     }
                     else -> false
                 }
@@ -253,7 +301,8 @@ class TossPayActivity : AppCompatActivity() {
                         setResult(Activity.RESULT_OK, resultIntent)
                         finish()
                     } else {
-                        Log.e(TAG, "Payment confirmation failed: ${response.code()} - ${response.message()}")
+                        val errorBody = response.errorBody()?.string()
+                        Log.e(TAG, "Payment confirmation failed: ${response.code()} - ${response.message()}\nBody: $errorBody")
                         Toast.makeText(
                             this@TossPayActivity,
                             "결제 승인에 실패했습니다: ${response.message()}",

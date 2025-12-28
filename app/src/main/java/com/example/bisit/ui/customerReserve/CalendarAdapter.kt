@@ -26,6 +26,13 @@ class CalendarAdapter(
         notifyDataSetChanged()
     }
 
+    private var closedDays: Set<Int> = emptySet()
+
+    fun setClosedDays(days: Set<Int>) {
+        closedDays = days
+        notifyDataSetChanged()
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DayViewHolder {
         val binding = ItemCalendarDayBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
@@ -58,15 +65,21 @@ class CalendarAdapter(
 
             // Check if it's past date
             val isPast = isBeforeDay(date, today)
+            
+            // Check if it's a closed day
+            val dayOfWeek = date.get(Calendar.DAY_OF_WEEK)
+            val isClosed = closedDays.contains(dayOfWeek)
 
             // Check selection
             val isSelected = selectedDate != null && isSameDay(date, selectedDate!!)
             
-            if (isPast) {
+            if (isPast || isClosed) {
                 binding.viewSelection.visibility = View.INVISIBLE
                 binding.tvDay.setTextColor(Color.parseColor("#DDDDDD")) // Gray for disabled
                 binding.root.setOnClickListener(null)
                 binding.root.isClickable = false
+                
+                // Optional: visual indicator for closed? For now just gray out like past dates.
             } else {
                 binding.root.isClickable = true
                 if (isSelected) {
