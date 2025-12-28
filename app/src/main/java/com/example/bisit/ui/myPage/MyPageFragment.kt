@@ -9,6 +9,12 @@ import androidx.navigation.fragment.findNavController
 import com.example.bisit.MainActivity
 import com.example.bisit.R
 import com.example.bisit.databinding.FragmentMyPageBinding
+import com.example.bisit.data.api.RetrofitClient
+import com.example.bisit.data.model.member.MyPageResponse
+import com.example.bisit.data.model.member.MyPageData
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class MyPageFragment : Fragment() {
     private var _binding: FragmentMyPageBinding? = null
@@ -24,6 +30,9 @@ class MyPageFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Fetch My Page Info
+        fetchMyPageInfo()
 
         binding.logoutLayout.setOnClickListener {
             (activity as? MainActivity)?.logout()
@@ -64,14 +73,31 @@ class MyPageFragment : Fragment() {
         binding.term3.setOnClickListener {
             findNavController().navigate(R.id.action_myPageFragment_to_myPageTerm3Fragment)
         }
-
-        binding.term4.setOnClickListener {
-            findNavController().navigate(R.id.action_myPageFragment_to_myPageTerm4Fragment)
-        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun fetchMyPageInfo() {
+        RetrofitClient.getMemberApi(requireContext()).getMyPage()
+            .enqueue(object : Callback<MyPageResponse> {
+                override fun onResponse(
+                    call: Call<MyPageResponse>,
+                    response: Response<MyPageResponse>
+                ) {
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        val data = response.body()?.data
+                        binding.tvName.text = data?.name ?: "사용자"
+                        binding.tvCouponCnt.text = "${data?.couponCount ?: 0}"
+                        binding.tvReviewCnt.text = "${data?.reviewCount ?: 0}"
+                    }
+                }
+
+                override fun onFailure(call: Call<MyPageResponse>, t: Throwable) {
+                    // Handle failure
+                }
+            })
     }
 }

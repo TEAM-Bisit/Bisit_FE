@@ -81,8 +81,11 @@ class HomeListFragment : Fragment() {
 
     private fun setupRecyclerView() {
         adapter = HomeListAdapter(emptyList()) {
-            Log.d(TAG, "가게 아이템 클릭됨 → 상세 페이지 이동")
-            findNavController().navigate(R.id.action_homeListFragment_to_customerShopFragment)
+            Log.d(TAG, "가게 아이템 클릭됨 → 상세 페이지 이동: ${it.shopId}")
+            val bundle = Bundle().apply {
+                putLong("shopId", it.shopId)
+            }
+            findNavController().navigate(R.id.action_homeListFragment_to_customerShopFragment, bundle)
         }
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())

@@ -45,7 +45,11 @@
         android:id="@+id/customerMyReserveDetailFragment"
         android:name="com.example.bisit.ui.customerMyReserve.CustomerMyReserveDetailFragment"
         android:label="예약 상세"
-        tools:layout="@layout/fragment_customer_my_reserve_detail" />
+        tools:layout="@layout/fragment_customer_my_reserve_detail">
+        <argument
+            android:name="reservationId"
+            app:argType="string" />
+    </fragment>
 
     <fragment
         android:id="@+id/myPageFragment"

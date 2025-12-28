@@ -1,12 +1,17 @@
 package com.example.bisit.ui.myPage
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.bisit.data.api.RetrofitClient
+import com.example.bisit.data.model.coupon.CouponListResponse
 import com.example.bisit.databinding.FragmentMyPageCouponBinding
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class MyPageCouponFragment : Fragment() {
 
@@ -25,27 +30,36 @@ class MyPageCouponFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.rvCoupons.layoutManager = LinearLayoutManager(requireContext())
-        val dummyCoupons = listOf(
-            mapOf(
-                "percent" to "20%",
-                "title" to "[첫 구매 적용 쿠폰]",
-                "desc" to "첫 구매 20% 할인 쿠폰입니다.",
-                "dday" to "1일 남음",
-                "validDate" to "2025년 09월 22일까지 사용 가능"
-            ),
-            mapOf(
-                "percent" to "10%",
-                "title" to "[두 번째 쿠폰]",
-                "desc" to "두 번째 쿠폰 설명입니다.",
-                "dday" to "3일 남음",
-                "validDate" to "2025년 10월 01일까지 사용 가능"
-            )
-        )
-        binding.rvCoupons.adapter = MyPageCouponAdapter(dummyCoupons)
+        
+        fetchCoupons()
 
         binding.btnBackCoupon.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
+    }
+
+    private fun fetchCoupons() {
+        // TODO: Use real memberId. For now using placeholder 1L as per plan.
+        val memberId = 1L
+        
+        RetrofitClient.getCouponApi(requireContext()).getMyCoupons(memberId, 0, 100)
+            .enqueue(object : Callback<CouponListResponse> {
+                override fun onResponse(
+                    call: Call<CouponListResponse>,
+                    response: Response<CouponListResponse>
+                ) {
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        val coupons = response.body()?.data?.coupons?.content ?: emptyList()
+                        binding.rvCoupons.adapter = MyPageCouponAdapter(coupons)
+                    } else {
+                        // Handle error
+                    }
+                }
+
+                override fun onFailure(call: Call<CouponListResponse>, t: Throwable) {
+                    // Handle failure
+                }
+            })
     }
 
 

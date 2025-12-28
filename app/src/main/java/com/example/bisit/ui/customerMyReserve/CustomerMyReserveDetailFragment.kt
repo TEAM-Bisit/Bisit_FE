@@ -121,29 +121,33 @@ class CustomerMyReserveDetailFragment : Fragment() {
         // --- 별점 로직 끝 ---
 
         dialogBinding.btnSummit.setOnClickListener {
-            val content = dialogBinding.etReview.text.toString()
-            val reservationId = "shtydlqslek" // 실제로는 Fragment argument 등으로 받아온 값을 사용해야 합니다.
-
-            val request = ReviewRequest(reservationId, currentScore, content)
-
-            RetrofitClient.getReviewApi(requireContext()).writeReview(request)
-                .enqueue(object : Callback<ReviewResponse> {
-                    override fun onResponse(call: Call<ReviewResponse>, response: Response<ReviewResponse>) {
-                        if (response.isSuccessful && response.body()?.success == true) {
-                            Toast.makeText(requireContext(), "리뷰가 등록되었습니다.", Toast.LENGTH_SHORT).show()
-                            dialog.dismiss()
-                        } else {
-                            Toast.makeText(requireContext(), "리뷰 등록 실패: ${response.code()}", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-
-                    override fun onFailure(call: Call<ReviewResponse>, t: Throwable) {
-                        Toast.makeText(requireContext(), "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
-                    }
-                })
+            submitReview(dialog, dialogBinding, currentScore)
         }
 
         dialog.show()
+    }
+
+    private fun submitReview(dialog: Dialog, dialogBinding: DialogCustomerMyReserveReviewBinding, score: Int) {
+        val content = dialogBinding.etReview.text.toString()
+        val reservationId = arguments?.getString("reservationId") ?: "shtydlqslek" // Fallback to old dummy if null
+
+        val request = ReviewRequest(reservationId, score, content)
+
+        RetrofitClient.getReviewApi(requireContext()).writeReview(request)
+            .enqueue(object : Callback<ReviewResponse> {
+                override fun onResponse(call: Call<ReviewResponse>, response: Response<ReviewResponse>) {
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        Toast.makeText(requireContext(), "리뷰가 등록되었습니다.", Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                    } else {
+                        Toast.makeText(requireContext(), "리뷰 등록 실패: ${response.code()}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<ReviewResponse>, t: Throwable) {
+                    Toast.makeText(requireContext(), "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 
     override fun onDestroyView() {

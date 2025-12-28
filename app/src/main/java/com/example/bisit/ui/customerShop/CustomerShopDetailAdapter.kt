@@ -21,11 +21,14 @@ import com.example.bisit.databinding.ItemShopDetailBinding
 
 class CustomerShopDetailAdapter(
     private val items: List<CustomerShopUiItem>,
-    private val servicesLists: List<List<ServiceItem>> = emptyList(),
-    private val reviewsLists: List<List<ReviewItem>> = emptyList()
+    servicesLists: List<List<ServiceItem>> = emptyList(),
+    reviewsLists: List<List<ReviewItem>> = emptyList()
 ) : RecyclerView.Adapter<CustomerShopDetailAdapter.ShopDetailViewHolder>() {
 
     private val expandedPositions = mutableSetOf<Int>()
+
+    private var servicesLists: List<List<ServiceItem>> = servicesLists
+    private var reviewsLists: List<List<ReviewItem>> = reviewsLists
 
     inner class ShopDetailViewHolder(val binding: ItemShopDetailBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -97,6 +100,15 @@ class CustomerShopDetailAdapter(
                 binding.containerReviewItems.addView(view)
             }
 
+            // Update tab info text count
+            fun updateTabInfo(isService: Boolean) {
+                if (isService) {
+                    binding.tvTabInfo.text = "서비스 정보 ${servicesForThis.size}개"
+                } else {
+                    binding.tvTabInfo.text = "리뷰 ${reviewsForThis.size}개"
+                }
+            }
+
             binding.tabService.setOnClickListener {
                 binding.containerServiceItems.visibility = View.VISIBLE
                 binding.containerReviewItems.visibility = View.GONE
@@ -104,6 +116,7 @@ class CustomerShopDetailAdapter(
                 binding.tabReview.setTextColor(ContextCompat.getColor(binding.root.context, R.color.gray))
                 binding.tabService.setBackgroundResource(R.drawable.bg_tab_selected)
                 binding.tabReview.setBackgroundResource(R.drawable.bg_tab_unselected)
+                updateTabInfo(true)
             }
 
             binding.tabReview.setOnClickListener {
@@ -113,8 +126,10 @@ class CustomerShopDetailAdapter(
                 binding.tabReview.setTextColor(ContextCompat.getColor(binding.root.context, R.color.black))
                 binding.tabService.setBackgroundResource(R.drawable.bg_tab_unselected)
                 binding.tabReview.setBackgroundResource(R.drawable.bg_tab_selected)
+                updateTabInfo(false)
             }
 
+            // Initial state (Service selected)
             binding.containerServiceItems.visibility = View.VISIBLE
             binding.containerReviewItems.visibility = View.GONE
             binding.tabService.apply {
@@ -125,6 +140,7 @@ class CustomerShopDetailAdapter(
                 setTextColor(ContextCompat.getColor(binding.root.context, R.color.gray))
                 setBackgroundResource(R.drawable.bg_tab_unselected)
             }
+            updateTabInfo(true)
         }
 
         private fun showCopyAddressDialog(context: Context, address: String) {
@@ -160,4 +176,12 @@ class CustomerShopDetailAdapter(
     }
 
     override fun getItemCount(): Int = items.size
+
+    fun updateData(newServices: List<ServiceItem>, newReviews: List<ReviewItem>) {
+        // Since we assume adapter is bound to 1 shop item (position 0), we just wrap them in a list of list
+        servicesLists = listOf(newServices)
+        reviewsLists = listOf(newReviews)
+        notifyItemChanged(0)
+    }
 }
+

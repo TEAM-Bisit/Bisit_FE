@@ -17,6 +17,8 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+import com.example.bisit.data.model.member.MyProfileResponse
+
 class MyPageEditFragment : Fragment() {
 
     private var _binding: FragmentMyPageEditBinding? = null
@@ -42,6 +44,9 @@ class MyPageEditFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Fetch Profile Info
+        fetchMyProfile()
 
         binding.btnBack.setOnClickListener {
             findNavController().popBackStack()
@@ -125,11 +130,100 @@ class MyPageEditFragment : Fragment() {
             })
         }
 
-        binding.btnBook.isEnabled = false
+        // Initial logic setup
+        setupUpdateButton()
+        // Default disabled until loaded or edited? existing code had false. 
+        // We enable it in fetch success, or we can enable it here if you want edits immediately. 
+        // Logic in fetchMyProfile enables it after load.
+        binding.btnBook.isEnabled = false 
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+    private fun fetchMyProfile() {
+        RetrofitClient.getMemberApi(requireContext()).getMyProfile()
+            .enqueue(object : Callback<MyProfileResponse> {
+                override fun onResponse(
+                    call: Call<MyProfileResponse>,
+                    response: Response<MyProfileResponse>
+                ) {
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        val data = response.body()?.data
+                        binding.etName.setText(data?.name)
+                        binding.etEmail.setText(data?.email)
+                        if (!data?.phone.isNullOrEmpty()) {
+                            binding.etPhone.setText(data?.phone)
+                        }
+                        // Enable button initially if data is loaded, or let TextWatcher handle it
+                        binding.btnBook.isEnabled = true
+                        binding.btnBook.backgroundTintList =
+                            resources.getColorStateList(com.example.bisit.R.color.blue_4076FF, null)
+                    }
+                }
+
+                override fun onFailure(call: Call<MyProfileResponse>, t: Throwable) {
+                    Log.e("MyPageEditFragment", "Fetch profile failed", t)
+                }
+            })
+    }
+    
+    private fun setupUpdateButton() {
+        binding.btnBook.setOnClickListener {
+            updateProfile()
+        }
+    }
+
+    private fun updateProfile() {
+        val name = binding.etName.text.toString().trim()
+        val email = binding.etEmail.text.toString().trim()
+        val phone = binding.etPhone.text.toString().trim()
+        val code = binding.etPhone2.text.toString().trim().ifEmpty { null }
+        
+        // Basic validation
+        if (name.isEmpty()) {
+            android.widget.Toast.makeText(requireContext(), "이름을 입력해주세요.", android.widget.Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (email.isEmpty()) { // Add email regex validation if needed
+             android.widget.Toast.makeText(requireContext(), "이메일을 입력해주세요.", android.widget.Toast.LENGTH_SHORT).show()
+             return
+        }
+        
+        // If phone changed, code must be verified (isPhoneVerified flag handles local check, backend also checks)
+        // If phone is different from initial, code is required. 
+        // For now, simplistically pass what we have. API requirement: "Verification code required when phone changes"
+        
+        val request = com.example.bisit.data.model.member.MemberUpdateRequest(
+            name = name,
+            email = email,
+            phone = phone,
+            verificationCode = code
+        )
+
+        binding.btnBook.isEnabled = false
+        
+        RetrofitClient.getMemberApi(requireContext()).updateMyProfile(request)
+            .enqueue(object : Callback<com.example.bisit.data.model.member.MemberUpdateResponse> {
+                override fun onResponse(
+                    call: Call<com.example.bisit.data.model.member.MemberUpdateResponse>,
+                    response: Response<com.example.bisit.data.model.member.MemberUpdateResponse>
+                ) {
+                     binding.btnBook.isEnabled = true
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        android.widget.Toast.makeText(requireContext(), "정보가 수정되었습니다.", android.widget.Toast.LENGTH_SHORT).show()
+                        findNavController().popBackStack()
+                    } else {
+                        val msg = response.body()?.message ?: "수정에 실패했습니다."
+                        android.widget.Toast.makeText(requireContext(), msg, android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<com.example.bisit.data.model.member.MemberUpdateResponse>, t: Throwable) {
+                    binding.btnBook.isEnabled = true
+                    android.widget.Toast.makeText(requireContext(), "네트워크 오류: ${t.message}", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 }

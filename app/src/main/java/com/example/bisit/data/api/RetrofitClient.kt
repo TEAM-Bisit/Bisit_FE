@@ -102,6 +102,20 @@ object RetrofitClient {
     fun getCustomerShopApi(context: Context) =
         getServerRetrofit(context).create(CustomerShopApiService::class.java)
 
+    fun getPaymentApi(context: Context) =
+        getServerRetrofit(context).create(PaymentApiService::class.java)
+
+    fun getReservationApi(context: Context) =
+        getServerRetrofit(context).create(ReservationApiService::class.java)
+
+    fun getMemberApi(context: Context): MemberApiService {
+        return getServerRetrofit(context).create(MemberApiService::class.java)
+    }
+
+    fun getCouponApi(context: Context): CouponApiService {
+        return getServerRetrofit(context).create(CouponApiService::class.java)
+    }
+    
     fun getStaffManageApi(context: Context) =
         getServerRetrofit(context).create(StaffManageApiService::class.java)
 }

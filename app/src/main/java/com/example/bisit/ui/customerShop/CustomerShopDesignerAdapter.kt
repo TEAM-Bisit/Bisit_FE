@@ -8,11 +8,12 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.bisit.R
-import com.example.bisit.data.model.shop.Designer
+import com.example.bisit.data.model.customerShop.StaffData
 
 class CustomerShopDesignerAdapter(
-    private val items: List<Designer>,
+    private var items: List<StaffData>,
     private val itemClick: (Int) -> Unit
 ) : RecyclerView.Adapter<CustomerShopDesignerAdapter.VH>() {
 
@@ -35,12 +36,23 @@ class CustomerShopDesignerAdapter(
 
     override fun onBindViewHolder(holder: VH, position: Int) {
         val item = items[position]
-        holder.tvName.text = item.name
-        holder.tvRole.text = item.role
-        holder.tvIntro.text = item.intro
-        holder.tvRating.text = item.rating
-        holder.tvReviewCount.text = item.reviewCount
-        holder.imgAvatar.setImageResource(R.drawable.img_designer)
+        holder.tvName.text = item.staffName
+        holder.tvRole.text = "사장님" // API에서 role 정보가 없으므로 기본값 사용
+        holder.tvIntro.text = item.description ?: "소개가 없습니다."
+        holder.tvRating.text = String.format("%.1f", item.averageRating)
+        holder.tvReviewCount.text = "리뷰 ${item.reviewCount}개"
+        
+        // 이미지 로딩 (Glide 사용)
+        if (!item.image.isNullOrEmpty()) {
+            Glide.with(holder.itemView.context)
+                .load(item.image)
+                .placeholder(R.drawable.img_designer)
+                .error(R.drawable.img_designer)
+                .circleCrop()
+                .into(holder.imgAvatar)
+        } else {
+            holder.imgAvatar.setImageResource(R.drawable.img_designer)
+        }
 
         val isSelected = position == selectedPosition
         holder.itemView.isSelected = isSelected
@@ -73,4 +85,10 @@ class CustomerShopDesignerAdapter(
     }
 
     override fun getItemCount(): Int = items.size
+
+    fun updateData(newItems: List<StaffData>) {
+        items = newItems
+        selectedPosition = -1
+        notifyDataSetChanged()
+    }
 }

@@ -5,18 +5,44 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.databinding.ItemMypageCouponBinding
 
-class MyPageCouponAdapter(private val coupons: List<Map<String, String>>) :
+import com.example.bisit.data.model.coupon.Coupon
+import java.text.SimpleDateFormat
+import java.util.Locale
+
+class MyPageCouponAdapter(private val coupons: List<Coupon>) :
     RecyclerView.Adapter<MyPageCouponAdapter.CouponViewHolder>() {
 
     inner class CouponViewHolder(private val binding: ItemMypageCouponBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: Map<String, String>) {
-            binding.tvCouponTitlePercent.text = item["percent"]
-            binding.tvCouponTitle.text = item["title"]
-            binding.tvCouponDesc.text = item["desc"]
-            binding.tvCouponMetaDday.text = item["dday"]
-            binding.tvCouponMeta.text = item["validDate"]
+        fun bind(item: Coupon) {
+            // Display percent or amount
+            if (item.percent > 0) {
+                 binding.tvCouponTitlePercent.text = "${item.percent}%"
+            } else {
+                 binding.tvCouponTitlePercent.text = "${item.amount}원"
+            }
+            
+            binding.tvCouponTitle.text = item.name
+            binding.tvCouponDesc.text = item.description
+            
+            // Format Valid Date
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+            val outputFormat = SimpleDateFormat("yyyy년 MM월 dd일까지 사용 가능", Locale.KOREA)
+            try {
+                val date = inputFormat.parse(item.validTo)
+                binding.tvCouponMeta.text = if (date != null) outputFormat.format(date) else item.validTo
+                
+                // Calculate D-Day
+                if (date != null) {
+                    val diff = date.time - System.currentTimeMillis()
+                    val days = diff / (1000 * 60 * 60 * 24)
+                    binding.tvCouponMetaDday.text = if (days >= 0) "${days}일 남음" else "만료됨"
+                }
+
+            } catch (e: Exception) {
+                binding.tvCouponMeta.text = item.validTo
+            }
         }
     }
 

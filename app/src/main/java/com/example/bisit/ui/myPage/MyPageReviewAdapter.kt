@@ -8,9 +8,11 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.R
 
+import com.example.bisit.data.model.review.ReviewDetailItem
+
 class MyPageReviewAdapter(
-    private val reviews: List<String>,
-    private val onMoreClick: (Int) -> Unit
+    private val reviews: List<ReviewDetailItem>,
+    private val onMoreClick: (ReviewDetailItem) -> Unit
 ) : RecyclerView.Adapter<MyPageReviewAdapter.ReviewViewHolder>() {
 
     inner class ReviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -25,9 +27,10 @@ class MyPageReviewAdapter(
     }
 
     override fun onBindViewHolder(holder: ReviewViewHolder, position: Int) {
-        holder.tvContent.text = reviews[position]
+        val item = reviews[position]
+        holder.tvContent.text = item.content
         holder.btnMore.setOnClickListener {
-            onMoreClick(position)
+            onMoreClick(item)
         }
     }
 

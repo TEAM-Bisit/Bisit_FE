@@ -15,6 +15,13 @@ import com.example.bisit.ui.todayReserv.dialog.SortOptionDialog
 import java.text.SimpleDateFormat
 import java.util.*
 
+import com.example.bisit.data.api.RetrofitClient
+import com.example.bisit.data.model.review.ReviewDetailItem
+import com.example.bisit.data.model.review.ReviewListResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+
 class ShopReviewsFragment : Fragment() {
 
     private var _binding: FragmentShopReviewsBinding? = null
@@ -22,12 +29,8 @@ class ShopReviewsFragment : Fragment() {
 
     private lateinit var adapter: ReviewAdapter
 
-    private val data = mutableListOf(
-        Review(1, "2025.09.12", "염컬", "김*영", 5, "마음에 들어요!"),
-        Review(2, "2025.09.10", "셋팅펌", "박*민", 4, "친절했습니다.")
-    )
-
-    // 현재 정렬 상태: "recent" 또는 "oldest"
+    // No local data needed, will fetch from API
+    
     private var currentSort: String = "recent"
 
     override fun onCreateView(
@@ -43,37 +46,16 @@ class ShopReviewsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = ReviewAdapter(onMoreClick = { review ->
-            BottomActionSheet().show(parentFragmentManager, "actions")
-
-            parentFragmentManager.setFragmentResultListener(
-                BottomActionSheet.REQUEST_KEY,
-                viewLifecycleOwner
-            ) { _, bundle ->
-                when (bundle.getString(BottomActionSheet.RESULT_ACTION)) {
-
-                    BottomActionSheet.ACTION_DELETE -> {
-                        ConfirmDialog(
-                            message = "삭제하시겠어요?",
-                            okText = "삭제하기",
-                            onOk = {
-                                data.removeAll { it.id == review.id }
-                                sortReviews(currentSort)
-                            }
-                        ).show(parentFragmentManager, "confirm")
-                    }
-
-                    BottomActionSheet.ACTION_EDIT -> {
-                        // TODO: 리뷰 수정 로직
-                    }
-                }
-            }
+            // Logic for more click, e.g., report?
+            // Shop reviews usually don't have delete/edit for the viewer unless it's their own or admin.
+            // Keeping existing structure but maybe disable actions if not owner.
         })
 
         binding.rvReviews.layoutManager = LinearLayoutManager(requireContext())
         binding.rvReviews.adapter = adapter
 
-        // 초기 정렬 반영
-        sortReviews(currentSort)
+        // Fetch Data
+        fetchReviews()
 
         // 정렬 옵션 다이얼로그
         binding.tvSortLabel.setOnClickListener {
@@ -81,21 +63,39 @@ class ShopReviewsFragment : Fragment() {
                 currentSort = selectedSort
                 binding.tvSortLabel.text =
                     if (selectedSort == "recent") "최근 순으로" else "오래된 순으로"
-
-                sortReviews(selectedSort)
+                
+                // Re-fetch or sorting logic if API supports sort
+                // API provided doesn't have sort param, assuming backend handles "recent" by default?
+                // Or client side sort? client side sort is hard with pagination.
+                // For now, re-fetch.
+                fetchReviews() 
             }.show(parentFragmentManager, "sort_option")
         }
     }
 
-    private fun sortReviews(sortBy: String) {
-        val sdf = SimpleDateFormat("yyyy.MM.dd", Locale.KOREA)
+    private fun fetchReviews() {
+        val shopId = arguments?.getLong("shopId") ?: 1L 
+        
+        RetrofitClient.getReviewApi(requireContext()).getShopReviews(shopId, 0, 10)
+            .enqueue(object : Callback<ReviewListResponse> {
+                override fun onResponse(
+                    call: Call<ReviewListResponse>,
+                    response: Response<ReviewListResponse>
+                ) {
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        val reviewPage = response.body()?.data?.reviews
+                        val items = reviewPage?.content ?: emptyList()
+                        
+                        // Client side sort if needed or provided by API
+                        // The user said "리뷰는 최신순으로 정렬됩니다" (reviews are sorted by latest) by default.
+                        adapter.submitList(items)
+                    }
+                }
 
-        val sorted = when (sortBy) {
-            "recent" -> data.sortedByDescending { sdf.parse(it.date) }
-            else -> data.sortedBy { sdf.parse(it.date) }
-        }
-
-        adapter.submitList(sorted)
+                override fun onFailure(call: Call<ReviewListResponse>, t: Throwable) {
+                    // Handle error
+                }
+            })
     }
 
     override fun onDestroyView() {

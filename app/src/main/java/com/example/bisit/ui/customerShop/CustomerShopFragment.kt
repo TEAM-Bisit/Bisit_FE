@@ -50,7 +50,12 @@ class CustomerShopFragment : Fragment() {
         // 상태바 높이만큼 padding 추가
         applyStatusBarPadding()
 
-        shopId = arguments?.getLong("shopId") ?: 3L
+        shopId = arguments?.getLong("shopId") ?: -1L
+        if (shopId == -1L) {
+            Toast.makeText(requireContext(), "잘못된 접근입니다.", Toast.LENGTH_SHORT).show()
+            findNavController().popBackStack()
+            return
+        }
 
         binding.rvShopDetail.layoutManager = LinearLayoutManager(requireContext())
         adapter = CustomerShopDetailAdapter(emptyList(), emptyList(), emptyList())
@@ -58,7 +63,11 @@ class CustomerShopFragment : Fragment() {
 
         binding.shopBack.setOnClickListener { parentFragmentManager.popBackStack() }
         binding.btnBook.setOnClickListener {
-            findNavController().navigate(R.id.action_customerShopFragment_to_shopDesignerFragment)
+            val bundle = Bundle().apply {
+                putLong("shopId", shopId)
+                putString("shopName", viewModel.shopData.value?.shopName ?: "")
+            }
+            findNavController().navigate(R.id.action_customerShopFragment_to_shopDesignerFragment, bundle)
         }
 
         viewModel.shopData.observe(viewLifecycleOwner) { data ->
@@ -77,9 +86,23 @@ class CustomerShopFragment : Fragment() {
             err?.let { Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show() }
         }
 
+        viewModel.servicesData.observe(viewLifecycleOwner) { services ->
+            // Current list implementation requires both services and reviews to update adapter
+            // We can check if adapter is initialized and update
+            val reviews = viewModel.reviewsData.value ?: emptyList()
+            adapter.updateData(services, reviews)
+        }
+
+        viewModel.reviewsData.observe(viewLifecycleOwner) { reviews ->
+            val services = viewModel.servicesData.value ?: emptyList()
+            adapter.updateData(services, reviews)
+        }
+
         Log.d("CustomerShopFragment", "Starting to load shop with id: $shopId")
         viewModel.loadShop(requireContext(), shopId)
         viewModel.loadShopIntroduce(requireContext(), shopId)
+        viewModel.loadShopServices(requireContext(), shopId)
+        viewModel.loadShopReviews(requireContext(), shopId)
     }
 
     private fun applyStatusBarPadding() {
