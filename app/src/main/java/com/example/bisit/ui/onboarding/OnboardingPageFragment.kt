@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.DrawableRes
 import androidx.fragment.app.Fragment
 import com.example.bisit.databinding.FragmentOnboardingPageBinding
 
@@ -23,9 +24,9 @@ class OnboardingPageFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // arguments?.let {
-        //     binding.ivOnboardingImage.setImageResource(it.getInt(ARG_IMAGE_RES))
-        // }
+        arguments?.let {
+            binding.ivOnboardingImage.setImageResource(it.getInt(ARG_IMAGE_RES))
+        }
     }
 
     override fun onDestroyView() {
@@ -34,13 +35,13 @@ class OnboardingPageFragment : Fragment() {
     }
 
     companion object {
-        // private const val ARG_IMAGE_RES = "image_res"
+        private const val ARG_IMAGE_RES = "image_res"
 
-        fun newInstance(/*@DrawableRes imageRes: Int*/): OnboardingPageFragment {
+        fun newInstance(@DrawableRes imageRes: Int): OnboardingPageFragment {
             return OnboardingPageFragment().apply {
-                // arguments = Bundle().apply {
-                //     putInt(ARG_IMAGE_RES, imageRes)
-                // }
+                arguments = Bundle().apply {
+                    putInt(ARG_IMAGE_RES, imageRes)
+                }
             }
         }
     }

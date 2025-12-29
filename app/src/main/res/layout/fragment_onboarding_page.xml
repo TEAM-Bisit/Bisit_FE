@@ -10,5 +10,4 @@
         android:layout_width="164dp"
         android:layout_height="164dp"
         android:layout_gravity="center"
-        android:background="@android:color/black"
         android:scaleType="centerCrop" /> </FrameLayout>
