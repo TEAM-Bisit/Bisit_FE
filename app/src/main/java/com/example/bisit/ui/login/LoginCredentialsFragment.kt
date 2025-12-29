@@ -60,18 +60,11 @@ class LoginCredentialsFragment : Fragment() {
             if (isSuccess) {
                 Toast.makeText(context, "로그인 성공!", Toast.LENGTH_SHORT).show()
 
-                val intent = Intent(requireContext(), MainActivity::class.java)
+                val userType = viewModel.userType.value ?: "customer"
 
-                // 임시로 id에 따른 분기처리
-                val inputId = binding.etId.text.toString()
-                val userType = when (inputId) {
-                    "rlatkwkd" -> "owner"
-                    "rlathssla" -> "customer"
-                    else -> "customer"
+                val intent = Intent(requireContext(), MainActivity::class.java).apply {
+                    putExtra("USER_TYPE", userType)
                 }
-
-                intent.putExtra("USER_TYPE", userType)
-
                 startActivity(intent)
                 requireActivity().finish()
             }
