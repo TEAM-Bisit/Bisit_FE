@@ -127,4 +127,7 @@ object RetrofitClient {
     
     fun getStaffManageApi(context: Context) =
         getServerRetrofit(context).create(StaffManageApiService::class.java)
+
+    fun getOwnerApi(context: Context) =
+        getServerRetrofit(context).create(ShopApiService::class.java)
 }

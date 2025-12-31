@@ -9,7 +9,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.Fragment
+import com.example.bisit.data.api.RetrofitClient
+import com.example.bisit.data.model.shop.BusinessValidateRequest
+import com.example.bisit.data.model.shop.BusinessValidateResponse
 import com.example.bisit.databinding.FragmentBusinessRegistrationBinding
+import com.example.bisit.ui.dialog.CommonInfoDialog
+import com.example.bisit.ui.dialog.CustomTwoButtonDialog
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.util.regex.Pattern
 
 class BusinessRegistrationFragment : Fragment() {
@@ -132,9 +140,54 @@ class BusinessRegistrationFragment : Fragment() {
         })
 
         binding.btnCheckBusiness.setOnClickListener {
-            // (TODO: API로 사업자 번호 확인 로직...)
-            (parentFragment as? OwnerOnboardingFragment)?.setNextButtonEnabled(true)
+            val businessNo = binding.etBusinessNumber.text.toString()
+            validateBusinessNumber(businessNo)
         }
+    }
+
+    private fun validateBusinessNumber(number: String) {
+        val ownerApi = RetrofitClient.getOwnerApi(requireContext())
+        val request = BusinessValidateRequest(businessRegNo = number)
+
+        ownerApi.validateBusiness(request).enqueue(object : Callback<BusinessValidateResponse> {
+            override fun onResponse(call: Call<BusinessValidateResponse>, response: Response<BusinessValidateResponse>) {
+                if (response.isSuccessful && response.body() != null) {
+                    val isAvailable = response.body()!!.data
+
+                    if (isAvailable) {
+                        // 1. 중복 아님 -> 사장님 온보딩 계속 진행
+                        (parentFragment as? OwnerOnboardingFragment)?.setNextButtonEnabled(true)
+                        showDialog("인증에 성공했습니다. 다음 단계로 진행해주세요.")
+                    } else {
+                        // 2. 중복됨 -> 직원 등록 플로우로 유도
+                        showStaffRedirectDialog()
+                    }
+                } else {
+                    showDialog("사업자 번호 확인에 실패했습니다.")
+                }
+            }
+
+            override fun onFailure(call: Call<BusinessValidateResponse>, t: Throwable) {
+                showDialog("네트워크 연결을 확인해주세요.")
+            }
+        })
+    }
+
+    private fun showStaffRedirectDialog() {
+        CustomTwoButtonDialog(
+            title = "등록되어 있는 매장입니다.",
+            subtitle = "직원으로 신청하시겠어요?",
+            positiveButtonText = "등록하기",
+            negativeButtonText = "닫기",
+            onPositiveClick = {
+                // TODO: 직원 등록 프래그먼트 또는 액티비티로 이동하는 네비게이션 로직 구현
+                // 예: findNavController().navigate(R.id.action_to_staffRegistration)
+            }
+        ).show(parentFragmentManager, "StaffRedirectDialog")
+    }
+
+    private fun showDialog(msg: String) {
+        CommonInfoDialog(message = msg, onConfirm = {}).show(parentFragmentManager, "InfoDialog")
     }
 
     override fun onDestroyView() {
