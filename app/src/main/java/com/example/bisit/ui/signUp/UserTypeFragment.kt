@@ -11,7 +11,14 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.bisit.MainActivity
 import com.example.bisit.R
+import com.example.bisit.data.api.RetrofitClient
+import com.example.bisit.data.model.member.MemberRoleResponse
 import com.example.bisit.databinding.FragmentUserTypeBinding
+import com.example.bisit.data.model.member.MemberRoleRequest
+import com.example.bisit.ui.dialog.CommonInfoDialog
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 private enum class UserType {
     CUSTOMER, OWNER
@@ -50,18 +57,10 @@ class UserTypeFragment : Fragment() {
         }
 
         binding.btnNext.setOnClickListener {
-            val userTypeString = selectedUserType!!.name
+            val selectedRole = selectedUserType ?: return@setOnClickListener
 
-            if (selectedUserType == UserType.OWNER) {
-                findNavController().navigate(R.id.action_userTypeFragment_to_ownerOnboardingFragment)
-
-            } else {
-                val intent = Intent(requireActivity(), MainActivity::class.java).apply {
-                    putExtra("USER_TYPE", userTypeString)
-                }
-                startActivity(intent)
-                requireActivity().finish() // SignUpActivity 종료
-            }
+            // 서버에 역할 업데이트 요청 실행
+            updateMemberRoleOnServer(selectedRole)
         }
     }
 
@@ -90,6 +89,46 @@ class UserTypeFragment : Fragment() {
             setCardBackgroundColor(if (isOwnerSelected) selectedBackgroundColor else defaultBackgroundColor)
             binding.textViewOwner.setTextColor(if (isOwnerSelected) selectedTextColor else defaultTextColor)
         }
+    }
+
+    private fun updateMemberRoleOnServer(role: UserType) {
+        val memberApi = RetrofitClient.getMemberApi(requireContext())
+        val request = MemberRoleRequest(role = role.name) // "CUSTOMER" 또는 "OWNER"
+
+        memberApi.updateMemberRole(request).enqueue(object : Callback<MemberRoleResponse> {
+            override fun onResponse(call: Call<MemberRoleResponse>, response: Response<MemberRoleResponse>) {
+                if (response.isSuccessful && response.body()?.success == true) {
+                    handleNavigationAfterRoleUpdate(role)
+                } else {
+                    val errorMsg = response.body()?.message ?: "역할 설정에 실패했습니다."
+                    showErrorDialog(errorMsg)
+                }
+            }
+
+            override fun onFailure(call: Call<MemberRoleResponse>, t: Throwable) {
+                showErrorDialog("네트워크 연결 상태를 확인해주세요.")
+            }
+        })
+    }
+
+    private fun handleNavigationAfterRoleUpdate(role: UserType) {
+        if (role == UserType.OWNER) {
+            findNavController().navigate(R.id.action_userTypeFragment_to_ownerOnboardingFragment)
+        } else {
+            val intent = Intent(requireActivity(), MainActivity::class.java).apply {
+                putExtra("USER_TYPE", role.name)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            startActivity(intent)
+            requireActivity().finish()
+        }
+    }
+
+    private fun showErrorDialog(message: String) {
+        CommonInfoDialog(
+            message = message,
+            onConfirm = { }
+        ).show(parentFragmentManager, "RoleUpdateError")
     }
 
     override fun onResume() {
