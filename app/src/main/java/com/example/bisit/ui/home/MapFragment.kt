@@ -14,7 +14,6 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bisit.R
 import com.example.bisit.data.api.RetrofitClient
 import com.example.bisit.data.model.map.GeocodingResponse
@@ -45,7 +44,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private var searchMarker: Marker? = null
     private val shopMarkers = mutableListOf<Marker>()
 
-    private var currentCategory: String? = null
     private var nextCursor: Long? = null
     private var isLoading = false
 
@@ -62,6 +60,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         super.onViewCreated(view, savedInstanceState)
 
         mapView = binding.mapView
+        // onCreate 등에서 mapView.onCreate() 호출이 필요한 경우 레이아웃에 따라 추가 (대부분 자동 처리됨)
         locationSource = FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
 
         mapView.getMapAsync(this)
@@ -73,9 +72,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         binding.cardSearch.setOnClickListener {
             binding.etSearch.requestFocus()
             Handler(Looper.getMainLooper()).postDelayed({
-                val imm = requireContext()
-                    .getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.showSoftInput(binding.etSearch, InputMethodManager.SHOW_IMPLICIT)
+                // 안전한 Context 접근
+                context?.let { ctx ->
+                    val imm = ctx.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                    imm?.showSoftInput(binding.etSearch, InputMethodManager.SHOW_IMPLICIT)
+                }
             }, 100)
         }
 
@@ -91,20 +92,15 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onMapReady(naverMap: NaverMap) {
         Log.d(TAG, "onMapReady 호출됨")
-
         this.naverMap = naverMap
         naverMap.locationSource = locationSource
 
-        /** 🔥 내 위치 표시 핵심 설정 */
+        // 하드코딩된 좌표 대신 사용자의 현재 위치를 추적하도록 설정
         naverMap.locationOverlay.isVisible = true
         naverMap.locationTrackingMode = LocationTrackingMode.Follow
 
-        /** 현재 위치 변경 로그 */
         naverMap.addOnLocationChangeListener { location ->
-            Log.d(
-                TAG,
-                "현재 위치 수신: lat=${location.latitude}, lng=${location.longitude}"
-            )
+            Log.d(TAG, "현재 위치 수신: lat=${location.latitude}, lng=${location.longitude}")
         }
 
         naverMap.addOnCameraIdleListener {
@@ -122,25 +118,29 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             nextCursor = null
             fetchShopsByName(query)
         } else {
-            Toast.makeText(requireContext(), "검색어를 입력하세요.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context ?: return, "검색어를 입력하세요.", Toast.LENGTH_SHORT).show()
         }
 
-        val imm = requireContext()
-            .getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(binding.etSearch.windowToken, 0)
+        context?.let { ctx ->
+            val imm = ctx.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+            imm?.hideSoftInputFromWindow(binding.etSearch.windowToken, 0)
+        }
     }
 
     private fun fetchShopsByName(name: String) {
-        lifecycleScope.launch {
+        val currentContext = context ?: return // Fragment 분리 체크
+        viewLifecycleOwner.lifecycleScope.launch {
             isLoading = true
             try {
-                val api = RetrofitClient.getMapApi(requireContext())
+                val api = RetrofitClient.getMapApi(currentContext)
                 val response = api.searchShopsByName(name = name, cursor = nextCursor)
 
-                if (response.isSuccessful) {
+                if (response.isSuccessful && _binding != null) {
                     val data = response.body()?.data
                     data?.content?.forEach { addShopMarker(it) }
                 }
+            } catch (e: Exception) {
+                Log.e(TAG, "fetchShopsByName Error", e)
             } finally {
                 isLoading = false
             }
@@ -149,18 +149,15 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private fun fetchShops() {
         if (!::naverMap.isInitialized || isLoading) return
+        val currentContext = context ?: return
+
+        clearShopMarkers()
 
         val bounds = naverMap.contentBounds
-        Log.d(
-            TAG,
-            "fetchShops bounds: lat(${bounds.southLatitude}~${bounds.northLatitude}), " +
-                    "lng(${bounds.westLongitude}~${bounds.eastLongitude})"
-        )
-
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             isLoading = true
             try {
-                val api = RetrofitClient.getMapApi(requireContext())
+                val api = RetrofitClient.getMapApi(currentContext)
                 val response = api.searchShopsInBounds(
                     minLatitude = bounds.southLatitude,
                     maxLatitude = bounds.northLatitude,
@@ -169,11 +166,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     cursor = nextCursor
                 )
 
-                if (response.isSuccessful) {
+                if (response.isSuccessful && _binding != null) {
                     val shops = response.body()?.data?.content.orEmpty()
                     Log.d(TAG, "영역 검색 성공, 가게 수=${shops.size}")
                     shops.forEach { addShopMarker(it) }
                 }
+            } catch (e: Exception) {
+                Log.e(TAG, "fetchShops Error", e)
             } finally {
                 isLoading = false
             }
@@ -181,6 +180,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun addShopMarker(shop: ShopMapItem) {
+        if (_binding == null) return
         val marker = Marker().apply {
             position = LatLng(shop.latitude, shop.longitude)
             captionText = shop.shopName
@@ -201,6 +201,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     call: Call<GeocodingResponse>,
                     response: Response<GeocodingResponse>
                 ) {
+                    if (_binding == null) return
                     val addr = response.body()?.addresses?.firstOrNull() ?: return
                     val lat = addr.y?.toDoubleOrNull()
                     val lng = addr.x?.toDoubleOrNull()
@@ -211,12 +212,15 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 }
 
                 override fun onFailure(call: Call<GeocodingResponse>, t: Throwable) {
-                    Toast.makeText(requireContext(), "지오코딩 실패", Toast.LENGTH_SHORT).show()
+                    context?.let {
+                        Toast.makeText(it, "지오코딩 실패", Toast.LENGTH_SHORT).show()
+                    }
                 }
             })
     }
 
     private fun showMarker(latLng: LatLng) {
+        if (!::naverMap.isInitialized) return
         searchMarker?.map = null
         searchMarker = Marker().apply {
             position = latLng
@@ -234,10 +238,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             locationSource.onRequestPermissionsResult(requestCode, permissions, grantResults)
         ) {
             if (locationSource.isActivated) {
-                Log.d(TAG, "위치 권한 허용됨 → Tracking 재개")
                 naverMap.locationTrackingMode = LocationTrackingMode.Follow
             } else {
-                Log.d(TAG, "위치 권한 거부됨")
                 naverMap.locationTrackingMode = LocationTrackingMode.None
             }
             return
