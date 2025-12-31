@@ -41,6 +41,9 @@ class CustomerPayFragment : Fragment() {
     private var serviceName: String = ""
     private var staffName: String = ""
     private var shopName: String = ""
+    private var staffImage: String? = null
+    private var reviewCount: Int = 0
+    private var staffDescription: String? = null
 
     // State variables to preserve form data
     private var savedName: String = ""
@@ -110,6 +113,9 @@ class CustomerPayFragment : Fragment() {
             serviceName = it.getString("serviceName", "")
             staffName = it.getString("staffName", "")
             shopName = it.getString("shopName", "")
+            staffImage = it.getString("staffImage")
+            reviewCount = it.getInt("reviewCount", 0)
+            staffDescription = it.getString("staffDescription")
         }
 
         // Restore saved state
@@ -123,7 +129,6 @@ class CustomerPayFragment : Fragment() {
         setupPayButton()
         setupAddressSearch()
         setupTextWatchers()
-
         // Check for returned couponResult
         findNavController().currentBackStackEntry?.savedStateHandle?.getLiveData<ApplicableCoupon>("selectedCoupon")
             ?.observe(viewLifecycleOwner) { coupon ->
@@ -131,7 +136,35 @@ class CustomerPayFragment : Fragment() {
                 updatePriceWithCoupon()
             }
 
+        loadApplicableCouponCount()
+
         return binding.root
+    }
+
+    private fun loadApplicableCouponCount() {
+        val memberId = 1L // TODO: 실제 로그인한 회원 ID로 연동 필요
+        
+        RetrofitClient.getCouponApi(requireContext()).getApplicableCoupons(memberId, totalPrice)
+            .enqueue(object : retrofit2.Callback<com.example.bisit.data.model.coupon.ApplicableCouponResponse> {
+                override fun onResponse(
+                    call: retrofit2.Call<com.example.bisit.data.model.coupon.ApplicableCouponResponse>,
+                    response: retrofit2.Response<com.example.bisit.data.model.coupon.ApplicableCouponResponse>
+                ) {
+                    if (_binding == null) return
+                    
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        val count = response.body()?.data?.coupons?.size ?: 0
+                        binding.tvCouponSelectCount.text = "${count}개"
+                        binding.tvCouponSelectCount.visibility = if (count > 0 && selectedCoupon == null) View.VISIBLE else View.GONE
+                    } else {
+                        Log.e("CustomerPayFragment", "Failed to load coupon count: ${response.code()}")
+                    }
+                }
+
+                override fun onFailure(call: retrofit2.Call<com.example.bisit.data.model.coupon.ApplicableCouponResponse>, t: Throwable) {
+                    Log.e("CustomerPayFragment", "Network error loading coupon count", t)
+                }
+            })
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -223,6 +256,11 @@ class CustomerPayFragment : Fragment() {
     private fun setupCheckBox() {
         binding.cbAgree.setOnCheckedChangeListener { _, _ ->
             validateForm()
+        }
+        
+        // 텍스트 클릭 시에도 체크박스 토글
+        binding.tvAgreeLabel.setOnClickListener {
+            binding.cbAgree.isChecked = !binding.cbAgree.isChecked
         }
     }
 
@@ -423,6 +461,20 @@ class CustomerPayFragment : Fragment() {
         
         // Set shop name
         reservationInfo.tvMachineName.text = shopName.ifEmpty { "매장명 없음" }
+
+        // Set staff profile
+        reservationInfo.tvStaffName.text = staffName.trim().ifEmpty { "디자이너 이름 없음" }
+        reservationInfo.tvReviewCount.text = "최근 시술 ${reviewCount}회"
+        reservationInfo.tvStaffDescription.text = staffDescription?.trim()?.ifEmpty { "소개글이 없습니다" } ?: "소개글이 없습니다"
+        
+        if (!staffImage.isNullOrEmpty()) {
+            com.bumptech.glide.Glide.with(this)
+                .load(staffImage)
+                .placeholder(R.drawable.img_designer)
+                .error(R.drawable.img_designer)
+                .centerCrop()
+                .into(reservationInfo.ivStaffProfile)
+        }
         
         // Format and set schedule (date and time)
         val formattedSchedule = formatScheduleText(selectedDate, selectedTime)

@@ -66,7 +66,7 @@ class CustomerShopDesignerFragment : Fragment() {
         }
 
         btnHome.setOnClickListener {
-            findNavController().navigate(R.id.action_shopDesignerFragment_to_homeListFragment)
+            findNavController().navigate(R.id.customerCategoryFragment)
         }
 
         btnBook.setOnClickListener {
@@ -78,6 +78,7 @@ class CustomerShopDesignerFragment : Fragment() {
                     putString("staffName", selectedStaff.staffName)
                     putString("staffImage", selectedStaff.image)
                     putInt("reviewCount", selectedStaff.reviewCount)
+                    putString("staffDescription", selectedStaff.description)
                     putString("shopName", shopName)
                 }
                 findNavController().navigate(R.id.customerReserveFragment, bundle)

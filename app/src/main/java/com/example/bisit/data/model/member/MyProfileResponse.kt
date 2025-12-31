@@ -10,5 +10,6 @@ data class MyProfileResponse(
 data class MyProfileData(
     val name: String,
     val email: String,
-    val phone: String
+    val phone: String,
+    val profileImage: String? = null
 )

@@ -42,8 +42,14 @@ class CustomerShopDetailAdapter(
             binding.tvAddress.text = item.address
             binding.tvOpenInfo.text = item.openInfo
             binding.tvPhone.text = item.phone
-            binding.tvNoticeText.text = item.notice
-            binding.tvNoticeTime.text = item.noticeTime
+            
+            if (item.notice.isNotEmpty()) {
+                binding.layoutNotice.visibility = View.VISIBLE
+                binding.tvNoticeText.text = item.notice
+                binding.tvNoticeTime.text = item.noticeTime
+            } else {
+                binding.layoutNotice.visibility = View.GONE
+            }
 
             val marginInPx = (2 * binding.root.context.resources.displayMetrics.density).toInt()
             binding.layoutOpenHourDetail.removeAllViews()
@@ -95,17 +101,31 @@ class CustomerShopDetailAdapter(
             reviewsForThis.forEach { rev ->
                 val view = inflater.inflate(R.layout.item_shop_review, binding.containerReviewItems, false)
                 view.findViewById<TextView>(R.id.tvReviewContent)?.text = rev.content
-                view.findViewById<TextView>(R.id.tvReviewDate)?.text = rev.date
+                view.findViewById<TextView>(R.id.tvReviewDate)?.text = "${rev.date} 방문"
                 view.findViewById<TextView>(R.id.tvReviewer)?.text = rev.author
+                
+                // 상세 정보 바인딩
+                view.findViewById<TextView>(R.id.tvServiceName)?.text = rev.serviceName ?: "기본 서비스"
+                view.findViewById<TextView>(R.id.tvManager)?.text = rev.staffName ?: "상점 원장님"
+                
+                // 별점 표시 (5개 이미지 기준)
+                val starRow = view.findViewById<LinearLayout>(R.id.starRow)
+                if (starRow != null) {
+                    for (i in 0 until starRow.childCount) {
+                        val star = starRow.getChildAt(i)
+                        star.alpha = if (i < rev.rating) 1.0f else 0.2f
+                    }
+                }
+                
                 binding.containerReviewItems.addView(view)
             }
 
             // Update tab info text count
             fun updateTabInfo(isService: Boolean) {
                 if (isService) {
-                    binding.tvTabInfo.text = "서비스 정보 ${servicesForThis.size}개"
+                    binding.tvTabInfo.text = "서비스 정보 ${servicesForThis.size}"
                 } else {
-                    binding.tvTabInfo.text = "리뷰 ${reviewsForThis.size}개"
+                    binding.tvTabInfo.text = "리뷰 ${reviewsForThis.size}"
                 }
             }
 

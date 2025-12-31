@@ -17,6 +17,7 @@ object RetrofitClient {
         .connectTimeout(20, TimeUnit.SECONDS)
         .readTimeout(20, TimeUnit.SECONDS)
         .addInterceptor { chain ->
+            Log.d(TAG, "NCP Key ID exists: ${BuildConfig.NCP_KEY_ID.isNotEmpty()}")
             val request = chain.request().newBuilder()
                 .addHeader("X-NCP-APIGW-API-KEY-ID", BuildConfig.NCP_KEY_ID)
                 .addHeader("X-NCP-APIGW-API-KEY", BuildConfig.NCP_SECRET_KEY)
@@ -64,8 +65,15 @@ object RetrofitClient {
                             Log.d(TAG, "🌐 API Request: ${request.method} ${request.url}")
                             val response = chain.proceed(request)
                             Log.d(TAG, "📡 API Response: ${response.code}")
+                            
+                            // 403 에러는 /introduce 엔드포인트의 경우 선택적 기능이므로 에러 로그 출력 안 함
                             if (!response.isSuccessful) {
-                                Log.e(TAG, "❌ API Error: ${response.code} - ${response.message}")
+                                val isIntroduceEndpoint = request.url.toString().contains("/introduce")
+                                if (response.code == 403 && isIntroduceEndpoint) {
+                                    // 403 on /introduce is expected, don't log as error
+                                } else {
+                                    Log.e(TAG, "❌ API Error: ${response.code} - ${response.message}")
+                                }
                             }
                             response
                         }
@@ -118,4 +126,7 @@ object RetrofitClient {
     
     fun getStaffManageApi(context: Context) =
         getServerRetrofit(context).create(StaffManageApiService::class.java)
+
+    fun getMapApi(context: Context) =
+        getServerRetrofit(context).create(MapApiService::class.java)
 }

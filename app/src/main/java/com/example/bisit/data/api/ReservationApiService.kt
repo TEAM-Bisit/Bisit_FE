@@ -1,13 +1,12 @@
 package com.example.bisit.data.api
 
+import com.example.bisit.data.model.reservation.CancelReservationRequest
 import com.example.bisit.data.model.reservation.ReservationRequest
 import com.example.bisit.data.model.reservation.ReservationResponse
 import com.example.bisit.data.model.reservation.StaffAvailabilityResponse
 import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.Query
+import retrofit2.http.*
+import com.example.bisit.data.model.todayReservation.ChangeStatusRequest
 
 interface ReservationApiService {
 
@@ -42,4 +41,28 @@ interface ReservationApiService {
         @Query("size") size: Int = 10,
         @Query("sortDirection") sortDirection: String = "desc"
     ): Response<com.example.bisit.data.model.reservation.ReservationListResponse>
+
+    @GET("/api/reservations/{reservationId}/inquiry")
+    suspend fun getReservationInquiry(
+        @Path("reservationId") reservationId: Long
+    ): Response<com.example.bisit.data.model.reservation.ReservationInquiryResponse>
+
+    @GET("/api/reservations/{reservationId}")
+    suspend fun getReservationDetail(
+        @Path("reservationId") reservationId: Long
+    ): Response<com.example.bisit.data.model.reservation.ReservationDetailResponse>
+
+    @POST("/api/reservations/{reservationId}/cancel-by-customer")
+    suspend fun cancelReservation(
+        @Path("reservationId") reservationId: Long,
+        @Body request: CancelReservationRequest
+    ): Response<com.example.bisit.data.model.reservation.ReservationDetailResponse>
+
+    @POST("/api/reservations/{reservationId}/confirm-by-customer")
+    suspend fun confirmReservation(
+        @Path("reservationId") reservationId: Long
+    ): Response<com.example.bisit.data.model.reservation.ReservationDetailResponse>
 }
+
+
+

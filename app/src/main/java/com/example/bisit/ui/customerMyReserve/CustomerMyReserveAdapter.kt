@@ -11,8 +11,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.R
 
 class CustomerMyReserveAdapter(
-    private val onDetailClick: (MyReserveItem) -> Unit
+    private val onDetailClick: (MyReserveItem) -> Unit,
+    private val onInquireClick: (MyReserveItem) -> Unit,
+    private val onCancelClick: (MyReserveItem) -> Unit,
+    private val onConfirmClick: (MyReserveItem) -> Unit
 ) : RecyclerView.Adapter<CustomerMyReserveAdapter.ViewHolder>() {
+
+
 
     private var items: List<MyReserveItem> = listOf()
 
@@ -24,7 +29,7 @@ class CustomerMyReserveAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(viewType, parent, false)
-        return ViewHolder(view, onDetailClick)
+        return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -34,8 +39,6 @@ class CustomerMyReserveAdapter(
     override fun getItemCount(): Int = items.size
 
     override fun getItemViewType(position: Int): Int {
-        // Return layout resource based on status for now, or use the one passed previously?
-        // To query simple, I'll map status to layout R.
         return when (items[position].status) {
             "예약" -> R.layout.item_customer_my_reserve_wait
             "완료" -> R.layout.item_customer_my_reserve_completed
@@ -44,7 +47,9 @@ class CustomerMyReserveAdapter(
         }
     }
 
-    class ViewHolder(itemView: View, private val onDetailClick: (MyReserveItem) -> Unit) : RecyclerView.ViewHolder(itemView) {
+    inner class ViewHolder(
+        itemView: View
+    ) : RecyclerView.ViewHolder(itemView) {
 
         fun bind(item: MyReserveItem) {
             val context = itemView.context
@@ -67,20 +72,25 @@ class CustomerMyReserveAdapter(
             itemView.findViewById<TextView>(R.id.tv_cancel_datetime)?.text = formatDateTime(item.reservedDate)
             itemView.findViewById<TextView>(R.id.tv_cancel_service)?.text = "${item.treatmentName}  ${formatPrice(item.price)}원"
             
+            // Buttons
+            val cardWait = itemView.findViewById<View>(R.id.card_wait)
+
+            val btnWaitCancel = itemView.findViewById<Button>(R.id.btn_wait_cancel)
+            btnWaitCancel?.setOnClickListener { onCancelClick(item) }
+
+
             val btnDoneDetail = itemView.findViewById<Button>(R.id.btn_done_detail)
-            btnDoneDetail?.setOnClickListener {
-                onDetailClick(item)
-            }
+            btnDoneDetail?.setOnClickListener { onDetailClick(item) }
+
+            val btnDoneConfirm = itemView.findViewById<Button>(R.id.btn_done_confirm)
+            btnDoneConfirm?.setOnClickListener { onConfirmClick(item) }
+
 
             val btnCancelDetail = itemView.findViewById<Button>(R.id.btn_cancel_detail)
-            btnCancelDetail?.setOnClickListener {
-                onDetailClick(item)
-            }
+            btnCancelDetail?.setOnClickListener { onDetailClick(item) }
 
             val btnInquire = itemView.findViewById<Button>(R.id.btn_wait_inquire)
-            btnInquire?.setOnClickListener {
-                showInquireDialog(context)
-            }
+            btnInquire?.setOnClickListener { onInquireClick(item) }
         }
         
         private fun formatDateTime(dateStr: String): String {
@@ -96,22 +106,6 @@ class CustomerMyReserveAdapter(
         
         private fun formatPrice(price: Int): String {
             return java.text.NumberFormat.getNumberInstance(java.util.Locale.US).format(price)
-        }
-
-        private fun showInquireDialog(context: Context) {
-            val dialogView = LayoutInflater.from(context)
-                .inflate(R.layout.dialog_customer_my_reserve_ask, null)
-
-            val dialog = AlertDialog.Builder(context)
-                .setView(dialogView)
-                .create()
-
-            dialogView.findViewById<TextView>(R.id.btnClose)?.setOnClickListener {
-                dialog.dismiss()
-            }
-
-            dialog.show()
-            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         }
     }
 }
