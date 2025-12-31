@@ -5,6 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bisit.databinding.FragmentShopNoticesBinding
 import com.example.bisit.ui.shop.adapter.NoticeAdapter
@@ -12,6 +15,8 @@ import com.example.bisit.ui.shop.dialog.AddNoticeDialog
 import com.example.bisit.ui.shop.dialog.BottomActionSheet
 import com.example.bisit.ui.shop.dialog.ConfirmDialog
 import com.example.bisit.ui.shop.model.Notice
+import com.example.bisit.ui.todayReserv.dialog.SortOptionDialog
+import kotlinx.coroutines.launch
 
 class ShopNoticesFragment : Fragment() {
 
@@ -20,10 +25,13 @@ class ShopNoticesFragment : Fragment() {
 
     private lateinit var adapter: NoticeAdapter
 
-    private val data = mutableListOf(
-        Notice(1, "개인 사정으로 휴무입니다.", "09/13 금요일은 개인 사정으로 휴무입니다.", "2025.09.13"),
-        Notice(2, "광복절 휴무입니다.", "공휴일 운영안내: 일정 공지", "2025.08.15")
-    )
+    /** shopId 제공용 */
+    private val shopRegisterViewModel: ShopRegisterViewModel by activityViewModels()
+
+    /** 공지사항 전용 ViewModel */
+    private val noticeViewModel: ShopNoticeViewModel by viewModels {
+        ShopNoticeViewModelFactory(requireContext())
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,6 +45,15 @@ class ShopNoticesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupRecyclerView()
+        observeViewModel()
+        setupSort()
+        setupAddNotice()
+    }
+
+    /** ================= RecyclerView ================= */
+
+    private fun setupRecyclerView() {
         adapter = NoticeAdapter { notice ->
             BottomActionSheet().show(parentFragmentManager, "actions")
 
@@ -48,18 +65,23 @@ class ShopNoticesFragment : Fragment() {
 
                     BottomActionSheet.ACTION_DELETE -> {
                         ConfirmDialog("삭제하시겠어요?") {
-                            data.removeAll { it.id == notice.id }
-                            adapter.submitList(data.toList())
+                            val shopId =
+                                shopRegisterViewModel.shopId.value ?: return@ConfirmDialog
+                            noticeViewModel.deleteNotice(shopId, notice.id)
                         }.show(parentFragmentManager, "confirm")
                     }
 
                     BottomActionSheet.ACTION_EDIT -> {
                         AddNoticeDialog(prefill = notice) { updated ->
-                            val idx = data.indexOfFirst { it.id == updated.id }
-                            if (idx != -1) {
-                                data[idx] = updated
-                                adapter.submitList(data.toList())
-                            }
+                            val shopId =
+                                shopRegisterViewModel.shopId.value ?: return@AddNoticeDialog
+
+                            noticeViewModel.updateNotice(
+                                shopId = shopId,
+                                noticeId = updated.id,
+                                title = updated.title,
+                                content = updated.content
+                            )
                         }.show(parentFragmentManager, "edit_notice")
                     }
                 }
@@ -68,13 +90,64 @@ class ShopNoticesFragment : Fragment() {
 
         binding.rvNotices.layoutManager = LinearLayoutManager(requireContext())
         binding.rvNotices.adapter = adapter
-        adapter.submitList(data.toList())
+    }
 
+    /** ================= ViewModel Observe ================= */
+
+    private fun observeViewModel() {
+        // shopId 수신 → 공지사항 로드
+        viewLifecycleOwner.lifecycleScope.launch {
+            shopRegisterViewModel.shopId.collect { shopId ->
+                if (shopId != null) {
+                    noticeViewModel.loadNotices(shopId)
+                }
+            }
+        }
+
+        // 공지사항 리스트 반영
+        viewLifecycleOwner.lifecycleScope.launch {
+            noticeViewModel.notices.collect { list ->
+                adapter.submitList(
+                    list.map {
+                        Notice(
+                            id = it.id,
+                            title = it.title,
+                            content = it.content,
+                            date = it.createdAt.substring(0, 10)
+                        )
+                    }
+                )
+            }
+        }
+    }
+
+    /** ================= 정렬 ================= */
+
+    private fun setupSort() {
+        binding.tvSortLabel.setOnClickListener {
+            SortOptionDialog(
+                currentSort = noticeViewModel.sortType.value
+            ) { selected ->
+                val shopId =
+                    shopRegisterViewModel.shopId.value ?: return@SortOptionDialog
+                noticeViewModel.changeSort(shopId, selected)
+            }.show(parentFragmentManager, "sort_option")
+        }
+    }
+
+    /** ================= 공지 추가 ================= */
+
+    private fun setupAddNotice() {
         binding.fabAdd.setOnClickListener {
             AddNoticeDialog { newItem ->
-                val newId = (data.maxOfOrNull { it.id } ?: 0) + 1
-                data.add(newItem.copy(id = newId))
-                adapter.submitList(data.toList())
+                val shopId =
+                    shopRegisterViewModel.shopId.value ?: return@AddNoticeDialog
+
+                noticeViewModel.createNotice(
+                    shopId = shopId,
+                    title = newItem.title,
+                    content = newItem.content
+                )
             }.show(parentFragmentManager, "add_notice")
         }
     }
