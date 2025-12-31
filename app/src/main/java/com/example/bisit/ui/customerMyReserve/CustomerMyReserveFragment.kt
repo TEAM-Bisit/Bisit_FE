@@ -21,6 +21,7 @@ import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.launch
 import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import retrofit2.Response
 
 class CustomerMyReserveFragment : Fragment(R.layout.fragment_customer_my_reserve) {
@@ -76,20 +77,24 @@ class CustomerMyReserveFragment : Fragment(R.layout.fragment_customer_my_reserve
         val dialog = Dialog(requireContext())
         val dialogBinding = DialogCancelReasonBinding.inflate(layoutInflater)
         dialog.setContentView(dialogBinding.root)
+
+        // 배경을 투명하게 설정 (둥근 모서리나 커스텀 배경 적용을 위해 필요)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
         dialogBinding.tvTitle.text = "예약 취소"
         dialogBinding.tvContentLabel.text = "${item.shopName} 예약을 취소하시겠습니까?"
-        
+
         dialogBinding.btnClose.setOnClickListener { dialog.dismiss() }
 
         dialogBinding.etReason.addTextChangedListener {
             val textLength = it?.length ?: 0
             dialogBinding.tvCharCount.text = "$textLength/50자"
             dialogBinding.btnSubmit.isEnabled = textLength > 0
+
+            // 버튼 색상 변경 (Context 안정성을 위해 requireContext() 사용)
             dialogBinding.btnSubmit.setTextColor(
-                if (textLength > 0) resources.getColor(R.color.white, null) 
-                else resources.getColor(R.color.muted_gray, null)
+                if (textLength > 0) ContextCompat.getColor(requireContext(), R.color.white)
+                else ContextCompat.getColor(requireContext(), R.color.muted_gray)
             )
         }
 
@@ -99,7 +104,19 @@ class CustomerMyReserveFragment : Fragment(R.layout.fragment_customer_my_reserve
             dialog.dismiss()
         }
 
+        // 1. 먼저 다이어로그를 보여줍니다.
         dialog.show()
+
+        // 2. 보여준 직후에 윈도우 크기를 화면에 맞게 재설정합니다.
+        val window = dialog.window
+        if (window != null) {
+            val params = window.attributes
+            // 화면 너비의 90% 정도로 설정 (원하는 비율로 조정 가능)
+            val displayMetrics = resources.displayMetrics
+            params.width = (displayMetrics.widthPixels * 0.9).toInt()
+            params.height = android.view.WindowManager.LayoutParams.WRAP_CONTENT
+            window.attributes = params
+        }
     }
 
     private fun cancelReservation(reservationId: String, reason: String) {
