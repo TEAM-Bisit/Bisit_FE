@@ -14,10 +14,10 @@ import com.example.bisit.ui.shop.dialog.ConfirmDialog
 import com.example.bisit.ui.shop.model.Notice
 
 class ShopNoticesFragment : Fragment() {
+
     private var _binding: FragmentShopNoticesBinding? = null
     private val binding get() = _binding!!
 
-    // 전역 변수로 이동
     private lateinit var adapter: NoticeAdapter
 
     private val data = mutableListOf(
@@ -37,28 +37,26 @@ class ShopNoticesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = NoticeAdapter(onMoreClick = { notice ->
+        adapter = NoticeAdapter { notice ->
             BottomActionSheet().show(parentFragmentManager, "actions")
 
-            // 결과 수신 리스너 설정
             parentFragmentManager.setFragmentResultListener(
                 BottomActionSheet.REQUEST_KEY,
                 viewLifecycleOwner
             ) { _, bundle ->
                 when (bundle.getString(BottomActionSheet.RESULT_ACTION)) {
+
                     BottomActionSheet.ACTION_DELETE -> {
-                        ConfirmDialog("삭제하시겠어요?", onOk = {
-                            val filtered = data.filterNot { it.id == notice.id }
-                            data.clear()
-                            data.addAll(filtered)
+                        ConfirmDialog("삭제하시겠어요?") {
+                            data.removeAll { it.id == notice.id }
                             adapter.submitList(data.toList())
-                        }).show(parentFragmentManager, "confirm")
+                        }.show(parentFragmentManager, "confirm")
                     }
 
                     BottomActionSheet.ACTION_EDIT -> {
                         AddNoticeDialog(prefill = notice) { updated ->
                             val idx = data.indexOfFirst { it.id == updated.id }
-                            if (idx >= 0) {
+                            if (idx != -1) {
                                 data[idx] = updated
                                 adapter.submitList(data.toList())
                             }
@@ -66,7 +64,7 @@ class ShopNoticesFragment : Fragment() {
                     }
                 }
             }
-        })
+        }
 
         binding.rvNotices.layoutManager = LinearLayoutManager(requireContext())
         binding.rvNotices.adapter = adapter
@@ -74,7 +72,8 @@ class ShopNoticesFragment : Fragment() {
 
         binding.fabAdd.setOnClickListener {
             AddNoticeDialog { newItem ->
-                data.add(newItem.copy(id = (data.maxOfOrNull { it.id } ?: 0) + 1))
+                val newId = (data.maxOfOrNull { it.id } ?: 0) + 1
+                data.add(newItem.copy(id = newId))
                 adapter.submitList(data.toList())
             }.show(parentFragmentManager, "add_notice")
         }
