@@ -26,6 +26,9 @@ class LoginViewModel : ViewModel() {
     private val _errorMessage = MutableLiveData<String>()
     val errorMessage: LiveData<String> get() = _errorMessage
 
+    private val _errorCode = MutableLiveData<String?>()
+    val errorCode: LiveData<String?> get() = _errorCode
+
     fun login(context: Context, id: String, pw: String) {
         val request = LoginRequest(id, pw)
 
@@ -47,17 +50,18 @@ class LoginViewModel : ViewModel() {
 
                         _loginResult.value = true
                     } else {
-                        _errorMessage.value = result.message ?: "로그인에 실패했습니다."
+                        parseError(response.errorBody()?.string())
                         _loginResult.value = false
                     }
                 } else {
-                    _errorMessage.value = "아이디 또는 비밀번호를 확인해주세요."
+                    parseError(response.errorBody()?.string())
                     _loginResult.value = false
                 }
             }
 
             override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
                 Log.e("LoginViewModel", "Network Error", t)
+                _errorCode.value = "NETWORK_ERROR"
                 _errorMessage.value = "네트워크 연결을 확인해주세요."
                 _loginResult.value = false
             }
@@ -83,6 +87,17 @@ class LoginViewModel : ViewModel() {
         } catch (e: Exception) {
             Log.e("LoginViewModel", "Token decoding error", e)
             null
+        }
+    }
+
+    private fun parseError(errorBodyString: String?) {
+        try {
+            val json = JSONObject(errorBodyString ?: "{}")
+            _errorCode.value = json.optString("code", "UNKNOWN")
+            _errorMessage.value = json.optString("message", "오류가 발생했습니다.")
+        } catch (e: Exception) {
+            _errorCode.value = "UNKNOWN"
+            _errorMessage.value = "로그인 요청 중 오류가 발생했습니다."
         }
     }
 }

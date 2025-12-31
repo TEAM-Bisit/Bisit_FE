@@ -14,7 +14,9 @@ import androidx.navigation.fragment.findNavController
 import com.example.bisit.MainActivity // 메인 액티비티 임포트
 import com.example.bisit.R
 import com.example.bisit.databinding.FragmentLoginCredentialsBinding
+import com.example.bisit.ui.dialog.CommonInfoDialog
 import com.example.bisit.ui.dialog.CustomDialog
+import com.example.bisit.ui.dialog.CustomTwoButtonDialog
 import com.example.bisit.ui.signUp.SignUpActivity
 
 class LoginCredentialsFragment : Fragment() {
@@ -77,7 +79,23 @@ class LoginCredentialsFragment : Fragment() {
                     }
                 }
             } else {
-                // 
+                val code = viewModel.errorCode.value
+                val message = viewModel.errorMessage.value ?: "오류가 발생했습니다."
+
+                when (code) {
+                    "AUTH400" -> {
+                        // 1. 비밀번호 틀림 -> 제공해주신 dialog_common_info 사용
+                        showWrongPasswordDialog("비밀번호를 확인해주세요")
+                    }
+                    "COMMON404" -> {
+                        // 2. 계정 없음 -> 2버튼 다이얼로그 (생성하기 포함)
+                        showNoAccountDialog()
+                    }
+                    else -> {
+                        // 기타 에러
+                        showWrongPasswordDialog(message)
+                    }
+                }
             }
         }
     }
@@ -98,6 +116,30 @@ class LoginCredentialsFragment : Fragment() {
         val isIdValid = binding.etId.text.isNullOrBlank().not()
         val isPasswordValid = binding.etPassword.text.isNullOrBlank().not()
         binding.btnLogin.isEnabled = isIdValid && isPasswordValid
+    }
+
+    private fun showWrongPasswordDialog(msg: String) {
+        val dialog = CommonInfoDialog(
+            message = msg,
+            onConfirm = { /* 닫기 클릭 시 추가 동작 필요하면 작성 */ }
+        )
+        dialog.show(parentFragmentManager, "WrongPasswordDialog")
+    }
+
+    private fun showNoAccountDialog() {
+        val dialog = CustomTwoButtonDialog(
+            title = "계정 정보가 없어요",
+            subtitle = "새로운 계정을 생성하시겠어요?",
+            positiveButtonText = "생성하기",
+            negativeButtonText = "닫기",
+            onPositiveClick = {
+                val intent = Intent(requireContext(), SignUpActivity::class.java).apply {
+                    putExtra("START_DESTINATION", "INFO")
+                }
+                startActivity(intent)
+            }
+        )
+        dialog.show(parentFragmentManager, "NoAccountDialog")
     }
 
     override fun onDestroyView() {
