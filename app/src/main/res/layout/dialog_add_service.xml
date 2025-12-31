@@ -1,7 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
-
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/bg_dialog_white"
+    android:fillViewport="true"
+    android:scrollbars="none">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -9,42 +14,81 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/dialog_title_shop_service"
-            android:textColor="#222222"
-            android:textStyle="bold"
-            android:textSize="16sp"/>
-
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/label_service_name"
-            android:textColor="#666666"
-            android:textSize="14sp"/>
-
-
-        <EditText
-            android:id="@+id/etTitle"
+        <!-- ===== 헤더 ===== -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:hint="@string/hint_service_name"
-            android:padding="12dp"
-            android:background="@drawable/bg_chip_selector"/>
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/dialog_title_shop_service"
+                android:textColor="#222222"
+                android:textStyle="bold"
+                android:textSize="16sp" />
 
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <ImageView
+                android:id="@+id/btnClose"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_close_button"
+                android:contentDescription="닫기" />
+        </LinearLayout>
+
+        <!-- ===== 시술명 ===== -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="@string/label_price"
-            android:textColor="#666666"
-            android:textSize="14sp"/>
+            android:text="@string/label_service_name"
+            android:textColor="#515965"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp" />
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/etTitle"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="@string/hint_service_name"
+                android:padding="12dp"
+                android:textSize="14sp"
+                android:textColor="#222222"
+                android:textColorHint="#9AA1AF"
+                android:maxLength="30"
+                android:background="@drawable/bg_edit_box" />
+
+            <TextView
+                android:id="@+id/tvTitleCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="12dp"
+                android:text="0/30자"
+                android:textSize="12sp"
+                android:textColor="#9AA1AF" />
+        </RelativeLayout>
+
+        <!-- ===== 가격 ===== -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_price"
+            android:textColor="#515965"
+            android:textSize="14sp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="8dp" />
 
         <EditText
             android:id="@+id/etPrice"
@@ -53,75 +97,147 @@
             android:hint="@string/hint_price"
             android:inputType="number"
             android:padding="12dp"
-            android:background="@drawable/bg_chip_selector"/>
+            android:textSize="14sp"
+            android:textColor="#222222"
+            android:textColorHint="#9AA1AF"
+            android:background="@drawable/bg_edit_box" />
 
-
+        <!-- ===== 소요 시간 ===== -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
             android:text="@string/label_duration"
-            android:textColor="#666666"
-            android:textSize="14sp"/>
+            android:textColor="#515965"
+            android:textSize="14sp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="8dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
+
             <TextView
                 android:id="@+id/etHour"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"
-                android:gravity="center"
-                android:text="0시간"
-                android:textColor="#FF6B6B"
-                android:textStyle="bold"
-                android:background="@drawable/bg_chip_selector"/>
+                android:gravity="center_vertical"
+                android:paddingStart="12dp"
+                android:text="00시간"
+                android:textColor="#9AA1AF"
+                android:textSize="14sp"
+                android:background="@drawable/bg_edit_box" />
+
             <Space
                 android:layout_width="8dp"
-                android:layout_height="0dp"/>
+                android:layout_height="0dp" />
+
             <TextView
                 android:id="@+id/etMin"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"
-                android:gravity="center"
-                android:text="0분"
-                android:textColor="#FF6B6B"
-                android:textStyle="bold"
-                android:background="@drawable/bg_chip_selector"/>
+                android:gravity="center_vertical"
+                android:paddingStart="12dp"
+                android:text="00분"
+                android:textColor="#9AA1AF"
+                android:textSize="14sp"
+                android:background="@drawable/bg_edit_box" />
         </LinearLayout>
 
+        <!-- ===== 시술 설명 ===== -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
             android:text="@string/label_description"
-            android:textColor="#666666"
-            android:textSize="14sp"/>
+            android:textColor="#515965"
+            android:textSize="14sp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="8dp" />
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-        <EditText
-            android:id="@+id/etDesc"
+            <EditText
+                android:id="@+id/etDesc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minLines="4"
+                android:gravity="top"
+                android:hint="@string/hint_description"
+                android:padding="12dp"
+                android:textSize="14sp"
+                android:textColor="#222222"
+                android:textColorHint="#9AA1AF"
+                android:maxLength="50"
+                android:background="@drawable/bg_edit_box" />
+
+            <TextView
+                android:id="@+id/tvDescCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignBottom="@id/etDesc"
+                android:layout_marginEnd="12dp"
+                android:layout_marginBottom="8dp"
+                android:text="0/50자"
+                android:textSize="12sp"
+                android:textColor="#9AA1AF" />
+        </RelativeLayout>
+
+        <!-- ===== 이미지 ===== -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minLines="3"
-            android:gravity="top"
-            android:hint="@string/hint_description"
-            android:padding="12dp"
-            android:background="@drawable/bg_chip_selector"/>
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="이미지"
+                android:textColor="#515965"
+                android:textSize="14sp" />
+        </LinearLayout>
 
+        <!-- 사진 1장 -->
+        <FrameLayout
+            android:id="@+id/layoutImage"
+            android:layout_width="61dp"
+            android:layout_height="60dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_image_add_box">
+
+            <!-- 선택된 이미지 -->
+            <ImageView
+                android:id="@+id/ivImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/ivAddImage"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_plus_gray"
+                app:tint="#9AA1AF" />
+
+        </FrameLayout>
+
+        <!-- ===== 저장 버튼 ===== -->
         <TextView
             android:id="@+id/btnAdd"
             android:layout_width="match_parent"
             android:layout_height="52dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="32dp"
             android:gravity="center"
             android:text="@string/btn_add"
-            android:textColor="#FFFFFF"
             android:textStyle="bold"
-            android:background="@drawable/bg_btn_primary_selector"/>
+            android:textColor="@color/btn_primary_text_selector"
+            android:background="@drawable/bg_btn_primary_selector" />
     </LinearLayout>
 </ScrollView>

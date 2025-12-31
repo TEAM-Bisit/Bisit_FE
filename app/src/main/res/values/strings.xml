@@ -92,8 +92,8 @@
     <string name="underlined_text"><u>수정하기</u></string>
 
     <!-- add_service -->
-    <string name="dialog_title_shop_service">메뉴 추가하기</string>
-    <string name="label_service_name">시술명</string>
+    <string name="dialog_title_shop_service">서비스 등록</string>
+    <string name="label_service_name">서비스명</string>
     <string name="hint_service_name">시술을 입력해주세요.</string>
     <string name="label_price">가격</string>
     <string name="hint_price">가격을 입력해주세요.</string>
@@ -227,5 +227,24 @@
 
     <!--직원 삭제-->
     <string name="delete_underlined"><u>삭제</u></string>
+
+    <!--매장 관리-->
+    <string name="add">추가하기</string>
+    <string name="edit">수정하기</string>
+    <string name="hour_suffix">%1$s시간</string>
+    <string name="minute_suffix">%1$s분</string>
+    <string name="duration_invalid">소요 시간은 0분일 수 없습니다.</string>
+    <string name="duration_title">소요 시간 선택</string>
+
+    <string name="notice_add_title">공지 추가</string>
+    <string name="notice_title_label">제목</string>
+    <string name="notice_title_hint">제목을 입력해주세요.</string>
+    <string name="notice_title_count_default">0/30자</string>
+    <string name="notice_content_label">내용</string>
+    <string name="notice_content_hint">내용을 입력해주세요.</string>
+    <string name="notice_content_count_default">0/50자</string>
+    <string name="notice_submit">공지 등록하기</string>
+
+
 
 </resources>

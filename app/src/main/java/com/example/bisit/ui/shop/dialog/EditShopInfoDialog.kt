@@ -1,5 +1,7 @@
 package com.example.bisit.ui.shop.dialog
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -8,15 +10,36 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.DialogFragment
 import com.example.bisit.databinding.DialogEditShopInfoBinding
+import com.example.bisit.ui.customerPay.AddressSearchActivity
 
 class EditShopInfoDialog(
-    private val onSaved: (() -> Unit)? = null
+    private val initialName: String,
+    private val initialPhone: String,
+    private val initialAddress: String,
+    private val onSaved: ((String, String, String, String) -> Unit)? = null
 ) : DialogFragment() {
 
     private var _b: DialogEditShopInfoBinding? = null
     private val b get() = _b!!
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // X 버튼으로만 닫히도록
+        isCancelable = false
+    }
+
+    // 주소 검색 결과 수신
+    private val addressLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val address =
+                    result.data?.getStringExtra("selectedAddress") ?: ""
+                b.etAddr.setText(address)
+            }
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,16 +53,30 @@ class EditShopInfoDialog(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        b.btnSearchAddr.setOnClickListener { }
+        /** X 버튼 클릭 시에만 닫기 */
+        b.btnClose.setOnClickListener {
+            dismissAllowingStateLoss()
+        }
 
-        // EditText 변화 감지 → 버튼 활성화 상태 변경
+        /** 기존 값 세팅 (조회 상태) */
+        b.etName.setText(initialName)
+        b.etPhone.setText(initialPhone)
+        b.etAddr.setText(initialAddress)
+
+        /** 초기 버튼 상태 = 비활성 */
+        updateSaveButton(false)
+
+        /** 주소 검색 */
+        b.btnSearchAddr.setOnClickListener {
+            val intent = Intent(requireContext(), AddressSearchActivity::class.java)
+            addressLauncher.launch(intent)
+        }
+
+        /** 입력 변경 감지 */
         val watcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                val name = b.etName.text?.isNotBlank() == true
-                val phone = b.etPhone.text?.isNotBlank() == true
-                val addr = b.etAddr.text?.isNotBlank() == true
-                b.btnSave.isEnabled = name && phone && addr
+                validateForm()
             }
             override fun afterTextChanged(s: Editable?) {}
         }
@@ -48,38 +85,68 @@ class EditShopInfoDialog(
         b.etPhone.addTextChangedListener(watcher)
         b.etAddr.addTextChangedListener(watcher)
 
+        /** 저장 */
         b.btnSave.setOnClickListener {
-//            val name = b.etName.text?.toString()?.trim().orEmpty()
-//            val phone = b.etPhone.text?.toString()?.trim().orEmpty()
-//            val addr = b.etAddr.text?.toString()?.trim().orEmpty()
+            if (!b.btnSave.isEnabled) return@setOnClickListener
 
-            if (b.btnSave.isEnabled) {
-                onSaved?.invoke()
-                InfoDialog("매장 정보가 수정되었습니다.")
-                    .show(parentFragmentManager, "info")
-                dismissAllowingStateLoss()
-            } else {
-                InfoDialog("모든 항목을 입력해주세요.")
-                    .show(parentFragmentManager, "info")
-            }
+            val name = b.etName.text.toString().trim()
+            val phone = b.etPhone.text.toString().trim()
+            val addressLine = b.etAddr.text.toString().trim()
+            val detailAddress = b.etAddrDetail.text.toString().trim()
+
+            onSaved?.invoke(
+                name,
+                phone,
+                addressLine,
+                detailAddress
+            )
+
+            InfoDialog("매장 정보가 수정되었습니다.")
+                .show(parentFragmentManager, "info")
+
+            dismissAllowingStateLoss()
         }
+
+    }
+
+    /** 유효성 + 변경 여부 검사 */
+    private fun validateForm() {
+        val name = b.etName.text?.toString()?.trim().orEmpty()
+        val phone = b.etPhone.text?.toString()?.trim().orEmpty()
+        val addr = b.etAddr.text?.toString()?.trim().orEmpty()
+        val detail = b.etAddrDetail.text?.toString()?.trim().orEmpty()
+
+        val allFilled = name.isNotEmpty() && phone.isNotEmpty() && addr.isNotEmpty()
+
+        val isChanged =
+            name != initialName ||
+                    phone != initialPhone ||
+                    addr != initialAddress ||
+                    detail.isNotEmpty()
+
+        updateSaveButton(allFilled && isChanged)
+    }
+
+    /** 버튼 스타일 제어 */
+    private fun updateSaveButton(enabled: Boolean) {
+        b.btnSave.isEnabled = enabled
     }
 
     override fun onStart() {
         super.onStart()
         dialog?.window?.apply {
             setBackgroundDrawableResource(android.R.color.transparent)
+
             val screenWidth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val windowMetrics = requireActivity().windowManager.currentWindowMetrics
                 val insets = windowMetrics.windowInsets.getInsets(WindowInsets.Type.systemBars())
                 windowMetrics.bounds.width() - insets.left - insets.right
             } else {
-                val displayMetrics = resources.displayMetrics
-                displayMetrics.widthPixels
+                resources.displayMetrics.widthPixels
             }
+
             val width = (screenWidth * 0.806f).toInt()
-            val height = ViewGroup.LayoutParams.WRAP_CONTENT
-            setLayout(width, height)
+            setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT)
         }
     }
 

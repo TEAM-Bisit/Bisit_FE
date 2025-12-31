@@ -3,44 +3,71 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@drawable/bg_dialog_white">
 
+    <!-- 상단 헤더 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="24dp">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="매출 관리 수정"
+            android:textColor="#222222"
+            android:textStyle="bold"
+            android:textSize="18sp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- 닫기 버튼 -->
+        <ImageView
+            android:id="@+id/btnClose"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_close_button"
+            android:contentDescription="닫기" />
+    </LinearLayout>
+
+    <!-- 계좌번호 라벨 -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="매출 관리 수정"
-        android:textColor="#222222"
-        android:textStyle="bold"
-        android:textSize="16sp"/>
-
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
         android:text="계좌번호 수정"
         android:textColor="#666666"
-        android:textSize="14sp"/>
+        android:textSize="14sp"
+        android:layout_marginBottom="8dp" />
 
-
+    <!-- 계좌번호 입력 -->
     <EditText
         android:id="@+id/etAccount"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:hint="카카오뱅크 3333178930984 가나다"
-        android:padding="12dp"
-        android:background="@drawable/bg_chip_selector"/>
+        android:hint="계좌번호를 입력해주세요."
+        android:paddingHorizontal="12dp"
+        android:textSize="14sp"
+        android:textColor="#222222"
+        android:textColorHint="#9AA1AF"
+        android:background="@drawable/bg_edit_box"
+        android:importantForAutofill="no" />
 
-
+    <!-- 수정하기 버튼 -->
     <TextView
-        android:id="@+id/btnSubmit"
+        android:id="@+id/btnSave"
         android:layout_width="match_parent"
         android:layout_height="52dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="20dp"
         android:gravity="center"
         android:text="수정하기"
-        android:textColor="#FFFFFF"
         android:textStyle="bold"
-        android:background="@drawable/bg_btn_primary_selector"/>
+        android:textSize="15sp"
+        android:textColor="@color/btn_primary_text_selector"
+        android:background="@drawable/bg_btn_primary_selector" />
 </LinearLayout>

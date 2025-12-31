@@ -1,5 +1,7 @@
 package com.example.bisit.ui.shop.model
 
+import android.net.Uri
+
 data class Review(
     val id: Long,
     val date: String,
@@ -9,16 +11,14 @@ data class Review(
     val content: String
 )
 
-
 data class ServiceItem(
     val id: Long,
     var title: String,
     var desc: String,
     var price: Int,
-    var imageUrl: String? = null,
+    var imageUri: Uri? = null,
     var durationMin: Int = 0
 )
-
 
 data class Notice(
     val id: Long,
