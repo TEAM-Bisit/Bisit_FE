@@ -26,6 +26,9 @@ class LoginViewModel : ViewModel() {
     private val _errorMessage = MutableLiveData<String>()
     val errorMessage: LiveData<String> get() = _errorMessage
 
+    private val _errorCode = MutableLiveData<String?>()
+    val errorCode: LiveData<String?> get() = _errorCode
+
     fun login(context: Context, id: String, pw: String) {
         val request = LoginRequest(id, pw)
 
@@ -38,41 +41,63 @@ class LoginViewModel : ViewModel() {
                         TokenManager.saveTokens(context, result.data.accessToken, result.data.refreshToken)
 
                         val role = getRoleFromToken(result.data.accessToken)
-                        _userType.value = if (role == "OWNER") "owner" else "customer"
+
+                        _userType.value = when (role) {
+                            "OWNER" -> "owner"
+                            "CUSTOMER" -> "customer"
+                            else -> "none"
+                        }
 
                         _loginResult.value = true
                     } else {
-                        _errorMessage.value = result.message ?: "로그인에 실패했습니다."
+                        parseError(response.errorBody()?.string())
                         _loginResult.value = false
                     }
                 } else {
-                    _errorMessage.value = "서버 오류: ${response.code()}"
+                    parseError(response.errorBody()?.string())
                     _loginResult.value = false
                 }
             }
 
             override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
                 Log.e("LoginViewModel", "Network Error", t)
+                _errorCode.value = "NETWORK_ERROR"
                 _errorMessage.value = "네트워크 연결을 확인해주세요."
                 _loginResult.value = false
             }
         })
     }
 
-    private fun getRoleFromToken(token: String): String {
+    private fun getRoleFromToken(token: String): String? {
         return try {
             val parts = token.split(".")
-            if (parts.size < 2) return "CUSTOMER"
+            if (parts.size < 2) return null
 
             val payload = parts[1]
             val decodedBytes = Base64.decode(payload, Base64.URL_SAFE)
             val decodedString = String(decodedBytes, Charsets.UTF_8)
 
             val jsonObject = JSONObject(decodedString)
-            jsonObject.optString("role", "CUSTOMER")
+
+            if (!jsonObject.has("role") || jsonObject.isNull("role")) {
+                null
+            } else {
+                jsonObject.getString("role")
+            }
         } catch (e: Exception) {
             Log.e("LoginViewModel", "Token decoding error", e)
-            "CUSTOMER"
+            null
+        }
+    }
+
+    private fun parseError(errorBodyString: String?) {
+        try {
+            val json = JSONObject(errorBodyString ?: "{}")
+            _errorCode.value = json.optString("code", "UNKNOWN")
+            _errorMessage.value = json.optString("message", "오류가 발생했습니다.")
+        } catch (e: Exception) {
+            _errorCode.value = "UNKNOWN"
+            _errorMessage.value = "로그인 요청 중 오류가 발생했습니다."
         }
     }
 }

@@ -12,7 +12,10 @@ class AuthInterceptor(private val context: Context) : Interceptor {
         // 토큰이 필요 없는 API 경로 목록 (로그인, 회원가입 등)
         val noAuthPaths = listOf(
             "/api/auth/login",
-            "/api/auth/sign-up"
+            "/api/auth/sign-up",
+            "/api/sms/send", 
+            "/api/sms/verify",
+            "/api/auth/check/login-id"
         )
 
         // 해당 경로가 포함되어 있으면 토큰 없이 진행
