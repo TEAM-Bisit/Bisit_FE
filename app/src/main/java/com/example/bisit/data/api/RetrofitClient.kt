@@ -143,4 +143,6 @@ object RetrofitClient {
     fun getShopRegisterApi(context: Context) =
         getServerRetrofit(context).create(ShopRegisterApiService::class.java)
 
+    fun getShopNoticeApi(context: Context) =
+        getServerRetrofit(context).create(ShopNoticeApiService::class.java)
 }
