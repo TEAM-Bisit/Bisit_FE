@@ -2,6 +2,8 @@ package com.example.bisit.data.api
 
 import com.example.bisit.data.model.auth.LoginRequest
 import com.example.bisit.data.model.auth.LoginResponse
+import com.example.bisit.data.model.signUp.SignUpRequest
+import com.example.bisit.data.model.signUp.SignUpResponse
 import com.example.bisit.data.model.todayReservation.CommonResponse
 import retrofit2.Call
 import retrofit2.http.Body
@@ -15,4 +17,7 @@ interface AuthApiService {
 
     @GET("/api/auth/check/login-id")
     fun checkLoginId(@Query("loginId") loginId: String): Call<CommonResponse<Boolean>>
+
+    @POST("/api/auth/sign-up")
+    fun signUp(@Body request: SignUpRequest): Call<SignUpResponse>
 }

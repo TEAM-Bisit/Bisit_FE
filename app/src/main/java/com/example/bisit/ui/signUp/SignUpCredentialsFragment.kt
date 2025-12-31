@@ -3,6 +3,7 @@ package com.example.bisit.ui.signUp
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,8 +17,13 @@ import com.example.bisit.data.model.todayReservation.CommonResponse
 import com.example.bisit.databinding.FragmentSignUpCredentialsBinding
 import kotlinx.coroutines.Job
 import androidx.lifecycle.lifecycleScope
+import com.example.bisit.data.model.signUp.SignUpRequest
+import com.example.bisit.data.model.signUp.SignUpResponse
+import com.example.bisit.ui.dialog.CustomDialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Response
 
 class SignUpCredentialsFragment : Fragment() {
 
@@ -56,8 +62,7 @@ class SignUpCredentialsFragment : Fragment() {
 
         setupTextWatchers()
         binding.btnNext.setOnClickListener {
-            // ... (API 호출 등) ...
-            findNavController().navigate(R.id.action_signUpCredentialsFragment_to_signUpCompleteFragment)
+            performSignUp()
         }
     }
 
@@ -165,10 +170,55 @@ class SignUpCredentialsFragment : Fragment() {
         })
     }
 
-
-
     private fun checkAllFieldsAndEnableNextButton() {
         binding.btnNext.isEnabled = isIdValid && isPasswordValid && isPasswordConfirmValid
+    }
+
+    private fun performSignUp() {
+        Log.d("SignUpDebug", "name: ${viewModel.name}")
+        Log.d("SignUpDebug", "email: ${viewModel.email}")
+        Log.d("SignUpDebug", "phone: ${viewModel.phone}")
+        Log.d("SignUpDebug", "gender: ${viewModel.gender}")
+        Log.d("SignUpDebug", "loginId: ${binding.etId.text}")
+
+        // 1. 전체 요청 객체 생성 (ViewModel + 현재 입력값)
+        val request = SignUpRequest(
+            name = viewModel.name,
+            email = viewModel.email,
+            phone = viewModel.phone,
+            gender = viewModel.gender,
+            loginId = binding.etId.text.toString(),
+            password = binding.etPassword.text.toString(),
+            confirmPassword = binding.etPasswordConfirm.text.toString()
+        )
+
+        // 2. 서버 전송
+        authApi.signUp(request).enqueue(object : retrofit2.Callback<SignUpResponse> {
+            override fun onResponse(call: Call<SignUpResponse>, response: Response<SignUpResponse>) {
+                if (response.isSuccessful && response.body()?.success == true) {
+                    // 성공 시 완료 화면 이동
+                    findNavController().navigate(R.id.action_signUpCredentialsFragment_to_signUpCompleteFragment)
+                } else {
+                    // [중요] 서버가 보내는 진짜 에러 이유를 확인하는 코드
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("SignUpError", "서버가 보낸 에러 내용: $errorBody")
+
+                    // 에러 팝업 띄우기
+                    val dialog = CustomDialog(
+                        title = "회원가입 실패",
+                        subtitle = "입력 정보를 다시 확인해주세요."
+                    )
+                    dialog.show(parentFragmentManager, "SignUpError")
+                }
+            }
+
+            override fun onFailure(call: Call<SignUpResponse>, t: Throwable) {
+                com.example.bisit.ui.dialog.CustomDialog(
+                    title = "네트워크 오류",
+                    subtitle = "서버와의 통신이 원활하지 않습니다."
+                ).show(parentFragmentManager, "NetworkError")
+            }
+        })
     }
 
     override fun onDestroyView() {

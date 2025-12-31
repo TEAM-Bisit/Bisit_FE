@@ -11,4 +11,9 @@ class SignUpViewModel : ViewModel() {
 
     val isVerificationUiVisible = MutableLiveData(false)
     val isPhoneVerified = MutableLiveData(false)
+
+    var name: String = ""
+    var email: String = ""
+    var phone: String = ""
+    var gender: String = "MALE"
 }

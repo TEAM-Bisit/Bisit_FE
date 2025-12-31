@@ -31,8 +31,10 @@ class SignUpCompleteFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.btnStart.setOnClickListener {
-            // ✨ Intent 대신 Navigation Action을 사용하여 유형 선택(UserType)으로 이동
-            findNavController().navigate(R.id.action_signUpCompleteFragment_to_userTypeFragment)
+            // 회원가입 프로세스 종료 후 로그인 화면(AuthActivity)으로 이동
+            val intent = Intent(requireContext(), AuthActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
         }
     }
 

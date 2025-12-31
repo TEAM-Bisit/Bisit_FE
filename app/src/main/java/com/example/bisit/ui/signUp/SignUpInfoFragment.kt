@@ -89,7 +89,7 @@ class SignUpInfoFragment : Fragment() {
         binding.btnVerify.setOnClickListener {
             val phone = binding.etPhone.text.toString().replace("-", "")
 
-            if (phone == "01000000000") { // 테스트용 코드
+            if (phone == "01012345678") { // 테스트용 코드
                 viewModel.isVerificationUiVisible.value = true
                 return@setOnClickListener
             }
@@ -115,7 +115,7 @@ class SignUpInfoFragment : Fragment() {
             val phone = binding.etPhone.text.toString().replace("-", "")
             val code = binding.etVerificationCode.text.toString()
 
-            if (phone == "01000000000" && code == "000000") { // 테스트용 코드
+            if (phone == "01012345678" && code == "000000") { // 테스트용 코드
                 val dialog = CommonInfoDialog(
                     message = "인증이 완료되었습니다.",
                     onConfirm = {
@@ -211,6 +211,11 @@ class SignUpInfoFragment : Fragment() {
     private fun showTermsSheet() {
         val sheet = TermsAgreementSheet(
             onAgreementComplete = {
+                viewModel.name = binding.etName.text.toString()
+                viewModel.email = binding.etEmail.text.toString()
+                viewModel.phone = binding.etPhone.text.toString().replace("-", "")
+                viewModel.gender = if (binding.etGender.text.toString() == "남") "MALE" else "FEMALE"
+
                 viewModel.shouldShowTermsSheetOnReturn = false
                 findNavController().navigate(R.id.action_signUpInfoFragment_to_signUpCredentialsFragment)
             },
