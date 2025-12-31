@@ -5,7 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF">
+    android:background="#FFFFFF"
+    android:paddingTop="24dp">
 
     <LinearLayout
         android:id="@+id/contentContainer"
@@ -67,6 +68,10 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <include layout="@layout/item_customer_my_reserve_detail_body" />
+        
+        <include 
+            android:id="@+id/footerWrap"
+            layout="@layout/item_customer_my_reserve_detail_foot" />
     </LinearLayout>
 
     <LinearLayout

@@ -3,6 +3,7 @@ package com.example.bisit.ui.customerMyReserve
 import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
+import com.example.bisit.R
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -16,9 +17,18 @@ import com.example.bisit.databinding.DialogCustomerMyReserveReviewBinding
 import com.example.bisit.databinding.FragmentCustomerMyReserveDetailBinding
 import com.example.bisit.databinding.ItemCustomerMyReserveDetailHeaderBinding
 import com.example.bisit.databinding.ItemCustomerMyReserveDetailBodyBinding
+import com.example.bisit.databinding.ItemCustomerMyReserveDetailFootBinding
+import com.example.bisit.data.model.reservation.ReservationDetailData
+import com.example.bisit.data.model.reservation.ReservationDetailResponse
+import com.example.bisit.databinding.DialogCancelReasonBinding
+import com.example.bisit.data.model.reservation.CancelReservationRequest
+import kotlinx.coroutines.launch
+import androidx.lifecycle.lifecycleScope
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.text.NumberFormat
+import java.util.Locale
 
 class CustomerMyReserveDetailFragment : Fragment() {
 
@@ -27,6 +37,7 @@ class CustomerMyReserveDetailFragment : Fragment() {
 
     private lateinit var headerBinding: ItemCustomerMyReserveDetailHeaderBinding
     private lateinit var bodyBinding: ItemCustomerMyReserveDetailBodyBinding
+    private lateinit var footBinding: ItemCustomerMyReserveDetailFootBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,32 +47,139 @@ class CustomerMyReserveDetailFragment : Fragment() {
 
         headerBinding = ItemCustomerMyReserveDetailHeaderBinding.bind(binding.headerContainer.getChildAt(0))
         bodyBinding = ItemCustomerMyReserveDetailBodyBinding.bind(binding.bodyContainer.getChildAt(0))
+        footBinding = ItemCustomerMyReserveDetailFootBinding.bind(binding.bodyContainer.findViewById(R.id.footerWrap))
 
-        setupHeader()
-        setupBody()
+        val reservationId = arguments?.getString("reservationId")
+        if (reservationId != null) {
+            fetchReservationDetail(reservationId.toLong())
+        }
+
         setupButtons()
 
         return binding.root
     }
 
-    private fun setupHeader() {
-        headerBinding.apply {
-            tvStatus.text = "시술 완료"
-            tvReservNo.text = "예약 번호 shtydlqslek"
-            tvShopName.text = "다른헤어"
-            tvShopAddr.text = "대구 중구 관덕정길 6-11 1층"
-            btnReview.setOnClickListener {
-                showReviewDialog()
+    private fun fetchReservationDetail(reservationId: Long) {
+        lifecycleScope.launch {
+            try {
+                val api = RetrofitClient.getReservationApi(requireContext())
+                val response = api.getReservationDetail(reservationId)
+                if (response.isSuccessful && response.body()?.success == true) {
+                    response.body()?.data?.let {
+                        bindData(it)
+                    }
+                } else {
+                    Toast.makeText(requireContext(), "정보를 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "네트워크 오류", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun setupBody() {
+    private fun bindData(data: ReservationDetailData) {
+        // Bind Header
+        headerBinding.apply {
+            tvReservNo.text = "예약 번호  ${data.orderId ?: data.reservationId}"
+            tvShopName.text = data.shopName
+            tvShopAddr.text = data.shopAddress
+            
+            val statusFromArg = arguments?.getString("status")
+            val isCanceled = data.status.uppercase().contains("CANCEL") || statusFromArg == "취소"
+
+            if (isCanceled) {
+                tvStatus.text = "시술 취소"
+                tvStatus.setTextColor(resources.getColor(R.color.main_red, null))
+                btnReview.isEnabled = false
+                btnReview.alpha = 0.5f // Visual feedback for disabled state
+                btnReview.text = "리뷰 작성 불가"
+                
+                // Canceled UI adjustments
+                binding.btnNextStep.visibility = View.GONE
+                footBinding.root.visibility = View.VISIBLE
+                footBinding.tvCancelReason.text = data.cancellationReason ?: ""
+            } else {
+                val isCompleted = data.status.uppercase() == "COMPLETED"
+                val canConfirm = data.canConfirm
+
+                if (isCompleted) {
+                    tvStatus.text = "시술 완료"
+                    tvStatus.setTextColor(resources.getColor(R.color.blue_4076FF, null))
+                } else if (data.status.uppercase() == "CUSTOMER_CONFIRMED") {
+                    tvStatus.text = "고객 확정 완료"
+                    tvStatus.setTextColor(resources.getColor(R.color.muted_gray, null))
+                }
+
+                btnReview.isEnabled = isCompleted || data.status.uppercase() == "CUSTOMER_CONFIRMED"
+                btnReview.alpha = if (btnReview.isEnabled) 1.0f else 0.5f
+                btnReview.text = if (btnReview.isEnabled) "리뷰 작성하기" else "리뷰 작성 불가"
+                btnReview.setOnClickListener {
+                    showReviewDialog()
+                }
+                
+                if (isCompleted && canConfirm) {
+                    binding.btnNextStep.visibility = View.VISIBLE
+                    binding.btnNextStep.text = "확정하기"
+                    binding.btnNextStep.setOnClickListener {
+                        confirmReservation(data.reservationId)
+                    }
+                } else if (!isCompleted && !isCanceled && data.status.uppercase() != "CUSTOMER_CONFIRMED") {
+                    // Scheduled reservation - show cancel button
+                    binding.btnNextStep.visibility = View.VISIBLE
+                    binding.btnNextStep.text = "취소하기"
+                    binding.btnNextStep.setOnClickListener {
+                        showCancelDialog(data)
+                    }
+                } else {
+                    binding.btnNextStep.visibility = View.GONE
+                }
+                footBinding.root.visibility = View.GONE
+            }
+        }
+
+        // Bind Body
         bodyBinding.apply {
-            tvValueDate.text = "2025.08.06 오후 1시"
-            tvValueTime.text = "1시간 30분"
-            tvValuePrice.text = "60,000원"
-            tvValueName.text = "라마바"
+            tvValueDate.text = formatDateTime(data.reservedDate, data.startTime)
+            tvValueTime.text = "${data.durationMin}분"
+            tvValuePrice.text = "${NumberFormat.getNumberInstance(Locale.US).format(data.price)}원"
+            tvValueName.text = data.customerName
+        }
+    }
+
+    private fun confirmReservation(reservationId: Long) {
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("시술 확정")
+            .setMessage("시술 완료를 확정하시겠습니까?")
+            .setPositiveButton("확정하기") { _, _ ->
+                lifecycleScope.launch {
+                    try {
+                        val api = RetrofitClient.getReservationApi(requireContext())
+                        val response = api.confirmReservation(reservationId)
+                        if (response.isSuccessful && response.body()?.success == true) {
+                            Toast.makeText(requireContext(), "시술이 확정되었습니다.", Toast.LENGTH_SHORT).show()
+                            // Refresh data
+                            fetchReservationDetail(reservationId)
+                        } else {
+                            Toast.makeText(requireContext(), "시술 확정에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: Exception) {
+                        Toast.makeText(requireContext(), "에러가 발생했습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("닫기", null)
+            .show()
+    }
+    private fun formatDateTime(date: String, time: String): String {
+
+        return try {
+            val inputFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+            val outputFormat = java.text.SimpleDateFormat("yyyy.MM.dd", java.util.Locale.getDefault())
+            val dateObj = inputFormat.parse(date)
+            val formattedDate = if (dateObj != null) outputFormat.format(dateObj) else date
+            "$formattedDate  $time"
+        } catch (e: Exception) {
+            "$date  $time"
         }
     }
 
@@ -69,10 +187,9 @@ class CustomerMyReserveDetailFragment : Fragment() {
         binding.btnBack.setOnClickListener {
             findNavController().popBackStack()
         }
-
-        binding.btnNextStep.setOnClickListener {
-        }
     }
+
+
 
     private fun showReviewDialog() {
         val dialog = Dialog(requireContext())
@@ -148,6 +265,55 @@ class CustomerMyReserveDetailFragment : Fragment() {
                     Toast.makeText(requireContext(), "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
+    }
+
+    private fun showCancelDialog(data: ReservationDetailData) {
+        val dialog = Dialog(requireContext())
+        val dialogBinding = DialogCancelReasonBinding.inflate(layoutInflater)
+        dialog.setContentView(dialogBinding.root)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        dialogBinding.tvTitle.text = "예약 취소"
+        dialogBinding.tvContentLabel.text = "${data.shopName} 예약을 취소하시겠습니까?"
+        
+        dialogBinding.btnClose.setOnClickListener { dialog.dismiss() }
+
+        dialogBinding.etReason.addTextChangedListener {
+            val textLength = it?.length ?: 0
+            dialogBinding.tvCharCount.text = "$textLength/50자"
+            dialogBinding.btnSubmit.isEnabled = textLength > 0
+            dialogBinding.btnSubmit.setTextColor(
+                if (textLength > 0) resources.getColor(R.color.white, null) 
+                else resources.getColor(R.color.muted_gray, null)
+            )
+        }
+
+        dialogBinding.btnSubmit.setOnClickListener {
+            val reason = dialogBinding.etReason.text.toString()
+            cancelReservation(data.reservationId, reason)
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun cancelReservation(reservationId: Long, reason: String) {
+        lifecycleScope.launch {
+            try {
+                val api = RetrofitClient.getReservationApi(requireContext())
+                val request = CancelReservationRequest(reason)
+                val response = api.cancelReservation(reservationId, request)
+                
+                if (response.isSuccessful && response.body()?.success == true) {
+                    Toast.makeText(requireContext(), "예약이 취소되었습니다.", Toast.LENGTH_SHORT).show()
+                    fetchReservationDetail(reservationId)
+                } else {
+                    Toast.makeText(requireContext(), "예약 취소에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "에러가 발생했습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     override fun onDestroyView() {

@@ -12,6 +12,8 @@ import androidx.navigation.fragment.findNavController
 import com.example.bisit.databinding.FragmentHomeListBinding
 import com.example.bisit.data.api.RetrofitClient
 import com.example.bisit.R
+import android.widget.Toast
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
 
 class HomeListFragment : Fragment() {
@@ -23,6 +25,10 @@ class HomeListFragment : Fragment() {
 
     private var currentSortType: String = "DISTANCE"
     private var currentCategory: String = "LIVING"
+    
+    private var nextCursor: Long? = null
+    private var hasNext: Boolean = false
+    private var isLoading: Boolean = false
 
     private val TAG = "HomeListFragment"
 
@@ -49,6 +55,7 @@ class HomeListFragment : Fragment() {
 
         setupFilterChips()
         setupRecyclerView()
+        setupInfiniteScroll()
 
         loadShopList()
 
@@ -71,7 +78,7 @@ class HomeListFragment : Fragment() {
             }
 
             Log.d(TAG, "변경된 정렬 타입 = $currentSortType")
-            loadShopList()
+            resetPaginationAndLoad()
         }
 
         binding.rvFilters.layoutManager =
@@ -92,31 +99,65 @@ class HomeListFragment : Fragment() {
         binding.recyclerView.adapter = adapter
     }
 
-    private fun loadShopList() {
-        Log.d(TAG, "===== loadShopList() 호출됨 =====")
+    private fun setupInfiniteScroll() {
+        binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
+                val totalItemCount = layoutManager.itemCount
+
+                if (!isLoading && hasNext && lastVisibleItemPosition + 5 >= totalItemCount) {
+                    Log.d(TAG, "Infinite Scroll triggered: loading with nextCursor=$nextCursor")
+                    loadShopList(nextCursor)
+                }
+            }
+        })
+    }
+
+    private fun resetPaginationAndLoad() {
+        nextCursor = null
+        hasNext = false
+        adapter.updateData(emptyList()) // Clear list
+        loadShopList(null)
+    }
+
+    private fun loadShopList(cursor: Long? = null) {
+        if (isLoading) return
+        isLoading = true
+        
+        Log.d(TAG, "===== loadShopList() 호출됨 (cursor=$cursor) =====")
         Log.d(TAG, "요청 파라미터 → category=$currentCategory, sort=$currentSortType")
 
         lifecycleScope.launch {
             try {
                 val api = RetrofitClient.getShopApi(requireContext())
-                Log.d(TAG, "ShopApi 객체 생성 성공")
-
+                
                 val resp = api.getShopsByCategory(
                     category = currentCategory,
                     lat = 37.5665,     // TODO: 실제 위치 넣기
                     lng = 126.9780,
-                    sortType = currentSortType
+                    sortType = currentSortType,
+                    cursor = cursor
                 )
 
-                Log.d(TAG, "API 응답 성공")
-                Log.d(TAG, "응답 전체 = $resp")
+                Log.d(TAG, "API 응답 성공: size=${resp.data.content.size}, hasNext=${resp.data.hasNext}, nextCursor=${resp.data.nextCursor}")
+                
+                if (cursor == null) {
+                    adapter.updateData(resp.data.content)
+                } else {
+                    adapter.addData(resp.data.content)
+                }
 
-                Log.d(TAG, "응답 리스트 사이즈 = ${resp.data.content.size}")
-                adapter.updateData(resp.data.content)
+                nextCursor = resp.data.nextCursor
+                hasNext = resp.data.hasNext
 
             } catch (e: Exception) {
                 Log.e(TAG, "API 요청 중 오류 발생", e)
-                e.printStackTrace()
+                Toast.makeText(requireContext(), "가게 목록을 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
+            } finally {
+                isLoading = false
             }
         }
     }

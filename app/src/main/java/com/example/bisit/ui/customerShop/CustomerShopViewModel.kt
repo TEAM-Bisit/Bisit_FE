@@ -73,10 +73,17 @@ class CustomerShopViewModel(
                     Log.d("CustomerShopVM", "Shop introduce response: success=${body?.success}, data=${body?.data}")
                     _introduceData.value = body?.data
                 } else {
-                    Log.e("CustomerShopVM", "Shop introduce failed: ${resp.code()} - ${resp.message()}")
+                    // 403은 권한 문제로 introduce가 선택적 기능일 수 있으므로 에러 로그를 남기지 않음
+                    if (resp.code() != 403) {
+                        Log.e("CustomerShopVM", "Shop introduce failed: ${resp.code()} - ${resp.message()}")
+                    } else {
+                        Log.d("CustomerShopVM", "Shop introduce not available (403) - continuing without it")
+                    }
+                    _introduceData.value = null
                 }
             } catch (e: Exception) {
                 Log.e("CustomerShopVM", "Shop introduce error", e)
+                _introduceData.value = null
             }
         }
     }
@@ -133,7 +140,10 @@ class CustomerShopViewModel(
                         com.example.bisit.data.model.shop.ReviewItem(
                             author = it.reviewerName ?: "익명",
                             content = it.content,
-                            date = it.visitDate ?: it.createdAt?.substring(0, 10) ?: ""
+                            date = it.visitDate ?: it.createdAt?.substring(0, 10) ?: "",
+                            serviceName = it.serviceName,
+                            staffName = it.staffName,
+                            rating = it.rating
                         )
                     }
                     _reviewsData.value = items

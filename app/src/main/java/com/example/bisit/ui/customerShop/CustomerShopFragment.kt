@@ -62,6 +62,28 @@ class CustomerShopFragment : Fragment() {
         binding.rvShopDetail.adapter = adapter
 
         binding.shopBack.setOnClickListener { parentFragmentManager.popBackStack() }
+        binding.shopHome.setOnClickListener {
+            findNavController().navigate(R.id.customerCategoryFragment)
+        }
+        binding.btnShare.setOnClickListener {
+            val shopData = viewModel.shopData.value
+            if (shopData != null) {
+                val shareBody = "[${shopData.shopName}] 매장 정보를 확인해보세요!\n\n" +
+                        "주소: ${shopData.address} ${shopData.detailAddress ?: ""}\n" +
+                        "전화번호: ${shopData.phone ?: "정보 없음"}\n\n" +
+                        "나오때(Naottae) 앱에서 더 자세한 정보를 확인하세요."
+                
+                val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(android.content.Intent.EXTRA_SUBJECT, "[나오때] 매장 공유")
+                    putExtra(android.content.Intent.EXTRA_TEXT, shareBody)
+                }
+                startActivity(android.content.Intent.createChooser(intent, "매장 정보 공유하기"))
+            } else {
+                Toast.makeText(requireContext(), "정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         binding.btnBook.setOnClickListener {
             val bundle = Bundle().apply {
                 putLong("shopId", shopId)
@@ -87,15 +109,19 @@ class CustomerShopFragment : Fragment() {
         }
 
         viewModel.servicesData.observe(viewLifecycleOwner) { services ->
-            // Current list implementation requires both services and reviews to update adapter
-            // We can check if adapter is initialized and update
+            Log.d("CustomerShopFragment", "servicesData observer: ${services.size} services")
             val reviews = viewModel.reviewsData.value ?: emptyList()
-            adapter.updateData(services, reviews)
+            if (::adapter.isInitialized) {
+                adapter.updateData(services, reviews)
+            }
         }
 
         viewModel.reviewsData.observe(viewLifecycleOwner) { reviews ->
+            Log.d("CustomerShopFragment", "reviewsData observer: ${reviews.size} reviews")
             val services = viewModel.servicesData.value ?: emptyList()
-            adapter.updateData(services, reviews)
+            if (::adapter.isInitialized) {
+                adapter.updateData(services, reviews)
+            }
         }
 
         Log.d("CustomerShopFragment", "Starting to load shop with id: $shopId")
@@ -147,7 +173,7 @@ class CustomerShopFragment : Fragment() {
             rating = (data.averageRating?.toString() ?: "0.0"),
             summary = data.shortIntro ?: "",
             address = "${data.address ?: ""} ${data.detailAddress ?: ""}".trim(),
-            openInfo = data.todayBusinessHours ?: "",
+            openInfo = data.todayBusinessHours?.replace(" ~ ", "~") ?: "",
             phone = data.phone ?: "",
             notice = data.latestNotice?.title ?: "",
             noticeTime = noticeRel ?: "",
@@ -158,17 +184,21 @@ class CustomerShopFragment : Fragment() {
 
         Log.d("CustomerShopFragment", "shopDetailItem created: ${shopDetailItem.name}")
 
-        val services = listOf<List<ServiceItem>>(
-            emptyList()
-        )
+        // Get current services and reviews data
+        val services = viewModel.servicesData.value ?: emptyList()
+        val reviews = viewModel.reviewsData.value ?: emptyList()
 
-        val reviews = listOf<List<ReviewItem>>(
-            emptyList()
-        )
-
-        adapter = CustomerShopDetailAdapter(listOf(shopDetailItem), services, reviews)
-        binding.rvShopDetail.adapter = adapter
-        Log.d("CustomerShopFragment", "Adapter set with ${adapter.itemCount} items")
+        // Create or update adapter
+        if (!::adapter.isInitialized) {
+            adapter = CustomerShopDetailAdapter(listOf(shopDetailItem), listOf(services), listOf(reviews))
+            binding.rvShopDetail.adapter = adapter
+            Log.d("CustomerShopFragment", "Adapter initialized with ${adapter.itemCount} items, ${services.size} services, ${reviews.size} reviews")
+        } else {
+            // If adapter already exists, we need to recreate with new shop data
+            adapter = CustomerShopDetailAdapter(listOf(shopDetailItem), listOf(services), listOf(reviews))
+            binding.rvShopDetail.adapter = adapter
+            Log.d("CustomerShopFragment", "Adapter recreated with updated shop data")
+        }
     }
 
     private fun convertBusinessHourToString(item: BusinessHourItem): String? {
@@ -186,12 +216,10 @@ class CustomerShopFragment : Fragment() {
         return if (item.isClosed == true) {
             "$dayKr 휴무"
         } else {
-            val openFrom = item.openFrom ?: ""
-            val openTo = item.openTo ?: ""
-            val breakPart = if (!item.breakFrom.isNullOrBlank() && !item.breakTo.isNullOrBlank()) {
-                " (브레이크 ${item.breakFrom} ~ ${item.breakTo})"
-            } else ""
-            "$dayKr $openFrom ~ $openTo$breakPart"
+            // Parse time format from HH:mm:ss to HH:mm
+            val openFrom = item.openFrom?.substring(0, 5) ?: ""
+            val openTo = item.openTo?.substring(0, 5) ?: ""
+            "$dayKr $openFrom~$openTo"
         }
     }
 

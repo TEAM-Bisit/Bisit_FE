@@ -64,6 +64,7 @@ class CustomerReserveFragment : Fragment() {
     private var staffImage: String? = null
     private var reviewCount: Int = 0
     private var shopName: String = ""
+    private var staffDescription: String? = null
 
     // API data
     private var availableTimes: List<String> = emptyList()
@@ -82,6 +83,7 @@ class CustomerReserveFragment : Fragment() {
         staffImage = arguments?.getString("staffImage")
         reviewCount = arguments?.getInt("reviewCount", 0) ?: 0
         shopName = arguments?.getString("shopName") ?: ""
+        staffDescription = arguments?.getString("staffDescription")
 
         if (staffId == -1L || shopId == -1L) {
             Log.e("CustomerReserveFragment", "Missing staffId or shopId")
@@ -92,6 +94,7 @@ class CustomerReserveFragment : Fragment() {
         }
 
         setupDesignerInfo()
+        setupDesignerComment()
 
         setupStepProgress()
         setupCalendar()
@@ -146,6 +149,9 @@ class CustomerReserveFragment : Fragment() {
                     putInt("totalPrice", selectedServicePrice)
                     putString("serviceName", getSelectedServiceName())
                     putString("staffName", staffName)
+                    putString("staffImage", staffImage)
+                    putInt("reviewCount", reviewCount)
+                    putString("staffDescription", staffDescription)
                     putString("shopName", shopName)
                 }
                 findNavController().navigate(
@@ -539,6 +545,19 @@ class CustomerReserveFragment : Fragment() {
                 .error(R.drawable.img_designer)
                 .centerCrop()
                 .into(ivProfile)
+        }
+    }
+
+    private fun setupDesignerComment() {
+        val bind = binding ?: return
+        val root = bind.root
+        
+        val tvCommentContent = root.findViewById<TextView>(R.id.tvCommentContent)
+        
+        if (!staffDescription.isNullOrEmpty()) {
+            tvCommentContent?.text = staffDescription
+        } else {
+            tvCommentContent?.text = "시술 후 관리 잘 부탁드려요 😊" // 기본값
         }
     }
     private fun setupVisitType() {

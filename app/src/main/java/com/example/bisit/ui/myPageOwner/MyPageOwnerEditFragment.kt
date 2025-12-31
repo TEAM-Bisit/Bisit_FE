@@ -16,9 +16,23 @@ import com.example.bisit.R
 import com.example.bisit.data.api.RetrofitClient
 import com.example.bisit.data.api.SMSApiService
 import com.example.bisit.databinding.FragmentMyPageOwnerEditBinding
+import com.example.bisit.data.model.member.MyProfileResponse
+import com.example.bisit.data.model.member.MemberUpdateRequest
+import com.example.bisit.data.model.member.MemberUpdateResponse
+import com.example.bisit.data.api.StaffManageApiService
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.PickVisualMediaRequest
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import com.bumptech.glide.Glide
+import java.io.File
+import java.io.FileOutputStream
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import android.widget.Toast
+import android.widget.Button
 
 class MyPageOwnerEditFragment : Fragment() {
 
@@ -35,6 +49,19 @@ class MyPageOwnerEditFragment : Fragment() {
         RetrofitClient.getSmsApi(requireContext())
     }
 
+    private val staffApi by lazy {
+        RetrofitClient.getStaffManageApi(requireContext())
+    }
+
+    private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) {
+            Log.d("OwnerEdit", "Selected URI: $uri")
+            uploadImage(uri)
+        } else {
+            Log.d("OwnerEdit", "No media selected")
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -49,20 +76,166 @@ class MyPageOwnerEditFragment : Fragment() {
         setupCameraDialog()
         setupSaveDialog()
         setupPhoneInput()
+        setupInputWatchers()
+
+        fetchProfile()
 
         return binding.root
     }
 
+    private fun fetchProfile() {
+        RetrofitClient.getMemberApi(requireContext()).getMyProfile()
+            .enqueue(object : Callback<MyProfileResponse> {
+                override fun onResponse(call: Call<MyProfileResponse>, response: Response<MyProfileResponse>) {
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        response.body()?.data?.let {
+                            binding.etName.setText(it.name)
+                            binding.etEmail.setText(it.email)
+                            binding.etPhone.setText(it.phone)
+                            
+                            it.profileImage?.let { url ->
+                                Glide.with(this@MyPageOwnerEditFragment)
+                                    .load(url)
+                                    .placeholder(R.drawable.img_mypage_owner)
+                                    .into(binding.imgProfile)
+                            }
+
+                            // Initially disable btnBook as nothing has changed yet
+                            binding.btnBook.isEnabled = false
+                            binding.btnBook.backgroundTintList = resources.getColorStateList(R.color.gray, null)
+                        }
+                    } else {
+                        Toast.makeText(requireContext(), "정보를 불러오지 못했습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<MyProfileResponse>, t: Throwable) {
+                    Toast.makeText(requireContext(), "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
+    }
+
+    private fun uploadImage(uri: android.net.Uri) {
+        val file = uriToFile(uri) ?: return
+        val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+        val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
+
+        staffApi.uploadProfileImage(body).enqueue(object : Callback<MyProfileResponse> {
+            override fun onResponse(call: Call<MyProfileResponse>, response: Response<MyProfileResponse>) {
+                if (response.isSuccessful && response.body()?.success == true) {
+                    Toast.makeText(requireContext(), "사진이 업로드되었습니다.", Toast.LENGTH_SHORT).show()
+                    response.body()?.data?.profileImage?.let { url ->
+                        Glide.with(this@MyPageOwnerEditFragment).load(url).into(binding.imgProfile)
+                    }
+                } else {
+                    Toast.makeText(requireContext(), "업로드 실패", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<MyProfileResponse>, t: Throwable) {
+                Toast.makeText(requireContext(), "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    private fun uriToFile(uri: android.net.Uri): File? {
+        return try {
+            val contentResolver = requireContext().contentResolver
+            val inputStream = contentResolver.openInputStream(uri) ?: return null
+            val file = File(requireContext().cacheDir, "temp_profile_image.jpg")
+            val outputStream = FileOutputStream(file)
+            inputStream.copyTo(outputStream)
+            inputStream.close()
+            outputStream.close()
+            file
+        } catch (e: Exception) {
+            Log.e("OwnerEdit", "Error converting uri to file", e)
+            null
+        }
+    }
+
+    private fun setupInputWatchers() {
+        val watcher = object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                checkInputsChanged()
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        }
+        binding.etName.addTextChangedListener(watcher)
+        binding.etEmail.addTextChangedListener(watcher)
+    }
+
+    private fun checkInputsChanged() {
+        // Simple logic: if name or email is not empty, allow saving (phone is handled by isPhoneVerified)
+        val name = binding.etName.text.toString().trim()
+        val email = binding.etEmail.text.toString().trim()
+        
+        // If phone is verified OR if phone hasn't been touched but name/email changed
+        // For simplicity, let's enable save if name and email are valid format
+        binding.btnBook.isEnabled = name.isNotEmpty() && email.contains("@")
+        binding.btnBook.backgroundTintList = if (binding.btnBook.isEnabled) {
+            resources.getColorStateList(R.color.blue_4076FF, null)
+        } else {
+            resources.getColorStateList(R.color.gray, null)
+        }
+    }
+
     private fun setupCameraDialog() {
         binding.icCamera.setOnClickListener {
-            showDialog(R.layout.dialog_my_page_owner_edit)
+            showEditDialog()
         }
+    }
+
+    private fun showEditDialog() {
+        val dialog = Dialog(requireContext())
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setContentView(R.layout.dialog_my_page_owner_edit)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        
+        val btnClose = dialog.findViewById<Button>(R.id.btnClose)
+        val btnWrite = dialog.findViewById<Button>(R.id.btnWrite)
+
+        btnClose.setOnClickListener { dialog.dismiss() }
+        btnWrite.setOnClickListener {
+            pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     private fun setupSaveDialog() {
         binding.btnBook.setOnClickListener {
-            showDialog(R.layout.dialog_my_page_owner_edit_store)
+            updateProfile()
         }
+    }
+
+    private fun updateProfile() {
+        val name = binding.etName.text.toString().trim()
+        val email = binding.etEmail.text.toString().trim()
+        val phone = binding.etPhone.text.toString().trim()
+        val verificationCode = if (isPhoneVerified) binding.etPhone2.text.toString().trim() else null
+
+        val request = MemberUpdateRequest(name, email, phone, verificationCode)
+
+        RetrofitClient.getMemberApi(requireContext()).updateMyProfile(request)
+            .enqueue(object : Callback<MemberUpdateResponse> {
+                override fun onResponse(call: Call<MemberUpdateResponse>, response: Response<MemberUpdateResponse>) {
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        Toast.makeText(requireContext(), "프로필이 수정되었습니다.", Toast.LENGTH_SHORT).show()
+                        findNavController().popBackStack()
+                    } else {
+                        val errorMsg = response.errorBody()?.string() ?: "수정 실패"
+                        Log.e("OwnerEdit", "Update Failed: $errorMsg")
+                        Toast.makeText(requireContext(), "수정 실패: $errorMsg", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<MemberUpdateResponse>, t: Throwable) {
+                    Toast.makeText(requireContext(), "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 
     private fun showDialog(layoutId: Int) {
@@ -71,6 +244,17 @@ class MyPageOwnerEditFragment : Fragment() {
         dialog.setContentView(layoutId)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.setCancelable(true)
+        
+        if (layoutId == R.layout.dialog_my_page_owner_edit_store) {
+            val btnClose = dialog.findViewById<Button>(R.id.btnClose)
+            val btnWrite = dialog.findViewById<Button>(R.id.btnWrite)
+            btnClose?.setOnClickListener { dialog.dismiss() }
+            btnWrite?.setOnClickListener { 
+                updateProfile()
+                dialog.dismiss() 
+            }
+        }
+
         dialog.show()
     }
 
