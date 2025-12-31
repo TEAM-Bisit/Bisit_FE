@@ -15,6 +15,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.bisit.R
+import com.example.bisit.data.api.RetrofitClient
+import com.example.bisit.data.model.mypage.SmsResponse
+import com.example.bisit.data.model.mypage.SmsVerifyResponse
+import com.example.bisit.data.model.todayReservation.CommonResponse
 import com.example.bisit.databinding.FragmentSignUpInfoBinding
 import com.example.bisit.ui.dialog.CommonInfoDialog
 import java.util.regex.Pattern
@@ -27,6 +31,8 @@ class SignUpInfoFragment : Fragment() {
     private val phonePattern: Pattern = Pattern.compile("^010-\\d{4}-\\d{4}$")
 
     private val viewModel: SignUpViewModel by activityViewModels()
+
+    private val smsApi by lazy { RetrofitClient.getSmsApi(requireContext()) }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -82,19 +88,92 @@ class SignUpInfoFragment : Fragment() {
         })
 
         binding.btnVerify.setOnClickListener {
-            // TODO: 서버에 인증번호 전송 요청 (binding.etPhone.text.toString())
+            val phone = binding.etPhone.text.toString().replace("-", "")
 
-            viewModel.isVerificationUiVisible.value = true
+            if (phone == "01012345678") { // 테스트용 코드
+                viewModel.isVerificationUiVisible.value = true
+                return@setOnClickListener
+            }
+
+            // 1단계: 번호 중복 체크 API 호출
+            val authApi = RetrofitClient.getAuthApi(requireContext())
+            authApi.checkPhoneNumber(phone).enqueue(object : retrofit2.Callback<CommonResponse<Boolean>> {
+                override fun onResponse(
+                    call: retrofit2.Call<CommonResponse<Boolean>>,
+                    response: retrofit2.Response<CommonResponse<Boolean>>
+                ) {
+                    if (response.isSuccessful) {
+                        val isAvailable = response.body()?.data == true // data가 true면 가입 가능한 번호
+
+                        if (isAvailable) {
+                            // 2단계: 번호가 사용 가능하므로 SMS 발송 진행
+                            sendSmsRequest(phone)
+                        } else {
+                            // 번호 중복 시 다이얼로그 표시
+                            CommonInfoDialog(
+                                message = "이미 가입된 전화번호입니다.",
+                                onConfirm = { }
+                            ).show(parentFragmentManager, "PhoneDuplicateDialog")
+                        }
+                    } else {
+                        showErrorDialog("중복 체크에 실패했습니다. 다시 시도해주세요.")
+                    }
+                }
+
+                override fun onFailure(call: retrofit2.Call<CommonResponse<Boolean>>, t: Throwable) {
+                    showErrorDialog("네트워크 오류가 발생했습니다.")
+                }
+            })
         }
 
         binding.btnConfirmVerification.setOnClickListener {
-            val dialog = CommonInfoDialog(
-                message = "인증이 완료되었습니다.",
-                onConfirm = {
-                    viewModel.isPhoneVerified.value = true
-                }
+            val phone = binding.etPhone.text.toString().replace("-", "")
+            val code = binding.etVerificationCode.text.toString()
+
+            if (phone == "01012345678" && code == "000000") { // 테스트용 코드
+                val dialog = CommonInfoDialog(
+                    message = "인증이 완료되었습니다.",
+                    onConfirm = {
+                        viewModel.isPhoneVerified.value = true
+                    }
+                )
+                dialog.show(parentFragmentManager, "VerificationCompleteDialog")
+                return@setOnClickListener
+            }
+
+            val requestBody = mapOf(
+                "phoneNumber" to phone,
+                "code" to code
             )
-            dialog.show(parentFragmentManager, "VerificationCompleteDialog")
+
+            smsApi.verifySms(requestBody).enqueue(object : retrofit2.Callback<SmsVerifyResponse> {
+                override fun onResponse(call: retrofit2.Call<SmsVerifyResponse>, response: retrofit2.Response<SmsVerifyResponse>) {
+                    // 1. 서버 응답이 성공(200 OK)이고
+                    // 2. data 객체 내부의 'verified' 필드가 true인지 확인합니다.
+                    val isVerified = response.isSuccessful && response.body()?.data?.verified == true
+                    if (isVerified) {
+                        val dialog = CommonInfoDialog(
+                            message = "인증이 완료되었습니다.",
+                            onConfirm = {
+                                viewModel.isPhoneVerified.value = true
+                            }
+                        )
+                        dialog.show(parentFragmentManager, "VerificationCompleteDialog")
+                    } else {
+                        // 인증 실패 시 메시지 표시 (서버에서 보내준 message가 있다면 그것을 사용)
+                        val serverMessage = response.body()?.message ?: "인증번호가 일치하지 않습니다."
+                        val errorDialog = CommonInfoDialog(
+                            message = serverMessage,
+                            onConfirm = { }
+                        )
+                        errorDialog.show(parentFragmentManager, "VerificationErrorDialog")
+                    }
+                }
+
+                override fun onFailure(call: retrofit2.Call<SmsVerifyResponse>, t: Throwable) {
+                    // 네트워크 연결 실패 등 물리적 오류 처리
+                }
+            })
         }
 
         binding.etVerificationCode.addTextChangedListener(object : TextWatcher {
@@ -147,6 +226,11 @@ class SignUpInfoFragment : Fragment() {
     private fun showTermsSheet() {
         val sheet = TermsAgreementSheet(
             onAgreementComplete = {
+                viewModel.name = binding.etName.text.toString()
+                viewModel.email = binding.etEmail.text.toString()
+                viewModel.phone = binding.etPhone.text.toString().replace("-", "")
+                viewModel.gender = if (binding.etGender.text.toString() == "남") "MALE" else "FEMALE"
+
                 viewModel.shouldShowTermsSheetOnReturn = false
                 findNavController().navigate(R.id.action_signUpInfoFragment_to_signUpCredentialsFragment)
             },
@@ -182,6 +266,26 @@ class SignUpInfoFragment : Fragment() {
         val isPhoneVerified = viewModel.isPhoneVerified.value ?: false
 
         binding.btnNext.isEnabled = isNameValid && isEmailValid && isPhoneVerified
+    }
+
+    private fun sendSmsRequest(phone: String) {
+        val requestBody = mapOf("phoneNumber" to phone)
+        smsApi.sendSms(requestBody).enqueue(object : retrofit2.Callback<SmsResponse> {
+            override fun onResponse(call: retrofit2.Call<SmsResponse>, response: retrofit2.Response<SmsResponse>) {
+                if (response.isSuccessful) {
+                    viewModel.isVerificationUiVisible.value = true
+                } else {
+                    showErrorDialog("인증번호 발송에 실패했습니다.")
+                }
+            }
+            override fun onFailure(call: retrofit2.Call<SmsResponse>, t: Throwable) {
+                showErrorDialog("네트워크 오류로 인증번호를 보낼 수 없습니다.")
+            }
+        })
+    }
+
+    private fun showErrorDialog(message: String) {
+        CommonInfoDialog(message = message, onConfirm = {}).show(parentFragmentManager, "InfoDialog")
     }
 
     override fun onDestroyView() {

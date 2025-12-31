@@ -2,8 +2,15 @@ package com.example.bisit.ui.shop.dialog
 
 import android.os.Build
 import android.os.Bundle
-import android.view.*
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowInsets
+import androidx.core.graphics.toColorInt
 import androidx.fragment.app.DialogFragment
+import com.example.bisit.R
 import com.example.bisit.databinding.DialogAddNoticeBinding
 import com.example.bisit.ui.shop.model.Notice
 
@@ -14,6 +21,12 @@ class AddNoticeDialog(
 
     private var _b: DialogAddNoticeBinding? = null
     private val b get() = _b!!
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // X 버튼으로만 닫히게
+        isCancelable = false
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -27,23 +40,74 @@ class AddNoticeDialog(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 기존 데이터 미리 채우기
+        /** X 버튼 */
+        b.btnClose.setOnClickListener {
+            dismissAllowingStateLoss()
+        }
+
+        /** placeholder / 입력 글씨 색 */
+        b.etTitle.setHintTextColor("#9AA1AF".toColorInt())
+        b.etContent.setHintTextColor("#9AA1AF".toColorInt())
+        b.etTitle.setTextColor("#222222".toColorInt())
+        b.etContent.setTextColor("#222222".toColorInt())
+
+        /** 수정 모드 */
         prefill?.let {
             b.etTitle.setText(it.title)
             b.etContent.setText(it.content)
+            b.btnSubmit.text = getString(R.string.edit)
         }
 
-        // 저장 버튼 클릭
+        /** 초기 버튼 비활성 */
+        updateSubmitButton(false)
+
+        /** 입력 감지 */
+        val watcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                validateForm()
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        }
+
+        b.etTitle.addTextChangedListener(watcher)
+        b.etContent.addTextChangedListener(watcher)
+
+        /** 저장 */
         b.btnSubmit.setOnClickListener {
-            val title = b.etTitle.text?.toString().orEmpty()
-            val content = b.etContent.text?.toString().orEmpty()
+            if (!b.btnSubmit.isEnabled) return@setOnClickListener
+
+            val title = b.etTitle.text.toString().trim()
+            val content = b.etContent.text.toString().trim()
+
             val item = (prefill ?: Notice(0, title, content, date = "")).copy(
                 title = title,
                 content = content
             )
+
             onSaved(item)
             dismissAllowingStateLoss()
         }
+    }
+
+    /** 입력 검증 */
+    private fun validateForm() {
+        val title = b.etTitle.text.toString().trim()
+        val content = b.etContent.text.toString().trim()
+
+        val isFilled = title.isNotEmpty() && content.isNotEmpty()
+        val isChanged = if (prefill != null) {
+            title != prefill.title || content != prefill.content
+        } else {
+            true
+        }
+
+        updateSubmitButton(isFilled && isChanged)
+    }
+
+    /** 버튼 스타일 */
+    private fun updateSubmitButton(enabled: Boolean) {
+        b.btnSubmit.isEnabled = enabled
     }
 
     override fun onStart() {
@@ -56,13 +120,10 @@ class AddNoticeDialog(
                 val insets = wm.windowInsets.getInsets(WindowInsets.Type.systemBars())
                 wm.bounds.width() - insets.left - insets.right
             } else {
-                val displayMetrics = resources.displayMetrics
-                displayMetrics.widthPixels
+                resources.displayMetrics.widthPixels
             }
 
-            val width = (screenWidth * 0.806f).toInt()
-            val height = ViewGroup.LayoutParams.WRAP_CONTENT
-            setLayout(width, height)
+            setLayout((screenWidth * 0.806f).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT)
         }
     }
 

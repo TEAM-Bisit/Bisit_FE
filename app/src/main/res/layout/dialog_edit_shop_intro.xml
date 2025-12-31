@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="20dp"
+    android:background="@drawable/bg_dialog_white"
+    android:fillViewport="true"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 타이틀 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="매장 소개 수정"
+                android:textColor="#222222"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <ImageView
+                android:id="@+id/btnClose"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="8dp"
+                android:src="@drawable/ic_close_button"
+                android:contentDescription="닫기" />
+        </LinearLayout>
+
+        <!-- 매장 소개 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="매장 소개"
+            android:textColor="#515965"
+            android:textSize="13sp" />
+
+        <EditText
+            android:id="@+id/etStoreIntro"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_edit_box"
+            android:hint="매장 소개를 입력해주세요."
+            android:textColor="#222222"
+            android:textColorHint="#9AA1AF"
+            android:inputType="text"
+            android:maxLines="1"
+            android:paddingHorizontal="12dp"
+            android:textSize="14sp" />
+
+        <!-- 매장 사진 수정 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="매장 사진 수정"
+                android:textColor="#515965"
+                android:textSize="13sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="최대 5장"
+                android:textColor="#999999"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!-- 사진 리스트 -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvStoreImages"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_store_image_add" />
+
+        <!-- 이미지 가이드 -->
+        <LinearLayout
+            android:id="@+id/layout_image_guide"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_question_mark_gray"
+                app:tint="#999999" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:text="고객님이 매장 리스트에서 볼 수 있는 이미지입니다."
+                android:textColor="#777777"
+                android:textSize="12sp" />
+
+            <ImageView
+                android:id="@+id/iv_guide_arrow"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_arrow_down_gray" />
+        </LinearLayout>
+
+        <!-- 제공 서비스 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="제공하는 서비스"
+            android:textColor="#515965"
+            android:textSize="13sp" />
+
+        <RadioGroup
+            android:id="@+id/rgServiceType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp">
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/rbVisitService"
+                style="@style/CustomShopRadioButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="방문 서비스" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="26dp"
+                android:layout_marginBottom="2dp"
+                android:text="디자이너가 자택이나 병원으로 방문하여 시술합니다."
+                android:textColor="#6D7583"
+                android:textSize="13sp" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/rbShopService"
+                style="@style/CustomShopRadioButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="매장 서비스" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="26dp"
+                android:layout_marginBottom="2dp"
+                android:text="고객님이 매장에 직접 방문합니다."
+                android:textColor="#6D7583"
+                android:textSize="13sp" />
+        </RadioGroup>
+
+        <!-- 저장 버튼 -->
+        <TextView
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:text="저장하기"
+            android:textStyle="bold"
+            android:textColor="@color/btn_primary_text_selector"
+            android:background="@drawable/bg_btn_primary_selector" />
+
+    </LinearLayout>
+</ScrollView>

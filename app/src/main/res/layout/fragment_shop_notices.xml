@@ -54,12 +54,12 @@
 
         <ImageView
             android:id="@+id/fabAdd"
-            android:layout_width="72dp"
-            android:layout_height="72dp"
+            android:layout_width="74dp"
+            android:layout_height="74dp"
             android:layout_gravity="bottom|end"
             android:layout_margin="18dp"
             android:padding="27.9dp"
-            android:src="@drawable/ic_plus_red"
+            android:src="@drawable/ic_plus_blue"
             android:background="@drawable/bg_fab_white"
             android:elevation="10dp"
             android:contentDescription="등록 버튼" />

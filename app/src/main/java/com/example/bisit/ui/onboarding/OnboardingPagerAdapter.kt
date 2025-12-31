@@ -11,9 +11,9 @@ class OnboardingPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(
 
     override fun createFragment(position: Int): Fragment {
         return when (position) {
-            0 -> OnboardingPageFragment.newInstance(/* R.drawable.onboarding_image_1 */)
-            1 -> OnboardingPageFragment.newInstance(/* R.drawable.onboarding_image_2 */)
-            else -> OnboardingPageFragment.newInstance(/* R.drawable.onboarding_image_3 */)
+            0 -> OnboardingPageFragment.newInstance(R.drawable.img_onboarding_1)
+            1 -> OnboardingPageFragment.newInstance(R.drawable.img_onboarding_2)
+            else -> OnboardingPageFragment.newInstance(R.drawable.img_onboarding_3)
         }
     }
 }

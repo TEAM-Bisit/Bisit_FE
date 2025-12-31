@@ -14,6 +14,10 @@ import androidx.navigation.fragment.findNavController
 import com.example.bisit.MainActivity // 메인 액티비티 임포트
 import com.example.bisit.R
 import com.example.bisit.databinding.FragmentLoginCredentialsBinding
+import com.example.bisit.ui.dialog.CommonInfoDialog
+import com.example.bisit.ui.dialog.CustomDialog
+import com.example.bisit.ui.dialog.CustomTwoButtonDialog
+import com.example.bisit.ui.signUp.SignUpActivity
 
 class LoginCredentialsFragment : Fragment() {
 
@@ -58,27 +62,41 @@ class LoginCredentialsFragment : Fragment() {
     private fun observeViewModel() {
         viewModel.loginResult.observe(viewLifecycleOwner) { isSuccess ->
             if (isSuccess) {
-                Toast.makeText(context, "로그인 성공!", Toast.LENGTH_SHORT).show()
-
-                val intent = Intent(requireContext(), MainActivity::class.java)
-
-                // 임시로 id에 따른 분기처리
-                val inputId = binding.etId.text.toString()
-                val userType = when (inputId) {
-                    "rlatkwkd" -> "owner"
-                    "rlathssla" -> "customer"
-                    else -> "customer"
+                // 로그인이 성공했을 때 userType을 확인
+                when (viewModel.userType.value) {
+                    "owner", "customer" -> {
+                        // 역할이 있는 기존 유저 -> 메인 화면으로 이동
+                        val intent = Intent(requireContext(), MainActivity::class.java)
+                        startActivity(intent)
+                        activity?.finish()
+                    }
+                    "none" -> {
+                        // 역할이 없는 신규 유저 -> 역할 선택 화면(SignUpActivity의 첫 단계)으로 이동
+                        // 회원가입 플로우의 UserTypeFragment로 연결되는 Intent 실행
+                        val intent = Intent(requireContext(), SignUpActivity::class.java)
+                        startActivity(intent)
+                        activity?.finish()
+                    }
                 }
+            } else {
+                val code = viewModel.errorCode.value
+                val message = viewModel.errorMessage.value ?: "오류가 발생했습니다."
 
-                intent.putExtra("USER_TYPE", userType)
-
-                startActivity(intent)
-                requireActivity().finish()
+                when (code) {
+                    "AUTH400" -> {
+                        // 1. 비밀번호 틀림 -> 제공해주신 dialog_common_info 사용
+                        showWrongPasswordDialog("비밀번호를 확인해주세요")
+                    }
+                    "COMMON404" -> {
+                        // 2. 계정 없음 -> 2버튼 다이얼로그 (생성하기 포함)
+                        showNoAccountDialog()
+                    }
+                    else -> {
+                        // 기타 에러
+                        showWrongPasswordDialog(message)
+                    }
+                }
             }
-        }
-
-        viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -98,6 +116,30 @@ class LoginCredentialsFragment : Fragment() {
         val isIdValid = binding.etId.text.isNullOrBlank().not()
         val isPasswordValid = binding.etPassword.text.isNullOrBlank().not()
         binding.btnLogin.isEnabled = isIdValid && isPasswordValid
+    }
+
+    private fun showWrongPasswordDialog(msg: String) {
+        val dialog = CommonInfoDialog(
+            message = msg,
+            onConfirm = { /* 닫기 클릭 시 추가 동작 필요하면 작성 */ }
+        )
+        dialog.show(parentFragmentManager, "WrongPasswordDialog")
+    }
+
+    private fun showNoAccountDialog() {
+        val dialog = CustomTwoButtonDialog(
+            title = "계정 정보가 없어요",
+            subtitle = "새로운 계정을 생성하시겠어요?",
+            positiveButtonText = "생성하기",
+            negativeButtonText = "닫기",
+            onPositiveClick = {
+                val intent = Intent(requireContext(), SignUpActivity::class.java).apply {
+                    putExtra("START_DESTINATION", "INFO")
+                }
+                startActivity(intent)
+            }
+        )
+        dialog.show(parentFragmentManager, "NoAccountDialog")
     }
 
     override fun onDestroyView() {

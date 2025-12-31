@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.example.bisit.BuildConfig
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
@@ -54,6 +55,13 @@ object RetrofitClient {
         }
 
         if (serverRetrofit == null) {
+            val loggingInterceptor = HttpLoggingInterceptor().apply {
+                level = if (BuildConfig.DEBUG) {
+                    HttpLoggingInterceptor.Level.BODY
+                } else {
+                    HttpLoggingInterceptor.Level.NONE
+                }
+            }
             val client = OkHttpClient.Builder()
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
@@ -79,6 +87,7 @@ object RetrofitClient {
                         }
                     }
                 }
+                .addInterceptor(loggingInterceptor)
                 .addInterceptor(AuthInterceptor(context))
                 .build()
 
@@ -129,4 +138,20 @@ object RetrofitClient {
 
     fun getMapApi(context: Context) =
         getServerRetrofit(context).create(MapApiService::class.java)
+        
+    fun getShopBasicApi(context: Context) =
+        getServerRetrofit(context).create(ShopBasicApiService::class.java)
+
+    fun getShopPhotoApi(context: Context) =
+        getServerRetrofit(context).create(ShopPhotoApiService::class.java)
+
+    fun getShopDetailApi(context: Context) =
+        getServerRetrofit(context).create(ShopDetailApiService::class.java)
+
+    fun getShopAccountApi(context: Context) =
+        getServerRetrofit(context).create(ShopAccountApiService::class.java)
+
+    fun getShopRegisterApi(context: Context) =
+        getServerRetrofit(context).create(ShopRegisterApiService::class.java)
+
 }

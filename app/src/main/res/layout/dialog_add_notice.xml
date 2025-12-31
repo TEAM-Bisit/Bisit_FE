@@ -3,66 +3,137 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
+    android:background="@drawable/bg_dialog_white"
     android:padding="16dp">
 
+    <!-- 타이틀 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="12dp">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/notice_add_title"
+            android:textColor="#222222"
+            android:textStyle="bold"
+            android:textSize="16sp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/btnClose"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_close_button"
+            android:contentDescription="닫기" />
+    </LinearLayout>
+
+    <!-- 제목 라벨 -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="공지 추가"
-        android:textColor="#222222"
+        android:layout_marginTop="18dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/notice_title_label"
+        android:textColor="#515965"
         android:textStyle="bold"
-        android:textSize="16sp"/>
+        android:textSize="14sp" />
 
+    <!-- 제목 입력 + 카운트 -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
+        <EditText
+            android:id="@+id/etTitle"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="@string/notice_title_hint"
+            android:paddingHorizontal="12dp"
+            android:inputType="text"
+            android:maxLength="30"
+            android:scrollHorizontally="true"
+            android:importantForAutofill="no"
+            android:textColor="#222222"
+            android:textColorHint="#9AA1AF"
+            android:textSize="14sp"
+            android:background="@drawable/bg_edit_box" />
+
+        <TextView
+            android:id="@+id/tvTitleCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="12dp"
+            android:text="@string/notice_title_count_default"
+            android:textSize="12sp"
+            android:textColor="#9AA1AF" />
+    </RelativeLayout>
+
+    <!-- 내용 라벨 -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="제목"
-        android:textColor="#666666"
-        android:textSize="14sp"/>
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/notice_content_label"
+        android:textColor="#515965"
+        android:textStyle="bold"
+        android:textSize="14sp" />
 
-
-    <EditText
-        android:id="@+id/etTitle"
+    <!-- 내용 입력 + 카운트 -->
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:hint="제목을 입력해주세요."
-        android:padding="12dp"
-        android:inputType="text"
-        android:background="@drawable/bg_chip_selector"/>
+        android:layout_height="wrap_content">
 
+        <EditText
+            android:id="@+id/etContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minLines="4"
+            android:gravity="top"
+            android:hint="@string/notice_content_hint"
+            android:padding="12dp"
+            android:inputType="textMultiLine|textCapSentences"
+            android:maxLength="50"
+            android:scrollHorizontally="false"
+            android:importantForAutofill="no"
+            android:textColor="#222222"
+            android:textColorHint="#9AA1AF"
+            android:textSize="14sp"
+            android:background="@drawable/bg_edit_box" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="내용"
-        android:textColor="#666666"
-        android:textSize="14sp"/>
+        <TextView
+            android:id="@+id/tvContentCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignBottom="@id/etContent"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/notice_content_count_default"
+            android:textSize="12sp"
+            android:textColor="#9AA1AF" />
+    </RelativeLayout>
 
-
-    <EditText
-        android:id="@+id/etContent"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minLines="3"
-        android:gravity="top"
-        android:hint="내용을 입력해주세요."
-        android:padding="12dp"
-        android:inputType="textMultiLine|textCapSentences"
-        android:background="@drawable/bg_chip_selector"/>
-
-
+    <!-- 등록 버튼 -->
     <TextView
         android:id="@+id/btnSubmit"
         android:layout_width="match_parent"
         android:layout_height="52dp"
         android:layout_marginTop="16dp"
         android:gravity="center"
-        android:text="공지 등록하기"
-        android:textColor="#FFFFFF"
+        android:text="@string/notice_submit"
         android:textStyle="bold"
-        android:background="@drawable/bg_btn_primary_selector"/>
+        android:textColor="@color/btn_primary_text_selector"
+        android:background="@drawable/bg_btn_primary_selector" />
+
 </LinearLayout>
