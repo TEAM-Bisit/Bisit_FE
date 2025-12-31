@@ -11,7 +11,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.graphics.toColorInt
 import androidx.fragment.app.DialogFragment
 import com.example.bisit.databinding.DialogEditShopInfoBinding
 import com.example.bisit.ui.customerPay.AddressSearchActivity
@@ -20,7 +19,7 @@ class EditShopInfoDialog(
     private val initialName: String,
     private val initialPhone: String,
     private val initialAddress: String,
-    private val onSaved: (() -> Unit)? = null
+    private val onSaved: ((String, String, String, String) -> Unit)? = null
 ) : DialogFragment() {
 
     private var _b: DialogEditShopInfoBinding? = null
@@ -90,11 +89,24 @@ class EditShopInfoDialog(
         b.btnSave.setOnClickListener {
             if (!b.btnSave.isEnabled) return@setOnClickListener
 
-            onSaved?.invoke()
+            val name = b.etName.text.toString().trim()
+            val phone = b.etPhone.text.toString().trim()
+            val addressLine = b.etAddr.text.toString().trim()
+            val detailAddress = b.etAddrDetail.text.toString().trim()
+
+            onSaved?.invoke(
+                name,
+                phone,
+                addressLine,
+                detailAddress
+            )
+
             InfoDialog("매장 정보가 수정되었습니다.")
                 .show(parentFragmentManager, "info")
+
             dismissAllowingStateLoss()
         }
+
     }
 
     /** 유효성 + 변경 여부 검사 */
@@ -102,13 +114,15 @@ class EditShopInfoDialog(
         val name = b.etName.text?.toString()?.trim().orEmpty()
         val phone = b.etPhone.text?.toString()?.trim().orEmpty()
         val addr = b.etAddr.text?.toString()?.trim().orEmpty()
+        val detail = b.etAddrDetail.text?.toString()?.trim().orEmpty()
 
         val allFilled = name.isNotEmpty() && phone.isNotEmpty() && addr.isNotEmpty()
 
         val isChanged =
             name != initialName ||
                     phone != initialPhone ||
-                    addr != initialAddress
+                    addr != initialAddress ||
+                    detail.isNotEmpty()
 
         updateSaveButton(allFilled && isChanged)
     }

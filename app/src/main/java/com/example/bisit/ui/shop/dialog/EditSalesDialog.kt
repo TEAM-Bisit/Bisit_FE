@@ -8,14 +8,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
-import androidx.core.graphics.toColorInt
 import androidx.fragment.app.DialogFragment
 import com.example.bisit.databinding.DialogEditSalesBinding
 
 // 매출(계좌) 수정 다이얼로그
 class EditSalesDialog(
     private val initialAccount: String,
-    private val onResult: ((Boolean) -> Unit)? = null
+    private val onResult: ((String) -> Unit)? = null   // 🔹 타입만 변경
 ) : DialogFragment() {
 
     private var _b: DialogEditSalesBinding? = null
@@ -63,7 +62,9 @@ class EditSalesDialog(
         b.btnSave.setOnClickListener {
             if (!b.btnSave.isEnabled) return@setOnClickListener
 
-            onResult?.invoke(true)
+            val newAccount = b.etAccount.text.toString().trim()
+
+            onResult?.invoke(newAccount)   // 🔹 Boolean → 실제 값 전달
             dismissAllowingStateLoss()
 
             InfoDialog("수정 완료되었습니다.")

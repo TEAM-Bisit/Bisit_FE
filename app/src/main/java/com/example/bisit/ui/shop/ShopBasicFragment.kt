@@ -5,22 +5,38 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.net.toUri
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.example.bisit.databinding.FragmentShopBasicBinding
 import com.example.bisit.ui.shop.dialog.EditSalesDialog
 import com.example.bisit.ui.shop.dialog.EditShopInfoDialog
 import com.example.bisit.ui.shop.dialog.EditShopIntroDialog
+import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 
 class ShopBasicFragment : Fragment() {
 
     private var _binding: FragmentShopBasicBinding? = null
     private val binding get() = _binding!!
 
-    /** ===== 상태 변수 (중요) ===== */
+    /* ===================== ViewModel ===================== */
+    private val viewModel: ShopBasicViewModel by viewModels()
+    private val photoViewModel: ShopPhotoViewModel by viewModels()
+
+    /* ===================== 화면 상태 ===================== */
     private var currentIntro: String = ""
-    private var currentServiceType: String = "VISIT" // VISIT | SHOP
-    private var currentIntroImages: List<Uri> = emptyList()
+    private var currentServiceType: String = "VISIT"
+
+    /* ===================== 이미지 선택 런처 ===================== */
+    private val pickImageLauncher =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri ?: return@registerForActivityResult
+            uploadUriAsMultipart(uri)
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,96 +50,141 @@ class ShopBasicFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        fetchShopInfo()
-        fetchShopIntro()
-        fetchSalesInfo()
+        val shopId = requireArguments().getLong("shopId")
+        viewModel.setShopId(shopId)
+        photoViewModel.setShopId(shopId)
+
+        observeViewModel()
+
+        viewModel.fetchShopDetail()
+        viewModel.fetchShopIntro()
+        viewModel.fetchShopAccount()
+        photoViewModel.fetchPhotos()
+
         setupClickListeners()
     }
 
-    /* ===================== GET ===================== */
+    /* ===================== ViewModel Observe ===================== */
+    private fun observeViewModel() {
 
-    private fun fetchShopInfo() {
-        val name = "장미헤어"
-        val phone = "010-0000-0000"
-        val address = "대구 중구 관덕정길 6-11 1층"
-
-        binding.tvShopName.text = name
-        binding.tvShopPhone.text = phone
-        binding.tvShopAddress.text = address
-    }
-
-    private fun fetchShopIntro() {
-        // 서버 GET 결과라고 가정
-        currentIntro = "10년차 아티스트가 운영하는 장미헤어입니다."
-        currentServiceType = "VISIT"
-
-        currentIntroImages = listOf(
-            "https://example.com/shop1.jpg".toUri(),
-            "https://example.com/shop2.jpg".toUri()
-        )
-
-        binding.tvShopIntro.text = currentIntro
-        binding.tvShopService.text =
-            if (currentServiceType == "VISIT") "방문 서비스" else "매장 서비스"
-
-        // 대표 이미지 = 첫 번째 이미지
-        currentIntroImages.firstOrNull()?.let { uri ->
-            // Glide / Coil 사용
-            // Glide.with(this).load(uri).into(binding.imgHeader)
+        // 샵 상세
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.shopDetail.collect { detail ->
+                detail ?: return@collect
+                binding.tvShopName.text = detail.shopName
+                binding.tvShopPhone.text = detail.phone
+                binding.tvShopAddress.text =
+                    "${detail.address} ${detail.detailAddress}"
+            }
         }
-    }
 
-    private fun fetchSalesInfo() {
-        binding.tvSalesAccount.text = "국민 6812********** 정원렬"
+        // 매장 소개
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.shopIntro.collect { intro ->
+                intro ?: return@collect
+
+                currentIntro = intro.intro
+                currentServiceType = intro.serviceChannel
+
+                binding.tvShopIntro.text = intro.intro
+                binding.tvShopService.text =
+                    if (intro.serviceChannel == "VISIT") "방문 서비스" else "매장 서비스"
+            }
+        }
+
+        // 정산 계좌
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.shopAccount.collect { account ->
+                account ?: return@collect
+                binding.tvSalesAccount.text =
+                    "${account.bankName} ${account.accountNumber} ${account.accountHolder}"
+            }
+        }
     }
 
     /* ===================== 클릭 ===================== */
 
     private fun setupClickListeners() {
 
+        // 매장 기본 정보 수정
         binding.btnEditShopInfo.setOnClickListener {
             EditShopInfoDialog(
                 initialName = binding.tvShopName.text.toString(),
                 initialPhone = binding.tvShopPhone.text.toString(),
                 initialAddress = binding.tvShopAddress.text.toString(),
-                onSaved = { fetchShopInfo() }
+                onSaved = { name, phone, addressLine, detailAddress ->
+                    viewModel.updateShopBasicInfo(
+                        name = name,
+                        phone = phone,
+                        addressLine = addressLine,
+                        detailAddress = detailAddress
+                    )
+                }
             ).show(parentFragmentManager, "edit_shop_info")
         }
 
         // 매장 소개 수정
-        binding.btnEditIntro.setOnClickListener {
-            openIntroDialog()
-        }
+        binding.btnEditIntro.setOnClickListener { openIntroDialog() }
+        binding.btnChangeHeader.setOnClickListener { openIntroDialog() }
 
-        // 대표 이미지 변경 → 같은 모달
-        binding.btnChangeHeader.setOnClickListener {
-            openIntroDialog()
-        }
-
+        // 정산 계좌 수정
         binding.btnEditSales.setOnClickListener {
             EditSalesDialog(
                 initialAccount = binding.tvSalesAccount.text.toString(),
-                onResult = { fetchSalesInfo() }
+                onResult = { newAccount ->
+                    viewModel.updateShopAccount(
+                        bankCode = "004",
+                        accountNumber = newAccount,
+                        accountHolder = "정원렬"
+                    )
+                }
             ).show(parentFragmentManager, "edit_sales")
         }
     }
+
+    /* ===================== Intro Dialog ===================== */
 
     private fun openIntroDialog() {
         EditShopIntroDialog(
             initialIntro = currentIntro,
             initialServiceType = currentServiceType,
-            initialImages = currentIntroImages,
-            onSaved = { intro, serviceType, images ->
+            photoFlow = photoViewModel.photos,
 
-                // 상태 갱신
-                currentIntro = intro
-                currentServiceType = serviceType
-                currentIntroImages = images
+            onAddPhotoClick = {
+                pickImageLauncher.launch("image/*")
+            },
 
-                // 화면 반영
-                fetchShopIntro()
+            onDeletePhotoClick = { photoId ->
+                photoViewModel.deletePhoto(photoId)
+            },
+
+            onSaved = { intro, serviceType, photos ->
+                viewModel.updateShopIntro(
+                    intro = intro,
+                    serviceChannel = serviceType,
+                    photoIds = photos.map { it.id }
+                )
             }
         ).show(parentFragmentManager, "edit_intro")
+    }
+
+    /* ===================== Uri → Multipart 변환 (핵심) ===================== */
+
+    private fun uploadUriAsMultipart(uri: Uri) {
+        val resolver = requireContext().contentResolver
+        val inputStream = resolver.openInputStream(uri) ?: return
+        val bytes = inputStream.readBytes()
+
+        val requestBody =
+            bytes.toRequestBody("image/*".toMediaTypeOrNull())
+
+        val part = MultipartBody.Part.createFormData(
+            name = "file",
+            filename = "shop_photo.jpg",
+            body = requestBody
+        )
+
+        photoViewModel.uploadPhoto(part)
     }
 
     override fun onDestroyView() {
@@ -131,4 +192,3 @@ class ShopBasicFragment : Fragment() {
         _binding = null
     }
 }
-
