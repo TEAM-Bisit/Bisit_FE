@@ -20,4 +20,7 @@ interface AuthApiService {
 
     @POST("/api/auth/sign-up")
     fun signUp(@Body request: SignUpRequest): Call<SignUpResponse>
+
+    @GET("/api/auth/check/phone-number")
+    fun checkPhoneNumber(@Query("phoneNumber") phoneNumber: String): Call<CommonResponse<Boolean>>
 }
