@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.example.bisit.BuildConfig
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
@@ -53,6 +54,13 @@ object RetrofitClient {
         }
 
         if (serverRetrofit == null) {
+            val loggingInterceptor = HttpLoggingInterceptor().apply {
+                level = if (BuildConfig.DEBUG) {
+                    HttpLoggingInterceptor.Level.BODY
+                } else {
+                    HttpLoggingInterceptor.Level.NONE
+                }
+            }
             val client = OkHttpClient.Builder()
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
@@ -71,6 +79,7 @@ object RetrofitClient {
                         }
                     }
                 }
+                .addInterceptor(loggingInterceptor)
                 .addInterceptor(AuthInterceptor(context))
                 .build()
 
