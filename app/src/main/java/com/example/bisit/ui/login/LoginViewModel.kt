@@ -38,7 +38,12 @@ class LoginViewModel : ViewModel() {
                         TokenManager.saveTokens(context, result.data.accessToken, result.data.refreshToken)
 
                         val role = getRoleFromToken(result.data.accessToken)
-                        _userType.value = if (role == "OWNER") "owner" else "customer"
+
+                        _userType.value = when (role) {
+                            "OWNER" -> "owner"
+                            "CUSTOMER" -> "customer"
+                            else -> "none"
+                        }
 
                         _loginResult.value = true
                     } else {
@@ -46,7 +51,7 @@ class LoginViewModel : ViewModel() {
                         _loginResult.value = false
                     }
                 } else {
-                    _errorMessage.value = "서버 오류: ${response.code()}"
+                    _errorMessage.value = "아이디 또는 비밀번호를 확인해주세요."
                     _loginResult.value = false
                 }
             }
@@ -59,20 +64,25 @@ class LoginViewModel : ViewModel() {
         })
     }
 
-    private fun getRoleFromToken(token: String): String {
+    private fun getRoleFromToken(token: String): String? {
         return try {
             val parts = token.split(".")
-            if (parts.size < 2) return "CUSTOMER"
+            if (parts.size < 2) return null
 
             val payload = parts[1]
             val decodedBytes = Base64.decode(payload, Base64.URL_SAFE)
             val decodedString = String(decodedBytes, Charsets.UTF_8)
 
             val jsonObject = JSONObject(decodedString)
-            jsonObject.optString("role", "CUSTOMER")
+
+            if (!jsonObject.has("role") || jsonObject.isNull("role")) {
+                null
+            } else {
+                jsonObject.getString("role")
+            }
         } catch (e: Exception) {
             Log.e("LoginViewModel", "Token decoding error", e)
-            "CUSTOMER"
+            null
         }
     }
 }

@@ -14,6 +14,8 @@ import androidx.navigation.fragment.findNavController
 import com.example.bisit.MainActivity // 메인 액티비티 임포트
 import com.example.bisit.R
 import com.example.bisit.databinding.FragmentLoginCredentialsBinding
+import com.example.bisit.ui.dialog.CustomDialog
+import com.example.bisit.ui.signUp.SignUpActivity
 
 class LoginCredentialsFragment : Fragment() {
 
@@ -58,20 +60,25 @@ class LoginCredentialsFragment : Fragment() {
     private fun observeViewModel() {
         viewModel.loginResult.observe(viewLifecycleOwner) { isSuccess ->
             if (isSuccess) {
-                Toast.makeText(context, "로그인 성공!", Toast.LENGTH_SHORT).show()
-
-                val userType = viewModel.userType.value ?: "customer"
-
-                val intent = Intent(requireContext(), MainActivity::class.java).apply {
-                    putExtra("USER_TYPE", userType)
+                // 로그인이 성공했을 때 userType을 확인
+                when (viewModel.userType.value) {
+                    "owner", "customer" -> {
+                        // 역할이 있는 기존 유저 -> 메인 화면으로 이동
+                        val intent = Intent(requireContext(), MainActivity::class.java)
+                        startActivity(intent)
+                        activity?.finish()
+                    }
+                    "none" -> {
+                        // 역할이 없는 신규 유저 -> 역할 선택 화면(SignUpActivity의 첫 단계)으로 이동
+                        // 회원가입 플로우의 UserTypeFragment로 연결되는 Intent 실행
+                        val intent = Intent(requireContext(), SignUpActivity::class.java)
+                        startActivity(intent)
+                        activity?.finish()
+                    }
                 }
-                startActivity(intent)
-                requireActivity().finish()
+            } else {
+                // 
             }
-        }
-
-        viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
 
