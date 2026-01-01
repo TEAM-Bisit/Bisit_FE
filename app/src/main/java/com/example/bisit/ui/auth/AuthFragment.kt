@@ -59,7 +59,7 @@ class AuthFragment : Fragment(), UserTypeDialog.UserTypeDialogListener {
             if (isSuccess) {
                 // 로그인 성공 시 사장님 온보딩으로 이동하도록 신호 전달
                 val intent = Intent(requireContext(), SignUpActivity::class.java).apply {
-                    putExtra("START_DESTINATION", "OWNER_ONBOARDING")
+                    putExtra("START_DESTINATION", "OWNER_INTRO")
                 }
                 startActivity(intent)
                 activity?.finish()

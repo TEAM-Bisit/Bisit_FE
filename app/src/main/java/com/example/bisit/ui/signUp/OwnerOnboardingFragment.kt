@@ -50,39 +50,53 @@ class OwnerOnboardingFragment : Fragment() {
             // 현재 표시되고 있는 자식 프래그먼트를 가져옵니다.
             val currentFragment = childFragmentManager.findFragmentById(R.id.owner_onboarding_nav_host)
 
-            // [수정] 2단계(매장 정보 입력)에서 다음을 누른 경우
-            if (currentStep == 2 && currentFragment is StoreInfoFragment) {
-                // StoreInfoFragment에 작성해둔 API 호출 함수 실행
-                currentFragment.registerStoreAndNext { shopId ->
-                    // API 성공 시 넘어온 shopId를 ViewModel에 저장 (이후 단계 PATCH 요청 시 사용)
-                    signUpViewModel.setShopId(shopId)
-
-                    // 성공했으므로 다음 단계로 이동
-                    replaceChildFragment(StoreIntroFragment.newInstance())
-                    currentStep = 3
+            when (currentStep) {
+                1 -> {
+                    // [1단계 -> 2단계] 사업자 인증 완료 후 이동
+                    replaceChildFragment(StoreInfoFragment.newInstance())
+                    currentStep = 2
                     updateCommonUI()
                 }
-            } else {
-                // 그 외 단계는 기존처럼 즉시 이동
-                when (currentStep) {
-                    1 -> {
-                        replaceChildFragment(StoreInfoFragment.newInstance())
-                        currentStep = 2
-                    }
-                    3 -> {
-                        replaceChildFragment(StoreCategoryFragment.newInstance())
-                        currentStep = 4
-                    }
-                    4 -> {
-                        replaceChildFragment(StoreHoursFragment.newInstance())
-                        currentStep = 5
-                    }
-                    5 -> {
-                        replaceChildFragment(StoreRegistrationCompleteFragment.newInstance())
-                        currentStep = 6
+
+                2 -> {
+                    // [2단계 -> 3단계] 매장 정보 등록 API 호출
+                    if (currentFragment is StoreInfoFragment) {
+                        currentFragment.registerStoreAndNext { shopId ->
+                            // API 성공 시 shopId 저장 후 이동
+                            signUpViewModel.setShopId(shopId)
+                            replaceChildFragment(StoreIntroFragment.newInstance())
+                            currentStep = 3
+                            updateCommonUI()
+                        }
                     }
                 }
-                updateCommonUI()
+
+                3 -> {
+                    // [3단계 -> 4단계] ★ 매장 소개 및 사진 업로드 API 호출
+                    if (currentFragment is StoreIntroFragment) {
+                        currentFragment.uploadDataAndNext {
+                            // 사진 업로드 및 소개 등록 성공 시 이동
+                            replaceChildFragment(StoreCategoryFragment.newInstance())
+                            currentStep = 4
+                            updateCommonUI()
+                        }
+                    }
+                }
+
+                4 -> {
+                    // [4단계 -> 5단계] 업종(카테고리) 선택 후 이동
+                    // (이 단계도 API가 필요하다면 위 단계들처럼 콜백 구조로 수정해야 합니다)
+                    replaceChildFragment(StoreHoursFragment.newInstance())
+                    currentStep = 5
+                    updateCommonUI()
+                }
+
+                5 -> {
+                    // [5단계 -> 6단계] 영업 시간 설정 후 완료 이동
+                    replaceChildFragment(StoreRegistrationCompleteFragment.newInstance())
+                    currentStep = 6
+                    updateCommonUI()
+                }
             }
         }
 
@@ -99,9 +113,23 @@ class OwnerOnboardingFragment : Fragment() {
 
         // 4. 초기 자식 프래그먼트(1단계) 로드
         if (savedInstanceState == null) {
-            childFragmentManager.beginTransaction()
-                .replace(R.id.owner_onboarding_nav_host, BusinessRegistrationFragment.newInstance())
-                .commit()
+            val startDest = activity?.intent?.getStringExtra("START_DESTINATION")
+
+            if (startDest == "OWNER_INTRO") { // 테스트용
+                currentStep = 3
+
+                signUpViewModel.setShopId(2)
+
+                childFragmentManager.beginTransaction()
+                    .replace(R.id.owner_onboarding_nav_host, StoreIntroFragment.newInstance())
+                    .commit()
+            } else {
+                // 기본 1단계 시작
+                currentStep = 1
+                childFragmentManager.beginTransaction()
+                    .replace(R.id.owner_onboarding_nav_host, BusinessRegistrationFragment.newInstance())
+                    .commit()
+            }
         }
 
         // 5. 초기 UI 상태 업데이트

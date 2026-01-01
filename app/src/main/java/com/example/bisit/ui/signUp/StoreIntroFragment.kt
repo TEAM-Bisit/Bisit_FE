@@ -11,8 +11,22 @@ import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.bisit.data.api.RetrofitClient
+import com.example.bisit.data.model.shop.ShopIntroduceRequest
+import com.example.bisit.data.model.shop.ShopIntroduceResponse
+import com.example.bisit.data.model.shop.ShopPhotoResponse
 import com.example.bisit.databinding.FragmentStoreIntroBinding
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.io.File
+import java.io.FileOutputStream
+
 // (어댑터 Import 필요)
 
 class StoreIntroFragment : Fragment() {
@@ -23,6 +37,8 @@ class StoreIntroFragment : Fragment() {
     private lateinit var photoAdapter: StorePhotoAdapter
     private val photoList = mutableListOf<Uri>()
     private val MAX_IMAGE_COUNT = 5
+
+    private val signUpViewModel: SignUpViewModel by activityViewModels()
 
     private val pickMultipleMedia = registerForActivityResult(
         ActivityResultContracts.PickMultipleVisualMedia(MAX_IMAGE_COUNT)
@@ -98,6 +114,89 @@ class StoreIntroFragment : Fragment() {
         photoList.removeAt(position)
         photoAdapter.submitList(photoList)
         checkValidation()
+    }
+
+    fun uploadDataAndNext(onSuccess: () -> Unit) {
+        val shopId = signUpViewModel.shopId.value ?: 2
+        val uploadedPhotoIds = mutableListOf<Int>()
+        var uploadCount = 0
+
+        // 사진이 아예 없는 경우 바로 소개글 등록으로 이동
+        if (photoList.isEmpty()) {
+            submitFinalIntroduce(shopId, emptyList(), onSuccess)
+            return
+        }
+
+        // 1. 사진들부터 하나씩 업로드 (ShopApiService 사용)
+        val storeApi = RetrofitClient.getStoreApi(requireContext())
+
+        photoList.forEach { uri ->
+            val file = uriToFile(uri)
+            val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+            val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
+
+            storeApi.uploadPhoto(shopId, body).enqueue(object : Callback<ShopPhotoResponse> {
+                override fun onResponse(call: Call<ShopPhotoResponse>, response: Response<ShopPhotoResponse>) {
+                    if (response.isSuccessful) {
+                        // 서버에서 준 photoId 추출
+                        response.body()?.data?.photoId?.let { uploadedPhotoIds.add(it) }
+                    }
+                    checkAllPhotosUploaded()
+                }
+
+                override fun onFailure(call: Call<ShopPhotoResponse>, t: Throwable) {
+                    checkAllPhotosUploaded()
+                }
+
+                private fun checkAllPhotosUploaded() {
+                    uploadCount++
+                    // 모든 사진 업로드 시도가 끝났으면 (성공 여부 상관없이 일단 진행)
+                    if (uploadCount == photoList.size) {
+                        submitFinalIntroduce(shopId, uploadedPhotoIds, onSuccess)
+                    }
+                }
+            })
+        }
+    }
+
+    private fun submitFinalIntroduce(shopId: Int, photoIds: List<Int>, onSuccess: () -> Unit) {
+        val introText = binding.etStoreIntro.text.toString().trim()
+
+        val serviceChannel = if (binding.rbShopService.isChecked) "SHOP" else "VISIT"
+
+        val request = ShopIntroduceRequest(
+            intro = introText,
+            photoIds = photoIds,
+            serviceChannel = serviceChannel
+        )
+
+        // 통합된 storeApi 사용
+        RetrofitClient.getStoreApi(requireContext()).updateIntroduce(shopId, request)
+            .enqueue(object : Callback<ShopIntroduceResponse> {
+                override fun onResponse(call: Call<ShopIntroduceResponse>, response: Response<ShopIntroduceResponse>) {
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        onSuccess() // 성공 시 다음 카테고리 단계로 이동
+                    } else {
+                        Toast.makeText(context, "매장 소개 등록에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<ShopIntroduceResponse>, t: Throwable) {
+                    Toast.makeText(context, "네트워크 통신 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
+                }
+            })
+    }
+
+    // URI -> File 변환 로직 (기존과 동일)
+    private fun uriToFile(uri: Uri): File {
+        val contentResolver = requireContext().contentResolver
+        val file = File(requireContext().cacheDir, "temp_image_${System.currentTimeMillis()}.jpg")
+        contentResolver.openInputStream(uri)?.use { input ->
+            FileOutputStream(file).use { output ->
+                input.copyTo(output)
+            }
+        }
+        return file
     }
 
     override fun onDestroyView() {
