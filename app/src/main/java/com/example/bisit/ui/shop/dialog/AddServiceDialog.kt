@@ -13,6 +13,7 @@ import android.widget.NumberPicker
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import com.bumptech.glide.Glide
 import com.example.bisit.R
 import com.example.bisit.databinding.DialogAddServiceBinding
 import com.example.bisit.data.model.shop.TreatmentResponse
@@ -77,9 +78,17 @@ class AddServiceDialog(
         binding.etTitle.setText(prefill.name)
         binding.etPrice.setText(prefill.price.toString())
         binding.etDesc.setText(prefill.description)
-
         binding.etHour.text = "%02d시간".format(prefill.durationHours)
         binding.etMin.text = "%02d분".format(prefill.durationMinutes)
+
+        prefill.photoUrl?.let { url ->
+            binding.ivImage.visibility = View.VISIBLE
+            binding.ivAddImage.visibility = View.GONE
+
+            Glide.with(requireContext())
+                .load(url)
+                .into(binding.ivImage)
+        }
 
         binding.btnAdd.text = getString(R.string.edit)
     }
@@ -113,7 +122,7 @@ class AddServiceDialog(
                 price = binding.etPrice.text.toString().toInt(),
                 durationHours = getHour(),
                 durationMinutes = getMinute(),
-                photoUrl = prefill?.photoUrl,
+                photoUrl = prefill?.photoUrl, // 서버에서 최종 갱신
                 isActive = true
             )
 
@@ -133,7 +142,14 @@ class AddServiceDialog(
     private val imagePickerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
-            selectedImageUri = result.data?.data
+
+            selectedImageUri = result.data?.data ?: return@registerForActivityResult
+
+            // ✅ 선택한 이미지 즉시 미리보기
+            binding.ivImage.visibility = View.VISIBLE
+            binding.ivAddImage.visibility = View.GONE
+            binding.ivImage.setImageURI(selectedImageUri)
+
             validateForm()
         }
 
