@@ -1,5 +1,7 @@
 package com.example.bisit.ui.signUp
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputFilter
@@ -7,8 +9,12 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import com.example.bisit.databinding.FragmentStoreInfoBinding
+import com.example.bisit.ui.customerPay.AddressSearchActivity
+import kotlin.jvm.java
 
 class StoreInfoFragment : Fragment() {
 
@@ -17,6 +23,18 @@ class StoreInfoFragment : Fragment() {
 
     // 연락처 포맷팅 플래그
     private var isFormattingContact = false
+
+    private val addressLauncher: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val address = result.data?.getStringExtra("selectedAddress")
+                if (!address.isNullOrBlank()) {
+                    binding.etAddressMain.setText(address)
+                    // 주소가 입력되면 상세주소 칸으로 포커스 이동
+                    binding.etAddressDetail.requestFocus()
+                }
+            }
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,9 +52,8 @@ class StoreInfoFragment : Fragment() {
 
         // 2. 주소 검색 버튼 리스너
         binding.btnSearchAddress.setOnClickListener {
-            // TODO: 카카오/다음 주소 API 연동 or 주소 검색 다이얼로그 띄우기
-            // 테스트를 위해 임시로 텍스트 입력
-            binding.etAddressMain.setText("서울시 마포구 와우산로")
+            val intent = Intent(requireContext(), AddressSearchActivity::class.java)
+            addressLauncher.launch(intent)
         }
 
         // 3. 연락처 자동 포맷팅 및 필터 (이전과 동일 로직)
