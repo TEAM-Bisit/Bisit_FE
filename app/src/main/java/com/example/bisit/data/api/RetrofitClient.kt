@@ -160,4 +160,6 @@ object RetrofitClient {
     fun getShopServiceApi(context: Context) =
         getServerRetrofit(context).create(ShopServiceApiService::class.java)
 
+    fun getReservationListApi(context: Context) =
+        getServerRetrofit(context).create(ReservListApiService::class.java)
 }

@@ -69,7 +69,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="예약 확정"
-                        android:textColor="#FE6B6B"
+                        android:textColor="#4076FF"
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
