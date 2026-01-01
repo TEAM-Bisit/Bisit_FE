@@ -7,12 +7,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.example.bisit.databinding.FragmentShopBasicBinding
 import com.example.bisit.ui.shop.dialog.EditSalesDialog
 import com.example.bisit.ui.shop.dialog.EditShopInfoDialog
 import com.example.bisit.ui.shop.dialog.EditShopIntroDialog
+import com.example.bisit.ui.shop.register.ShopRegisterViewModelFactory
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -24,14 +26,22 @@ class ShopBasicFragment : Fragment() {
     private val binding get() = _binding!!
 
     /* ===================== ViewModel ===================== */
+
+    // Factory 반드시 사용
+    private val shopRegisterViewModel: ShopRegisterViewModel by activityViewModels {
+        ShopRegisterViewModelFactory(requireContext())
+    }
+
     private val viewModel: ShopBasicViewModel by viewModels()
     private val photoViewModel: ShopPhotoViewModel by viewModels()
 
     /* ===================== 화면 상태 ===================== */
+
     private var currentIntro: String = ""
     private var currentServiceType: String = "VISIT"
 
     /* ===================== 이미지 선택 런처 ===================== */
+
     private val pickImageLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri ?: return@registerForActivityResult
@@ -50,24 +60,34 @@ class ShopBasicFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val shopId = requireArguments().getLong("shopId")
-        viewModel.setShopId(shopId)
-        photoViewModel.setShopId(shopId)
-
+        observeShopId()
         observeViewModel()
-
-        viewModel.fetchShopDetail()
-        viewModel.fetchShopIntro()
-        viewModel.fetchShopAccount()
-        photoViewModel.fetchPhotos()
-
         setupClickListeners()
     }
 
+    /* ===================== shopId Observe ===================== */
+
+    private fun observeShopId() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            shopRegisterViewModel.shopId.collect { shopId ->
+                shopId ?: return@collect
+
+                viewModel.setShopId(shopId)
+                photoViewModel.setShopId(shopId)
+
+                viewModel.fetchShopDetail()
+                viewModel.fetchShopIntro()
+                viewModel.fetchShopAccount()
+                photoViewModel.fetchPhotos()
+            }
+        }
+    }
+
     /* ===================== ViewModel Observe ===================== */
+
     private fun observeViewModel() {
 
-        // 샵 상세
+        // 매장 상세
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.shopDetail.collect { detail ->
                 detail ?: return@collect
@@ -168,7 +188,7 @@ class ShopBasicFragment : Fragment() {
         ).show(parentFragmentManager, "edit_intro")
     }
 
-    /* ===================== Uri → Multipart 변환 (핵심) ===================== */
+    /* ===================== Uri → Multipart ===================== */
 
     private fun uploadUriAsMultipart(uri: Uri) {
         val resolver = requireContext().contentResolver
