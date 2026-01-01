@@ -5,13 +5,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bisit.databinding.FragmentShopServicesBinding
 import com.example.bisit.ui.shop.adapter.ServiceAdapter
 import com.example.bisit.ui.shop.dialog.AddServiceDialog
 import com.example.bisit.ui.shop.dialog.BottomActionSheet
 import com.example.bisit.ui.shop.dialog.ConfirmDialog
-import com.example.bisit.ui.shop.model.ServiceItem
+import com.example.bisit.data.model.shop.TreatmentResponse
+import com.example.bisit.ui.shop.register.ShopRegisterViewModelFactory
+import com.example.bisit.ui.shop.model.toRequest
+import com.example.bisit.util.uriToMultipart
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import okhttp3.MultipartBody
 
 class ShopServicesFragment : Fragment() {
 
@@ -20,10 +28,19 @@ class ShopServicesFragment : Fragment() {
 
     private lateinit var adapter: ServiceAdapter
 
-    private val data = mutableListOf(
-        ServiceItem(1, "일반 컷트", "가장 기본적인 컷트", 25000),
-        ServiceItem(2, "볼륨매직", "두피 볼륨을 살리는 시술", 80000)
-    )
+    /* ===================== ViewModels ===================== */
+
+    private val shopRegisterViewModel: ShopRegisterViewModel by activityViewModels {
+        ShopRegisterViewModelFactory(requireContext())
+    }
+
+    private val shopServiceViewModel: ShopServiceViewModel by activityViewModels {
+        ShopServiceViewModelFactory(requireContext())
+    }
+
+    private var shopId: Long? = null
+
+    /* ===================== Lifecycle ===================== */
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,47 +54,147 @@ class ShopServicesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = ServiceAdapter(onMoreClick = { item ->
-            // BottomActionSheet 표시
-            BottomActionSheet().show(parentFragmentManager, "actions")
+        setupRecyclerView()
+        observeShopId()
+        observeServiceList()
+        observeError()
 
-            // 결과 수신 리스너 등록
-            parentFragmentManager.setFragmentResultListener(
-                BottomActionSheet.REQUEST_KEY,
-                viewLifecycleOwner
-            ) { _, bundle ->
-                when (bundle.getString(BottomActionSheet.RESULT_ACTION)) {
-                    BottomActionSheet.ACTION_DELETE -> {
-                        ConfirmDialog("삭제하시겠어요?", onOk = {
-                            data.removeIf { it.id == item.id }
-                            adapter.submitList(data.toList())
-                        }).show(parentFragmentManager, "confirm")
-                    }
+        binding.fabAdd.setOnClickListener {
+            openAddServiceDialog()
+        }
+    }
 
-                    BottomActionSheet.ACTION_EDIT -> {
-                        AddServiceDialog(prefill = item) { updated ->
-                            val idx = data.indexOfFirst { it.id == updated.id }
-                            if (idx >= 0) {
-                                data[idx] = updated
-                                adapter.submitList(data.toList())
-                            }
-                        }.show(parentFragmentManager, "edit_service")
-                    }
-                }
+    /* ===================== RecyclerView ===================== */
+
+    private fun setupRecyclerView() {
+        adapter = ServiceAdapter(
+            onMoreClick = { item ->
+                showActionSheet(item)
             }
-        })
+        )
 
         binding.rvServices.layoutManager = LinearLayoutManager(requireContext())
         binding.rvServices.adapter = adapter
-        adapter.submitList(data.toList())
+    }
 
-        binding.fabAdd.setOnClickListener {
-            AddServiceDialog { newItem ->
-                data.add(newItem.copy(id = (data.maxOfOrNull { it.id } ?: 0) + 1))
-                adapter.submitList(data.toList())
-            }.show(parentFragmentManager, "add_service")
+    /* ===================== shopId 구독 ===================== */
+
+    private fun observeShopId() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            shopRegisterViewModel.shopId.collectLatest { id ->
+                id?.let {
+                    shopId = it
+                    shopServiceViewModel.loadTreatments(
+                        shopId = it,
+                        isFirst = true
+                    )
+                }
+            }
         }
     }
+
+    /* ===================== 서비스 목록 구독 ===================== */
+
+    private fun observeServiceList() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            shopServiceViewModel.treatments.collectLatest { list ->
+                adapter.submitList(list)
+            }
+        }
+    }
+
+    /* ===================== 에러 처리 ===================== */
+
+    private fun observeError() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            shopServiceViewModel.errorMessage.collectLatest { message ->
+                message?.let {
+                    // Toast / Snackbar
+                }
+            }
+        }
+    }
+
+    /* ===================== 액션 시트 ===================== */
+
+    private fun showActionSheet(item: TreatmentResponse) {
+        BottomActionSheet().show(parentFragmentManager, "actions")
+
+        parentFragmentManager.setFragmentResultListener(
+            BottomActionSheet.REQUEST_KEY,
+            viewLifecycleOwner
+        ) { _, bundle ->
+            when (bundle.getString(BottomActionSheet.RESULT_ACTION)) {
+
+                BottomActionSheet.ACTION_DELETE -> {
+                    showDeleteConfirm(item)
+                }
+
+                BottomActionSheet.ACTION_EDIT -> {
+                    openEditServiceDialog(item)
+                }
+            }
+        }
+    }
+
+    /* ===================== 서비스 삭제 ===================== */
+
+    private fun showDeleteConfirm(item: TreatmentResponse) {
+        ConfirmDialog(
+            message = "서비스를 삭제하시겠어요?",
+            onOk = {
+                shopId?.let {
+                    shopServiceViewModel.deleteTreatment(
+                        treatmentId = item.treatmentId,
+                        shopId = it
+                    )
+                }
+            }
+        ).show(parentFragmentManager, "confirm_delete")
+    }
+
+    /* ===================== 서비스 추가 ===================== */
+
+    private fun openAddServiceDialog() {
+        AddServiceDialog { treatment, imageUri ->
+
+            val photoPart: MultipartBody.Part? =
+                imageUri?.let {
+                    uriToMultipart(requireContext(), it, "photo")
+                }
+
+            shopId?.let {
+                shopServiceViewModel.createTreatment(
+                    shopId = it,
+                    request = treatment.toRequest(),
+                    photo = photoPart
+                )
+            }
+        }.show(parentFragmentManager, "add_service")
+    }
+
+    /* ===================== 서비스 수정 ===================== */
+
+    private fun openEditServiceDialog(item: TreatmentResponse) {
+        AddServiceDialog(prefill = item) { updated, imageUri ->
+
+            val photoPart: MultipartBody.Part? =
+                imageUri?.let {
+                    uriToMultipart(requireContext(), it, "photo")
+                }
+
+            shopId?.let {
+                shopServiceViewModel.updateTreatment(
+                    treatmentId = updated.treatmentId,
+                    shopId = it,
+                    request = updated.toRequest(),
+                    photo = photoPart // null이면 기존 이미지 유지
+                )
+            }
+        }.show(parentFragmentManager, "edit_service")
+    }
+
+    /* ===================== Cleanup ===================== */
 
     override fun onDestroyView() {
         super.onDestroyView()

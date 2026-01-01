@@ -15,6 +15,7 @@ import com.example.bisit.ui.shop.dialog.AddNoticeDialog
 import com.example.bisit.ui.shop.dialog.BottomActionSheet
 import com.example.bisit.ui.shop.dialog.ConfirmDialog
 import com.example.bisit.ui.shop.model.Notice
+import com.example.bisit.ui.shop.register.ShopRegisterViewModelFactory
 import com.example.bisit.ui.todayReserv.dialog.SortOptionDialog
 import kotlinx.coroutines.launch
 
@@ -26,7 +27,9 @@ class ShopNoticesFragment : Fragment() {
     private lateinit var adapter: NoticeAdapter
 
     /** shopId 제공용 */
-    private val shopRegisterViewModel: ShopRegisterViewModel by activityViewModels()
+    private val shopRegisterViewModel: ShopRegisterViewModel by activityViewModels {
+        ShopRegisterViewModelFactory(requireContext())
+    }
 
     /** 공지사항 전용 ViewModel */
     private val noticeViewModel: ShopNoticeViewModel by viewModels {
