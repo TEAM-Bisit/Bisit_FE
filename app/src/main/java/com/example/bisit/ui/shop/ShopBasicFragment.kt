@@ -14,7 +14,6 @@ import com.example.bisit.databinding.FragmentShopBasicBinding
 import com.example.bisit.ui.shop.dialog.EditSalesDialog
 import com.example.bisit.ui.shop.dialog.EditShopInfoDialog
 import com.example.bisit.ui.shop.dialog.EditShopIntroDialog
-import com.example.bisit.ui.shop.register.ShopRegisterViewModelFactory
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody

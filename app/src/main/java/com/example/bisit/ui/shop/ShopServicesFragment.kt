@@ -14,7 +14,6 @@ import com.example.bisit.ui.shop.dialog.AddServiceDialog
 import com.example.bisit.ui.shop.dialog.BottomActionSheet
 import com.example.bisit.ui.shop.dialog.ConfirmDialog
 import com.example.bisit.data.model.shop.TreatmentResponse
-import com.example.bisit.ui.shop.register.ShopRegisterViewModelFactory
 import com.example.bisit.ui.shop.model.toRequest
 import com.example.bisit.util.uriToMultipart
 import kotlinx.coroutines.flow.collectLatest
@@ -31,7 +30,7 @@ class ShopServicesFragment : Fragment() {
     /* ===================== ViewModels ===================== */
 
     private val shopRegisterViewModel: ShopRegisterViewModel by activityViewModels {
-        ShopRegisterViewModelFactory(requireContext())
+        ShopRegisterViewModelFactory(requireContext().applicationContext)
     }
 
     private val shopServiceViewModel: ShopServiceViewModel by activityViewModels {

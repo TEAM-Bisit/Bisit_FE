@@ -1,10 +1,9 @@
-package com.example.bisit.ui.shop.register
+package com.example.bisit.ui.shop
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.bisit.data.repository.shop.ShopRegisterRepository
-import com.example.bisit.ui.shop.ShopRegisterViewModel
 
 class ShopRegisterViewModelFactory(
     private val context: Context
