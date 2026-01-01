@@ -14,7 +14,6 @@ import com.example.bisit.ui.shop.adapter.NoticeAdapter
 import com.example.bisit.ui.shop.dialog.AddNoticeDialog
 import com.example.bisit.ui.shop.dialog.BottomActionSheet
 import com.example.bisit.ui.shop.dialog.ConfirmDialog
-import com.example.bisit.ui.shop.model.Notice
 import com.example.bisit.ui.todayReserv.dialog.SortOptionDialog
 import kotlinx.coroutines.launch
 
@@ -26,7 +25,9 @@ class ShopNoticesFragment : Fragment() {
     private lateinit var adapter: NoticeAdapter
 
     /** shopId 제공용 */
-    private val shopRegisterViewModel: ShopRegisterViewModel by activityViewModels()
+    private val shopRegisterViewModel: ShopRegisterViewModel by activityViewModels {
+        ShopRegisterViewModelFactory(requireContext().applicationContext)
+    }
 
     /** 공지사항 전용 ViewModel */
     private val noticeViewModel: ShopNoticeViewModel by viewModels {
@@ -51,7 +52,7 @@ class ShopNoticesFragment : Fragment() {
         setupAddNotice()
     }
 
-    /** ================= RecyclerView ================= */
+    /* ================= RecyclerView ================= */
 
     private fun setupRecyclerView() {
         adapter = NoticeAdapter { notice ->
@@ -72,15 +73,18 @@ class ShopNoticesFragment : Fragment() {
                     }
 
                     BottomActionSheet.ACTION_EDIT -> {
-                        AddNoticeDialog(prefill = notice) { updated ->
+                        AddNoticeDialog(
+                            prefillTitle = notice.title,
+                            prefillContent = notice.content
+                        ) { title, content ->
                             val shopId =
                                 shopRegisterViewModel.shopId.value ?: return@AddNoticeDialog
 
                             noticeViewModel.updateNotice(
                                 shopId = shopId,
-                                noticeId = updated.id,
-                                title = updated.title,
-                                content = updated.content
+                                noticeId = notice.id,
+                                title = title,
+                                content = content
                             )
                         }.show(parentFragmentManager, "edit_notice")
                     }
@@ -92,36 +96,27 @@ class ShopNoticesFragment : Fragment() {
         binding.rvNotices.adapter = adapter
     }
 
-    /** ================= ViewModel Observe ================= */
+    /* ================= ViewModel Observe ================= */
 
     private fun observeViewModel() {
-        // shopId 수신 → 공지사항 로드
+
+        // shopId 수신 → 공지 조회
         viewLifecycleOwner.lifecycleScope.launch {
             shopRegisterViewModel.shopId.collect { shopId ->
-                if (shopId != null) {
-                    noticeViewModel.loadNotices(shopId)
-                }
+                shopId ?: return@collect
+                noticeViewModel.loadNotices(shopId)
             }
         }
 
-        // 공지사항 리스트 반영
+        // 공지 리스트 반영 (API 모델 그대로)
         viewLifecycleOwner.lifecycleScope.launch {
             noticeViewModel.notices.collect { list ->
-                adapter.submitList(
-                    list.map {
-                        Notice(
-                            id = it.id,
-                            title = it.title,
-                            content = it.content,
-                            date = it.createdAt.substring(0, 10)
-                        )
-                    }
-                )
+                adapter.submitList(list)
             }
         }
     }
 
-    /** ================= 정렬 ================= */
+    /* ================= 정렬 ================= */
 
     private fun setupSort() {
         binding.tvSortLabel.setOnClickListener {
@@ -135,18 +130,18 @@ class ShopNoticesFragment : Fragment() {
         }
     }
 
-    /** ================= 공지 추가 ================= */
+    /* ================= 공지 추가 ================= */
 
     private fun setupAddNotice() {
         binding.fabAdd.setOnClickListener {
-            AddNoticeDialog { newItem ->
+            AddNoticeDialog { title, content ->
                 val shopId =
                     shopRegisterViewModel.shopId.value ?: return@AddNoticeDialog
 
                 noticeViewModel.createNotice(
                     shopId = shopId,
-                    title = newItem.title,
-                    content = newItem.content
+                    title = title,
+                    content = content
                 )
             }.show(parentFragmentManager, "add_notice")
         }

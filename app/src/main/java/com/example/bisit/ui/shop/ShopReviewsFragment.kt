@@ -10,7 +10,6 @@ import com.example.bisit.databinding.FragmentShopReviewsBinding
 import com.example.bisit.ui.shop.adapter.ReviewAdapter
 import com.example.bisit.ui.shop.dialog.BottomActionSheet
 import com.example.bisit.ui.shop.dialog.ConfirmDialog
-import com.example.bisit.ui.shop.model.Review
 import com.example.bisit.ui.todayReserv.dialog.SortOptionDialog
 import java.text.SimpleDateFormat
 import java.util.*

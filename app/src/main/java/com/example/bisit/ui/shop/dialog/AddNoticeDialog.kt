@@ -12,11 +12,11 @@ import androidx.core.graphics.toColorInt
 import androidx.fragment.app.DialogFragment
 import com.example.bisit.R
 import com.example.bisit.databinding.DialogAddNoticeBinding
-import com.example.bisit.ui.shop.model.Notice
 
 class AddNoticeDialog(
-    private val prefill: Notice? = null,
-    private val onSaved: (Notice) -> Unit
+    private val prefillTitle: String? = null,
+    private val prefillContent: String? = null,
+    private val onSaved: (title: String, content: String) -> Unit
 ) : DialogFragment() {
 
     private var _b: DialogAddNoticeBinding? = null
@@ -52,9 +52,9 @@ class AddNoticeDialog(
         b.etContent.setTextColor("#222222".toColorInt())
 
         /** 수정 모드 */
-        prefill?.let {
-            b.etTitle.setText(it.title)
-            b.etContent.setText(it.content)
+        if (prefillTitle != null && prefillContent != null) {
+            b.etTitle.setText(prefillTitle)
+            b.etContent.setText(prefillContent)
             b.btnSubmit.text = getString(R.string.edit)
         }
 
@@ -80,12 +80,7 @@ class AddNoticeDialog(
             val title = b.etTitle.text.toString().trim()
             val content = b.etContent.text.toString().trim()
 
-            val item = (prefill ?: Notice(0, title, content, date = "")).copy(
-                title = title,
-                content = content
-            )
-
-            onSaved(item)
+            onSaved(title, content)
             dismissAllowingStateLoss()
         }
     }
@@ -96,16 +91,17 @@ class AddNoticeDialog(
         val content = b.etContent.text.toString().trim()
 
         val isFilled = title.isNotEmpty() && content.isNotEmpty()
-        val isChanged = if (prefill != null) {
-            title != prefill.title || content != prefill.content
-        } else {
-            true
-        }
+        val isChanged =
+            if (prefillTitle != null && prefillContent != null) {
+                title != prefillTitle || content != prefillContent
+            } else {
+                true
+            }
 
         updateSubmitButton(isFilled && isChanged)
     }
 
-    /** 버튼 스타일 */
+    /** 버튼 활성화 */
     private fun updateSubmitButton(enabled: Boolean) {
         b.btnSubmit.isEnabled = enabled
     }
@@ -115,15 +111,19 @@ class AddNoticeDialog(
         dialog?.window?.apply {
             setBackgroundDrawableResource(android.R.color.transparent)
 
-            val screenWidth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                val wm = requireActivity().windowManager.currentWindowMetrics
-                val insets = wm.windowInsets.getInsets(WindowInsets.Type.systemBars())
-                wm.bounds.width() - insets.left - insets.right
-            } else {
-                resources.displayMetrics.widthPixels
-            }
+            val screenWidth =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    val wm = requireActivity().windowManager.currentWindowMetrics
+                    val insets = wm.windowInsets.getInsets(WindowInsets.Type.systemBars())
+                    wm.bounds.width() - insets.left - insets.right
+                } else {
+                    resources.displayMetrics.widthPixels
+                }
 
-            setLayout((screenWidth * 0.806f).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT)
+            setLayout(
+                (screenWidth * 0.806f).toInt(),
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
         }
     }
 
