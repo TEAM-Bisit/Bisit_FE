@@ -168,11 +168,11 @@ class BusinessRegistrationFragment : Fragment() {
     }
 
     private fun validateBusinessNumber(number: String) {
-        val ownerApi = RetrofitClient.getOwnerApi(requireContext())
+        val storeApi = RetrofitClient.getStoreApi(requireContext())
         val request = BusinessValidateRequest(businessRegNo = number)
 
         // 1단계: DB 중복 확인
-        ownerApi.validateBusiness(request).enqueue(object : Callback<BusinessValidateResponse> {
+        storeApi.validateBusiness(request).enqueue(object : Callback<BusinessValidateResponse> {
             override fun onResponse(call: Call<BusinessValidateResponse>, response: Response<BusinessValidateResponse>) {
                 if (response.isSuccessful && response.body()?.data == true) {
                     // 중복되지 않은 번호라면 2단계: 상세 정보 진위 확인 시작
@@ -190,7 +190,7 @@ class BusinessRegistrationFragment : Fragment() {
     }
 
     private fun validateBusinessDetail(businessNo: String) {
-        val ownerApi = RetrofitClient.getOwnerApi(requireContext())
+        val ownerApi = RetrofitClient.getStoreApi(requireContext())
 
         // UI에서 입력값 추출 (하이픈 제거)
         val ownerName = binding.etOwnerName.text.toString()
