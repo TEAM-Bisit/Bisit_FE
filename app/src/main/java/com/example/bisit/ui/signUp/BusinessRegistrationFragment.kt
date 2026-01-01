@@ -10,6 +10,8 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.Fragment
 import com.example.bisit.data.api.RetrofitClient
+import com.example.bisit.data.model.shop.BusinessDetailValidateRequest
+import com.example.bisit.data.model.shop.BusinessDetailValidateResponse
 import com.example.bisit.data.model.shop.BusinessValidateRequest
 import com.example.bisit.data.model.shop.BusinessValidateResponse
 import com.example.bisit.databinding.FragmentBusinessRegistrationBinding
@@ -140,8 +142,28 @@ class BusinessRegistrationFragment : Fragment() {
         })
 
         binding.btnCheckBusiness.setOnClickListener {
-            val businessNo = binding.etBusinessNumber.text.toString()
-            validateBusinessNumber(businessNo)
+            val ownerName = binding.etOwnerName.text.toString().trim()
+            val openDate = binding.etOpeningDate.text.toString().trim()
+            val businessNo = binding.etBusinessNumber.text.toString().trim()
+
+            // 임시 테스트용 조건 확인
+            if (ownerName == "김사장" && openDate == "2026-01-01" && businessNo == "000-00-00000") {
+                // 성공 시: 온보딩 다음 버튼 활성화 및 안내 다이얼로그 출력
+                (parentFragment as? OwnerOnboardingFragment)?.setNextButtonEnabled(true)
+
+                com.example.bisit.ui.dialog.CommonInfoDialog(
+                    message = "사업자 인증에 성공했습니다.\n다음 단계로 진행해주세요. (테스트 모드)",
+                    onConfirm = {}
+                ).show(parentFragmentManager, "TestSuccessDialog")
+            } else {
+                // 실패 시: 다음 버튼 비활성화 유지 및 에러 메시지 출력
+                (parentFragment as? OwnerOnboardingFragment)?.setNextButtonEnabled(false)
+
+                com.example.bisit.ui.dialog.CommonInfoDialog(
+                    message = "입력하신 사업자 정보가 일치하지 않습니다.\n다시 확인해주세요. (테스트 모드)",
+                    onConfirm = {}
+                ).show(parentFragmentManager, "TestFailDialog")
+            }
         }
     }
 
@@ -149,26 +171,55 @@ class BusinessRegistrationFragment : Fragment() {
         val ownerApi = RetrofitClient.getOwnerApi(requireContext())
         val request = BusinessValidateRequest(businessRegNo = number)
 
+        // 1단계: DB 중복 확인
         ownerApi.validateBusiness(request).enqueue(object : Callback<BusinessValidateResponse> {
             override fun onResponse(call: Call<BusinessValidateResponse>, response: Response<BusinessValidateResponse>) {
-                if (response.isSuccessful && response.body() != null) {
-                    val isAvailable = response.body()!!.data
-
-                    if (isAvailable) {
-                        // 1. 중복 아님 -> 사장님 온보딩 계속 진행
-                        (parentFragment as? OwnerOnboardingFragment)?.setNextButtonEnabled(true)
-                        showDialog("인증에 성공했습니다. 다음 단계로 진행해주세요.")
-                    } else {
-                        // 2. 중복됨 -> 직원 등록 플로우로 유도
-                        showStaffRedirectDialog()
-                    }
+                if (response.isSuccessful && response.body()?.data == true) {
+                    // 중복되지 않은 번호라면 2단계: 상세 정보 진위 확인 시작
+                    validateBusinessDetail(number)
                 } else {
-                    showDialog("사업자 번호 확인에 실패했습니다.")
+                    // 이미 등록된 매장인 경우 (중복)
+                    showStaffRedirectDialog()
                 }
             }
 
             override fun onFailure(call: Call<BusinessValidateResponse>, t: Throwable) {
-                showDialog("네트워크 연결을 확인해주세요.")
+                showDialog("네트워크 연결 실패 (1단계)")
+            }
+        })
+    }
+
+    private fun validateBusinessDetail(businessNo: String) {
+        val ownerApi = RetrofitClient.getOwnerApi(requireContext())
+
+        // UI에서 입력값 추출 (하이픈 제거)
+        val ownerName = binding.etOwnerName.text.toString()
+        val openDate = binding.etOpeningDate.text.toString().replace("-", "")
+        // 상호 입력 필드가 필요합니다 (현재 예시에서는 임시로 처리하거나 필드 추가 권장)
+        val businessName = "입력된 상호명" // 확인 필요
+
+        val detailRequest = BusinessDetailValidateRequest(
+            businessRegNo = businessNo.replace("-", ""),
+            representativeName = ownerName,
+            openDate = openDate,
+            businessName = businessName
+        )
+
+        // 2단계: 국세청 API 기반 상세 진위 확인
+        ownerApi.validateDetail(detailRequest).enqueue(object : Callback<BusinessDetailValidateResponse> {
+            override fun onResponse(call: Call<BusinessDetailValidateResponse>, response: Response<BusinessDetailValidateResponse>) {
+                if (response.isSuccessful && response.body()?.data == true) {
+                    // 최종 인증 성공
+                    (parentFragment as? OwnerOnboardingFragment)?.setNextButtonEnabled(true)
+                    showDialog("사업자 인증에 성공했습니다.")
+                } else {
+                    // 정보가 일치하지 않는 경우
+                    showDialog("사업자 번호를 확인해주세요.")
+                }
+            }
+
+            override fun onFailure(call: Call<BusinessDetailValidateResponse>, t: Throwable) {
+                showDialog("네트워크 연결 실패 (2단계)")
             }
         })
     }

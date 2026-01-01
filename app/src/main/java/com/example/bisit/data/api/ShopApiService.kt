@@ -1,5 +1,7 @@
 package com.example.bisit.data.api
 
+import com.example.bisit.data.model.shop.BusinessDetailValidateRequest
+import com.example.bisit.data.model.shop.BusinessDetailValidateResponse
 import com.example.bisit.data.model.shop.BusinessValidateRequest
 import com.example.bisit.data.model.shop.BusinessValidateResponse
 import retrofit2.Call
@@ -11,4 +13,9 @@ interface ShopApiService {
     fun validateBusiness(
         @Body request: BusinessValidateRequest
     ): Call<BusinessValidateResponse>
+
+    @POST("/api/shops/regist/validate-detail")
+    fun validateDetail(
+        @Body request: BusinessDetailValidateRequest
+    ): Call<BusinessDetailValidateResponse>
 }
