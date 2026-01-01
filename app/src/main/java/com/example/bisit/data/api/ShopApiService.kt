@@ -4,6 +4,8 @@ import com.example.bisit.data.model.shop.BusinessDetailValidateRequest
 import com.example.bisit.data.model.shop.BusinessDetailValidateResponse
 import com.example.bisit.data.model.shop.BusinessValidateRequest
 import com.example.bisit.data.model.shop.BusinessValidateResponse
+import com.example.bisit.data.model.shop.ShopIndustryRequest
+import com.example.bisit.data.model.shop.ShopIndustryResponse
 import com.example.bisit.data.model.shop.ShopIntroduceRequest
 import com.example.bisit.data.model.shop.ShopIntroduceResponse
 import com.example.bisit.data.model.shop.ShopPhotoResponse
@@ -45,4 +47,10 @@ interface ShopApiService {
         @Path("shopId") shopId: Int,
         @Body request: ShopIntroduceRequest
     ): Call<ShopIntroduceResponse>
+
+    @POST("/api/shops/regist/{shopId}/industry")
+    fun updateIndustry(
+        @Path("shopId") shopId: Int,
+        @Body request: ShopIndustryRequest
+    ): Call<ShopIndustryResponse>
 }

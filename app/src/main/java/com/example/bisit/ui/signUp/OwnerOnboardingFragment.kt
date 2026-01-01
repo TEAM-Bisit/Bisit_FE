@@ -86,9 +86,13 @@ class OwnerOnboardingFragment : Fragment() {
                 4 -> {
                     // [4단계 -> 5단계] 업종(카테고리) 선택 후 이동
                     // (이 단계도 API가 필요하다면 위 단계들처럼 콜백 구조로 수정해야 합니다)
-                    replaceChildFragment(StoreHoursFragment.newInstance())
-                    currentStep = 5
-                    updateCommonUI()
+                    if (currentFragment is StoreCategoryFragment) {
+                        currentFragment.saveIndustryAndNext {
+                            replaceChildFragment(StoreHoursFragment.newInstance())
+                            currentStep = 5
+                            updateCommonUI()
+                        }
+                    }
                 }
 
                 5 -> {
@@ -116,12 +120,12 @@ class OwnerOnboardingFragment : Fragment() {
             val startDest = activity?.intent?.getStringExtra("START_DESTINATION")
 
             if (startDest == "OWNER_INTRO") { // 테스트용
-                currentStep = 3
+                currentStep = 4
 
                 signUpViewModel.setShopId(2)
 
                 childFragmentManager.beginTransaction()
-                    .replace(R.id.owner_onboarding_nav_host, StoreIntroFragment.newInstance())
+                    .replace(R.id.owner_onboarding_nav_host, StoreCategoryFragment.newInstance())
                     .commit()
             } else {
                 // 기본 1단계 시작

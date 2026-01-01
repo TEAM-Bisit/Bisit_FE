@@ -1,26 +1,35 @@
 package com.example.bisit.ui.signUp
 
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.fragment.app.activityViewModels
+import com.example.bisit.R
+import com.example.bisit.data.api.RetrofitClient
+import com.example.bisit.data.model.shop.ShopIndustryRequest
+import com.example.bisit.data.model.shop.ShopIndustryResponse
 import com.example.bisit.databinding.FragmentStoreCategoryBinding
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class StoreCategoryFragment : Fragment() {
 
     private var _binding: FragmentStoreCategoryBinding? = null
     private val binding get() = _binding!!
 
-    // 1. 어댑터 선언
-    private lateinit var categoryAdapter: StoreCategoryAdapter
+    private val signUpViewModel: SignUpViewModel by activityViewModels()
+
+    // 현재 선택된 카테고리를 저장할 변수
+    private var selectedCategory: String? = null
+    // 선택된 뷰를 관리하기 위함 (시각적 피드백용)
+    private var selectedView: View? = null
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentStoreCategoryBinding.inflate(inflater, container, false)
@@ -30,62 +39,66 @@ class StoreCategoryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 초기 상태: 다음 단계 버튼 비활성화
+        // 초기 상태: 다음 버튼 비활성화
         (parentFragment as? OwnerOnboardingFragment)?.setNextButtonEnabled(false)
 
-        setupSearchButton()
-        setupRecyclerView() // 어댑터 설정 함수 호출
+        setupCategoryListeners()
     }
 
-    private fun setupSearchButton() {
-        binding.etCategorySearch.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
-            override fun afterTextChanged(s: Editable?) {
-                binding.btnCategorySearch.isEnabled = s?.isNotBlank() == true
-            }
-        })
-
-        // 검색 버튼 클릭 리스너
-        binding.btnCategorySearch.setOnClickListener {
-            val query = binding.etCategorySearch.text.toString()
-            if (query.isNotBlank()) {
-                performSearch(query)
-            }
-        }
-    }
-
-    private fun setupRecyclerView() {
-        // 2. 어댑터 초기화 및 클릭 리스너 구현
-        categoryAdapter = StoreCategoryAdapter { selectedItem ->
-            // 리스트 아이템 클릭 시 동작
-            binding.etCategorySearch.setText(selectedItem) // 선택한 항목을 입력창에 반영
-            onCategorySelected() // 다음 단계 버튼 활성화
-        }
-
-        binding.rvCategoryResults.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = categoryAdapter
-        }
-    }
-
-    private fun performSearch(query: String) {
-        // 3. 검색 결과 업데이트 (임시 더미 데이터)
-        val dummyResults = listOf(
-            "디지털/전자 > 전자기기 서비스 > 컴퓨터 수리",
-            "디지털/전자 > 전자기기 서비스 > 스마트폰 수리",
-            "생활서비스 > 가전제품 > 에어컨 설치/수리",
-            "전문서비스 > IT/소프트웨어 > 앱 개발"
+    private fun setupCategoryListeners() {
+        // 각 카테고리 뷰와 서버에 보낼 값 매핑
+        val categoryMap = mapOf(
+            binding.categoryHome to "LIVING",
+            binding.categoryIt to "IT_ELECTRONICS",
+            binding.categoryFix to "REPAIR_INSTALLATION",
+            binding.categoryCar to "VEHICLE_MANAGEMENT",
+            binding.categoryHealth to "HEALTHCARE",
+            binding.categoryOffice to "OFFICE_MANAGEMENT",
+            binding.categoryCamera to "PHOTO_EVENT",
+            binding.categoryEdu to "EDUCATION"
         )
 
-        binding.layoutSearchResultsBox.visibility = View.VISIBLE
-        categoryAdapter.submitList(dummyResults)
+        categoryMap.forEach { (view, categoryName) ->
+            view.setOnClickListener {
+                handleCategorySelection(view, categoryName)
+            }
+        }
     }
 
-    private fun onCategorySelected() {
-        // 최종 선택 완료 시 부모 프래그먼트의 '다음' 버튼을 파란색으로 활성화
+    private fun handleCategorySelection(view: View, categoryName: String) {
+        // 이전에 선택된 뷰의 배경을 원래대로 (필요 시 bg_edit_box 등으로 변경 가능)
+        selectedView?.setBackgroundResource(android.R.color.transparent)
+
+        // 현재 선택된 뷰 강조 (테두리 있는 배경 등으로 교체 권장)
+        view.setBackgroundResource(R.drawable.bg_category_selected) // 미리 만들어둔 선택용 drawable
+
+        selectedCategory = categoryName
+        selectedView = view
+
+        // 카테고리가 선택되었으므로 다음 버튼 활성화
         (parentFragment as? OwnerOnboardingFragment)?.setNextButtonEnabled(true)
+    }
+
+    fun saveIndustryAndNext(onSuccess: () -> Unit) {
+        val shopId = signUpViewModel.shopId.value ?: 2 // 테스트용 2번
+        val categoryCode = selectedCategory ?: return
+
+        val request = ShopIndustryRequest(category = categoryCode)
+        val api = RetrofitClient.getStoreApi(requireContext())
+
+        api.updateIndustry(shopId, request).enqueue(object : Callback<ShopIndustryResponse> {
+            override fun onResponse(call: Call<ShopIndustryResponse>, response: Response<ShopIndustryResponse>) {
+                if (response.isSuccessful && response.body()?.success == true) {
+                    onSuccess() // 성공 시 다음 단계(영업시간)로 이동
+                } else {
+                    Toast.makeText(context, "업종 저장에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<ShopIndustryResponse>, t: Throwable) {
+                Toast.makeText(context, "네트워크 통신 오류", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     override fun onDestroyView() {
