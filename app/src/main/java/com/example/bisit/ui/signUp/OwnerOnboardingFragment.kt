@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator // ★ 애니메이션용 Import
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import com.example.bisit.R
 import com.example.bisit.databinding.FragmentOwnerOnboardingBinding
 import com.example.bisit.databinding.LayoutStepperBinding
@@ -23,6 +24,8 @@ class OwnerOnboardingFragment : Fragment() {
 
     // 현재 진행 단계를 관리
     private var currentStep = 1
+
+    private val signUpViewModel: SignUpViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,33 +44,46 @@ class OwnerOnboardingFragment : Fragment() {
         (activity as? SignUpActivity)?.setToolbarTitle("첫 화면으로 돌아가기")
 
         // 2. '다음 단계' 버튼 리스너
+        // OwnerOnboardingFragment.kt 의 onViewCreated 내부
+
         binding.btnNextStep.setOnClickListener {
-            when (currentStep) {
-                1 -> {
-                    // 1단계 -> 2단계(매장 등록)로 이동
-                    replaceChildFragment(StoreInfoFragment.newInstance())
-                    currentStep = 2
-                }
-                2 -> {
-                    // 2단계 -> 3단계(매장 소개)로 이동
-                    replaceChildFragment(StoreIntroFragment.newInstance()) // ★ 주석 해제
+            // 현재 표시되고 있는 자식 프래그먼트를 가져옵니다.
+            val currentFragment = childFragmentManager.findFragmentById(R.id.owner_onboarding_nav_host)
+
+            // [수정] 2단계(매장 정보 입력)에서 다음을 누른 경우
+            if (currentStep == 2 && currentFragment is StoreInfoFragment) {
+                // StoreInfoFragment에 작성해둔 API 호출 함수 실행
+                currentFragment.registerStoreAndNext { shopId ->
+                    // API 성공 시 넘어온 shopId를 ViewModel에 저장 (이후 단계 PATCH 요청 시 사용)
+                    signUpViewModel.setShopId(shopId)
+
+                    // 성공했으므로 다음 단계로 이동
+                    replaceChildFragment(StoreIntroFragment.newInstance())
                     currentStep = 3
+                    updateCommonUI()
                 }
-                3 -> {
-                    // 3단계(매장 소개) -> 4단계(업종 등록)로 이동
-                    replaceChildFragment(StoreCategoryFragment.newInstance()) // 새 프래그먼트 호출
-                    currentStep = 4
+            } else {
+                // 그 외 단계는 기존처럼 즉시 이동
+                when (currentStep) {
+                    1 -> {
+                        replaceChildFragment(StoreInfoFragment.newInstance())
+                        currentStep = 2
+                    }
+                    3 -> {
+                        replaceChildFragment(StoreCategoryFragment.newInstance())
+                        currentStep = 4
+                    }
+                    4 -> {
+                        replaceChildFragment(StoreHoursFragment.newInstance())
+                        currentStep = 5
+                    }
+                    5 -> {
+                        replaceChildFragment(StoreRegistrationCompleteFragment.newInstance())
+                        currentStep = 6
+                    }
                 }
-                4 -> {
-                    replaceChildFragment(StoreHoursFragment.newInstance())
-                    currentStep = 5
-                }
-                5 -> {
-                    replaceChildFragment(StoreRegistrationCompleteFragment.newInstance())
-                    currentStep = 6 // 완료 단계
-                }
+                updateCommonUI()
             }
-            updateCommonUI()
         }
 
         // 3. '이전으로' 버튼 리스너

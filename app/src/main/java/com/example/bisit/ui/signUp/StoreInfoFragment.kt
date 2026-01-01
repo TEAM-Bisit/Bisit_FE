@@ -12,8 +12,15 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import com.example.bisit.data.api.RetrofitClient
+import com.example.bisit.data.model.shop.ShopRegisterRequest
+import com.example.bisit.data.model.shop.ShopRegisterResponse
 import com.example.bisit.databinding.FragmentStoreInfoBinding
 import com.example.bisit.ui.customerPay.AddressSearchActivity
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import kotlin.jvm.java
 
 class StoreInfoFragment : Fragment() {
@@ -35,6 +42,8 @@ class StoreInfoFragment : Fragment() {
                 }
             }
         }
+
+    private val signUpViewModel: SignUpViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -184,6 +193,53 @@ class StoreInfoFragment : Fragment() {
                 isFormattingContact = false
             }
         })
+    }
+
+    fun registerStoreAndNext(onSuccess: (Int) -> Unit) {
+        val businessNo = signUpViewModel.businessRegNo.value ?: ""
+        val name = binding.etStoreName.text.toString().trim()
+        val contact = binding.etStoreContact.text.toString().trim()
+        val addressMain = binding.etAddressMain.text.toString().trim()
+        val addressDetail = binding.etAddressDetail.text.toString().trim()
+
+        // ★ 추가: 주소 앞의 우편번호 (예: (12345)) 제거 로직
+        // 정규식을 사용하여 "(숫자)"로 시작하는 부분을 지웁니다.
+        val cleanedAddress = addressMain.replace(Regex("^\\(\\d{5}\\)\\s*"), "")
+
+        val request = ShopRegisterRequest(
+            businessRegNO = businessNo.replace("-", ""),
+            name = name,
+            phone = contact,
+            addressLine = cleanedAddress, // 정제된 주소 전달
+            detailAddress = addressDetail
+        )
+
+        val api = RetrofitClient.getStoreApi(requireContext())
+        api.registerShop(request).enqueue(object : Callback<ShopRegisterResponse> {
+            override fun onResponse(call: Call<ShopRegisterResponse>, response: Response<ShopRegisterResponse>) {
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val shopId = response.body()?.data?.shopId ?: 0
+                    onSuccess(shopId)
+                } else {
+                    // 서버에서 보낸 에러 메시지를 다이얼로그에 표시 (지오코딩 실패 등)
+                    val errorMsg = response.body()?.message ?: "가게 등록에 실패했습니다."
+                    showDialog(errorMsg)
+                }
+            }
+
+            override fun onFailure(call: Call<ShopRegisterResponse>, t: Throwable) {
+                showDialog("네트워크 오류가 발생했습니다.")
+            }
+        })
+    }
+
+    private fun showDialog(msg: String) {
+        com.example.bisit.ui.dialog.CommonInfoDialog(
+            message = msg,
+            onConfirm = {
+                // 확인 버튼 클릭 시 동작 (필요 시 작성)
+            }
+        ).show(parentFragmentManager, "StoreInfoInfoDialog")
     }
 
     override fun onDestroyView() {

@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import com.example.bisit.data.api.RetrofitClient
 import com.example.bisit.data.model.shop.BusinessDetailValidateRequest
 import com.example.bisit.data.model.shop.BusinessDetailValidateResponse
@@ -32,6 +33,8 @@ class BusinessRegistrationFragment : Fragment() {
 
     private val businessNumberPattern: Pattern = Pattern.compile("^\\d{3}-\\d{2}-\\d{5}$")
     private val datePattern: Pattern = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$")
+
+    private val signUpViewModel: SignUpViewModel by activityViewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentBusinessRegistrationBinding.inflate(inflater, container, false)
@@ -146,23 +149,22 @@ class BusinessRegistrationFragment : Fragment() {
             val openDate = binding.etOpeningDate.text.toString().trim()
             val businessNo = binding.etBusinessNumber.text.toString().trim()
 
-            // 임시 테스트용 조건 확인
+            // 1. [테스트 모드] 하드코딩된 정보와 일치하는지 먼저 확인
             if (ownerName == "김사장" && openDate == "2026-01-01" && businessNo == "000-00-00000") {
-                // 성공 시: 온보딩 다음 버튼 활성화 및 안내 다이얼로그 출력
+
+                // 테스트 통과 시 번호 저장 및 다음 버튼 활성화
+                signUpViewModel.setBusinessRegNo(businessNo.replace("-", ""))
                 (parentFragment as? OwnerOnboardingFragment)?.setNextButtonEnabled(true)
 
                 com.example.bisit.ui.dialog.CommonInfoDialog(
                     message = "사업자 인증에 성공했습니다.\n다음 단계로 진행해주세요. (테스트 모드)",
                     onConfirm = {}
                 ).show(parentFragmentManager, "TestSuccessDialog")
-            } else {
-                // 실패 시: 다음 버튼 비활성화 유지 및 에러 메시지 출력
-                (parentFragment as? OwnerOnboardingFragment)?.setNextButtonEnabled(false)
 
-                com.example.bisit.ui.dialog.CommonInfoDialog(
-                    message = "입력하신 사업자 정보가 일치하지 않습니다.\n다시 확인해주세요. (테스트 모드)",
-                    onConfirm = {}
-                ).show(parentFragmentManager, "TestFailDialog")
+            } else {
+                // 2. [실제 모드] 테스트 정보가 아니라면 실제 API 검증 시작
+                // 하이픈을 제거하고 서버로 보냅니다.
+                validateBusinessNumber(businessNo.replace("-", ""))
             }
         }
     }
@@ -190,36 +192,36 @@ class BusinessRegistrationFragment : Fragment() {
     }
 
     private fun validateBusinessDetail(businessNo: String) {
-        val ownerApi = RetrofitClient.getStoreApi(requireContext())
+        val storeApi = RetrofitClient.getStoreApi(requireContext())
 
-        // UI에서 입력값 추출 (하이픈 제거)
-        val ownerName = binding.etOwnerName.text.toString()
-        val openDate = binding.etOpeningDate.text.toString().replace("-", "")
-        // 상호 입력 필드가 필요합니다 (현재 예시에서는 임시로 처리하거나 필드 추가 권장)
-        val businessName = "입력된 상호명" // 확인 필요
+        val ownerName = binding.etOwnerName.text.toString().trim()
+        val openDate = binding.etOpeningDate.text.toString().replace("-", "").trim()
 
+        // 국세청 API 호출을 위한 모델 생성 (businessName은 임시로 대표자명 사용)
         val detailRequest = BusinessDetailValidateRequest(
-            businessRegNo = businessNo.replace("-", ""),
+            businessRegNo = businessNo,
             representativeName = ownerName,
             openDate = openDate,
-            businessName = businessName
+            businessName = ownerName
         )
 
-        // 2단계: 국세청 API 기반 상세 진위 확인
-        ownerApi.validateDetail(detailRequest).enqueue(object : Callback<BusinessDetailValidateResponse> {
+        storeApi.validateDetail(detailRequest).enqueue(object : Callback<BusinessDetailValidateResponse> {
             override fun onResponse(call: Call<BusinessDetailValidateResponse>, response: Response<BusinessDetailValidateResponse>) {
                 if (response.isSuccessful && response.body()?.data == true) {
-                    // 최종 인증 성공
+
+                    // ★ 중요: 실제 API 인증 성공 시에도 ViewModel에 번호 저장!
+                    signUpViewModel.setBusinessRegNo(businessNo)
+
                     (parentFragment as? OwnerOnboardingFragment)?.setNextButtonEnabled(true)
-                    showDialog("사업자 인증에 성공했습니다.")
+                    showDialog("사업자 인증에 성공했습니다.\n다음 단계로 진행해주세요.")
                 } else {
-                    // 정보가 일치하지 않는 경우
-                    showDialog("사업자 번호를 확인해주세요.")
+                    // 정보 불일치 시
+                    showDialog("입력하신 정보가 국세청 등록 정보와 일치하지 않습니다.")
                 }
             }
 
             override fun onFailure(call: Call<BusinessDetailValidateResponse>, t: Throwable) {
-                showDialog("네트워크 연결 실패 (2단계)")
+                showDialog("네트워크 연결 실패 (상세 검증)")
             }
         })
     }
