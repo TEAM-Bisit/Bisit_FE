@@ -55,6 +55,15 @@ class BusinessRegistrationFragment : Fragment() {
             return@setOnEditorActionListener false
         }
 
+        binding.etBusinessName.setOnEditorActionListener { textView, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE && textView.text.isNotEmpty()) {
+                binding.layoutOpeningDate.visibility = View.VISIBLE // 개업 일자 레이아웃 노출
+                binding.etOpeningDate.requestFocus()
+                return@setOnEditorActionListener true
+            }
+            return@setOnEditorActionListener false
+        }
+
         val blockHyphenFilter = InputFilter { source, start, end, dest, dstart, dend ->
             if (source.toString() == "-") {
                 return@InputFilter ""
@@ -146,11 +155,12 @@ class BusinessRegistrationFragment : Fragment() {
 
         binding.btnCheckBusiness.setOnClickListener {
             val ownerName = binding.etOwnerName.text.toString().trim()
+            val businessName = binding.etBusinessName.text.toString().trim()
             val openDate = binding.etOpeningDate.text.toString().trim()
             val businessNo = binding.etBusinessNumber.text.toString().trim()
 
             // 1. [테스트 모드] 하드코딩된 정보와 일치하는지 먼저 확인
-            if (ownerName == "김사장" && openDate == "2026-01-01" && businessNo == "000-00-00000") {
+            if (ownerName == "김사장" && businessName == "김사장" && openDate == "2026-01-01" && businessNo == "000-00-00000") {
 
                 // 테스트 통과 시 번호 저장 및 다음 버튼 활성화
                 signUpViewModel.setBusinessRegNo(businessNo.replace("-", ""))
@@ -195,6 +205,7 @@ class BusinessRegistrationFragment : Fragment() {
         val storeApi = RetrofitClient.getStoreApi(requireContext())
 
         val ownerName = binding.etOwnerName.text.toString().trim()
+        val businessName = binding.etBusinessName.text.toString().trim()
         val openDate = binding.etOpeningDate.text.toString().replace("-", "").trim()
 
         // 국세청 API 호출을 위한 모델 생성 (businessName은 임시로 대표자명 사용)
@@ -202,7 +213,7 @@ class BusinessRegistrationFragment : Fragment() {
             businessRegNo = businessNo,
             representativeName = ownerName,
             openDate = openDate,
-            businessName = ownerName
+            businessName = businessName
         )
 
         storeApi.validateDetail(detailRequest).enqueue(object : Callback<BusinessDetailValidateResponse> {
