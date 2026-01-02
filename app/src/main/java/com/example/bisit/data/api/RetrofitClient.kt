@@ -162,4 +162,7 @@ object RetrofitClient {
 
     fun getReservationListApi(context: Context) =
         getServerRetrofit(context).create(ReservListApiService::class.java)
+
+    fun getReviewManageApi(context: Context) =
+        getServerRetrofit(context).create(ReviewManageApi::class.java)
 }

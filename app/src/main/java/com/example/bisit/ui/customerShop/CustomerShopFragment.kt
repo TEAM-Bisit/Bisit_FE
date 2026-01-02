@@ -17,7 +17,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bisit.R
 import com.example.bisit.data.model.customerShop.BusinessHourItem
-import com.example.bisit.data.model.shop.ReviewItem
 import com.example.bisit.data.model.shop.ServiceItem
 import com.example.bisit.data.model.shop.ShopDetailItem
 import com.example.bisit.data.repository.customerShop.CustomerShopRepository

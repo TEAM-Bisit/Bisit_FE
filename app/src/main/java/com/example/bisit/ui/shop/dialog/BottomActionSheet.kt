@@ -19,8 +19,22 @@ class BottomActionSheet : BottomSheetDialogFragment() {
     companion object {
         const val REQUEST_KEY = "bottom_action_sheet"
         const val RESULT_ACTION = "action"
+
         const val ACTION_DELETE = "delete"
         const val ACTION_EDIT = "edit"
+
+        // 사용 타입
+        private const val ARG_TYPE = "type"
+        const val TYPE_REVIEW = "review"
+        const val TYPE_OTHER = "other"
+
+        fun newInstance(type: String): BottomActionSheet {
+            return BottomActionSheet().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_TYPE, type)
+                }
+            }
+        }
     }
 
     override fun getTheme(): Int = R.style.CustomBottomSheetTheme
@@ -28,11 +42,6 @@ class BottomActionSheet : BottomSheetDialogFragment() {
     private var _b: SheetActionsBinding? = null
     private val b get() = _b!!
 
-    /**
-     * BottomSheet 자체 설정
-     * - FULL HEIGHT
-     * - 위쪽만 둥근 배경 적용
-     */
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = BottomSheetDialog(requireContext(), theme)
 
@@ -42,10 +51,7 @@ class BottomActionSheet : BottomSheetDialogFragment() {
                     com.google.android.material.R.id.design_bottom_sheet
                 ) ?: return@setOnShowListener
 
-            // 전체 높이
             bottomSheet.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
-
-            // 둥근 배경은 여기서만 적용
             bottomSheet.setBackgroundResource(R.drawable.bg_bottom_sheet_top_round)
             bottomSheet.clipToOutline = true
 
@@ -69,6 +75,17 @@ class BottomActionSheet : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val type = arguments?.getString(ARG_TYPE)
+
+        // 리뷰일 때만 삭제 버튼 노출
+        if (type == TYPE_REVIEW) {
+            b.btnDelete.visibility = View.VISIBLE
+            b.btnEdit.visibility = View.GONE
+        } else {
+            b.btnDelete.visibility = View.GONE
+            b.btnEdit.visibility = View.GONE
+        }
+
         b.btnDelete.setOnClickListener {
             parentFragmentManager.setFragmentResult(
                 REQUEST_KEY,
@@ -76,31 +93,17 @@ class BottomActionSheet : BottomSheetDialogFragment() {
             )
             dismiss()
         }
-
-        b.btnEdit.setOnClickListener {
-            parentFragmentManager.setFragmentResult(
-                REQUEST_KEY,
-                Bundle().apply { putString(RESULT_ACTION, ACTION_EDIT) }
-            )
-            dismiss()
-        }
     }
 
-    /**
-     * Window를 edge-to-edge로
-     * (하지만 배경은 투명)
-     */
     override fun onStart() {
         super.onStart()
 
         dialog?.window?.apply {
             val white = "#FEFEFE".toColorInt()
 
-            // Window 자체는 투명
             setBackgroundDrawableResource(android.R.color.transparent)
             setDimAmount(0.3f)
 
-            // 네비게이션 바 색상
             @Suppress("DEPRECATION")
             navigationBarColor = white
 
@@ -108,7 +111,6 @@ class BottomActionSheet : BottomSheetDialogFragment() {
                 isAppearanceLightNavigationBars = true
             }
 
-            // 시스템 바 영역까지 확장
             setFlags(
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
