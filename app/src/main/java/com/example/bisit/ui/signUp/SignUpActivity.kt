@@ -26,12 +26,16 @@ class SignUpActivity : AppCompatActivity() {
         val navGraph = navController.navInflater.inflate(R.navigation.nav_graph_sign_up)
         val startDestination = intent.getStringExtra("START_DESTINATION")
 
-        if (startDestination == "INFO") {
-            // 회원가입 텍스트 클릭 시: 정보 입력 화면부터 시작
-            navGraph.setStartDestination(R.id.signUpInfoFragment)
-        } else {
-            // 기본값 또는 USER_TYPE 신호 시: 유형 선택 화면부터 시작
-            navGraph.setStartDestination(R.id.userTypeFragment)
+        when (startDestination) {
+            "INFO" -> {
+                navGraph.setStartDestination(R.id.signUpInfoFragment)
+            }
+            "OWNER_ONBOARDING" -> {
+                navGraph.setStartDestination(R.id.ownerOnboardingFragment)
+            }
+            else -> {
+                navGraph.setStartDestination(R.id.userTypeFragment)
+            }
         }
 
         navController.graph = navGraph

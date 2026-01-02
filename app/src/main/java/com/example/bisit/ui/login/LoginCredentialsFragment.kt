@@ -62,17 +62,16 @@ class LoginCredentialsFragment : Fragment() {
     private fun observeViewModel() {
         viewModel.loginResult.observe(viewLifecycleOwner) { isSuccess ->
             if (isSuccess) {
-                // 로그인이 성공했을 때 userType을 확인
-                when (viewModel.userType.value) {
+                val userType = viewModel.userType.value
+                when (userType) {
                     "owner", "customer" -> {
-                        // 역할이 있는 기존 유저 -> 메인 화면으로 이동
-                        val intent = Intent(requireContext(), MainActivity::class.java)
+                        val intent = Intent(requireContext(), MainActivity::class.java).apply {
+                            putExtra("USER_TYPE", userType)
+                        }
                         startActivity(intent)
                         activity?.finish()
                     }
                     "none" -> {
-                        // 역할이 없는 신규 유저 -> 역할 선택 화면(SignUpActivity의 첫 단계)으로 이동
-                        // 회원가입 플로우의 UserTypeFragment로 연결되는 Intent 실행
                         val intent = Intent(requireContext(), SignUpActivity::class.java)
                         startActivity(intent)
                         activity?.finish()

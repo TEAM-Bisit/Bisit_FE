@@ -9,7 +9,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import com.example.bisit.data.api.RetrofitClient
+import com.example.bisit.data.model.shop.BusinessDetailValidateRequest
+import com.example.bisit.data.model.shop.BusinessDetailValidateResponse
+import com.example.bisit.data.model.shop.BusinessValidateRequest
+import com.example.bisit.data.model.shop.BusinessValidateResponse
 import com.example.bisit.databinding.FragmentBusinessRegistrationBinding
+import com.example.bisit.ui.dialog.CommonInfoDialog
+import com.example.bisit.ui.dialog.CustomTwoButtonDialog
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.util.regex.Pattern
 
 class BusinessRegistrationFragment : Fragment() {
@@ -22,6 +33,8 @@ class BusinessRegistrationFragment : Fragment() {
 
     private val businessNumberPattern: Pattern = Pattern.compile("^\\d{3}-\\d{2}-\\d{5}$")
     private val datePattern: Pattern = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$")
+
+    private val signUpViewModel: SignUpViewModel by activityViewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentBusinessRegistrationBinding.inflate(inflater, container, false)
@@ -36,6 +49,15 @@ class BusinessRegistrationFragment : Fragment() {
         binding.etOwnerName.setOnEditorActionListener { textView, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_DONE && textView.text.isNotEmpty()) {
                 binding.layoutOpeningDate.visibility = View.VISIBLE
+                binding.etOpeningDate.requestFocus()
+                return@setOnEditorActionListener true
+            }
+            return@setOnEditorActionListener false
+        }
+
+        binding.etBusinessName.setOnEditorActionListener { textView, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE && textView.text.isNotEmpty()) {
+                binding.layoutOpeningDate.visibility = View.VISIBLE // 개업 일자 레이아웃 노출
                 binding.etOpeningDate.requestFocus()
                 return@setOnEditorActionListener true
             }
@@ -132,9 +154,104 @@ class BusinessRegistrationFragment : Fragment() {
         })
 
         binding.btnCheckBusiness.setOnClickListener {
-            // (TODO: API로 사업자 번호 확인 로직...)
-            (parentFragment as? OwnerOnboardingFragment)?.setNextButtonEnabled(true)
+            val ownerName = binding.etOwnerName.text.toString().trim()
+            val businessName = binding.etBusinessName.text.toString().trim()
+            val openDate = binding.etOpeningDate.text.toString().trim()
+            val businessNo = binding.etBusinessNumber.text.toString().trim()
+
+            // 1. [테스트 모드] 하드코딩된 정보와 일치하는지 먼저 확인
+            if (ownerName == "김사장" && businessName == "김사장" && openDate == "2026-01-01" && businessNo == "000-00-00000") {
+
+                // 테스트 통과 시 번호 저장 및 다음 버튼 활성화
+                signUpViewModel.setBusinessRegNo(businessNo.replace("-", ""))
+                (parentFragment as? OwnerOnboardingFragment)?.setNextButtonEnabled(true)
+
+                com.example.bisit.ui.dialog.CommonInfoDialog(
+                    message = "사업자 인증에 성공했습니다.\n다음 단계로 진행해주세요. (테스트 모드)",
+                    onConfirm = {}
+                ).show(parentFragmentManager, "TestSuccessDialog")
+
+            } else {
+                // 2. [실제 모드] 테스트 정보가 아니라면 실제 API 검증 시작
+                // 하이픈을 제거하고 서버로 보냅니다.
+                validateBusinessNumber(businessNo.replace("-", ""))
+            }
         }
+    }
+
+    private fun validateBusinessNumber(number: String) {
+        val storeApi = RetrofitClient.getStoreApi(requireContext())
+        val request = BusinessValidateRequest(businessRegNo = number)
+
+        // 1단계: DB 중복 확인
+        storeApi.validateBusiness(request).enqueue(object : Callback<BusinessValidateResponse> {
+            override fun onResponse(call: Call<BusinessValidateResponse>, response: Response<BusinessValidateResponse>) {
+                if (response.isSuccessful && response.body()?.data == true) {
+                    // 중복되지 않은 번호라면 2단계: 상세 정보 진위 확인 시작
+                    validateBusinessDetail(number)
+                } else {
+                    // 이미 등록된 매장인 경우 (중복)
+                    showStaffRedirectDialog()
+                }
+            }
+
+            override fun onFailure(call: Call<BusinessValidateResponse>, t: Throwable) {
+                showDialog("네트워크 연결 실패 (1단계)")
+            }
+        })
+    }
+
+    private fun validateBusinessDetail(businessNo: String) {
+        val storeApi = RetrofitClient.getStoreApi(requireContext())
+
+        val ownerName = binding.etOwnerName.text.toString().trim()
+        val businessName = binding.etBusinessName.text.toString().trim()
+        val openDate = binding.etOpeningDate.text.toString().replace("-", "").trim()
+
+        // 국세청 API 호출을 위한 모델 생성 (businessName은 임시로 대표자명 사용)
+        val detailRequest = BusinessDetailValidateRequest(
+            businessRegNo = businessNo,
+            representativeName = ownerName,
+            openDate = openDate,
+            businessName = businessName
+        )
+
+        storeApi.validateDetail(detailRequest).enqueue(object : Callback<BusinessDetailValidateResponse> {
+            override fun onResponse(call: Call<BusinessDetailValidateResponse>, response: Response<BusinessDetailValidateResponse>) {
+                if (response.isSuccessful && response.body()?.data == true) {
+
+                    // ★ 중요: 실제 API 인증 성공 시에도 ViewModel에 번호 저장!
+                    signUpViewModel.setBusinessRegNo(businessNo)
+
+                    (parentFragment as? OwnerOnboardingFragment)?.setNextButtonEnabled(true)
+                    showDialog("사업자 인증에 성공했습니다.\n다음 단계로 진행해주세요.")
+                } else {
+                    // 정보 불일치 시
+                    showDialog("입력하신 정보가 국세청 등록 정보와 일치하지 않습니다.")
+                }
+            }
+
+            override fun onFailure(call: Call<BusinessDetailValidateResponse>, t: Throwable) {
+                showDialog("네트워크 연결 실패 (상세 검증)")
+            }
+        })
+    }
+
+    private fun showStaffRedirectDialog() {
+        CustomTwoButtonDialog(
+            title = "등록되어 있는 매장입니다.",
+            subtitle = "직원으로 신청하시겠어요?",
+            positiveButtonText = "등록하기",
+            negativeButtonText = "닫기",
+            onPositiveClick = {
+                // TODO: 직원 등록 프래그먼트 또는 액티비티로 이동하는 네비게이션 로직 구현
+                // 예: findNavController().navigate(R.id.action_to_staffRegistration)
+            }
+        ).show(parentFragmentManager, "StaffRedirectDialog")
+    }
+
+    private fun showDialog(msg: String) {
+        CommonInfoDialog(message = msg, onConfirm = {}).show(parentFragmentManager, "InfoDialog")
     }
 
     override fun onDestroyView() {

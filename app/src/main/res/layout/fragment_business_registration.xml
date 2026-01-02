@@ -36,6 +36,36 @@
             android:maxLines="1" />
 
         <LinearLayout
+            android:id="@+id/layout_business_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="24dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="상호명을 입력해주세요."
+                android:textSize="18sp"
+                android:textColor="@color/black" />
+
+            <EditText
+                android:id="@+id/et_business_name"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_edit_box"
+                android:hint="상호명을 입력해주세요"
+                android:inputType="text"
+                android:imeOptions="actionDone"
+                android:paddingHorizontal="12dp"
+                android:textSize="14sp"
+                android:maxLines="1" />
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/layout_opening_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
