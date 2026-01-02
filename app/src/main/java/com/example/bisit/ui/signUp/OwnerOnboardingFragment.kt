@@ -96,10 +96,14 @@ class OwnerOnboardingFragment : Fragment() {
                 }
 
                 5 -> {
-                    // [5단계 -> 6단계] 영업 시간 설정 후 완료 이동
-                    replaceChildFragment(StoreRegistrationCompleteFragment.newInstance())
-                    currentStep = 6
-                    updateCommonUI()
+                    if (currentFragment is StoreHoursFragment) {
+                        currentFragment.saveAllHoursData {
+                            // 모든 저장이 성공하면 다음 화면으로 이동
+                            replaceChildFragment(StoreRegistrationCompleteFragment.newInstance())
+                            currentStep = 6
+                            updateCommonUI()
+                        }
+                    }
                 }
             }
         }
@@ -120,12 +124,12 @@ class OwnerOnboardingFragment : Fragment() {
             val startDest = activity?.intent?.getStringExtra("START_DESTINATION")
 
             if (startDest == "OWNER_INTRO") { // 테스트용
-                currentStep = 4
+                currentStep = 5
 
                 signUpViewModel.setShopId(2)
 
                 childFragmentManager.beginTransaction()
-                    .replace(R.id.owner_onboarding_nav_host, StoreCategoryFragment.newInstance())
+                    .replace(R.id.owner_onboarding_nav_host, StoreHoursFragment.newInstance())
                     .commit()
             } else {
                 // 기본 1단계 시작

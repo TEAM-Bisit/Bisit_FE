@@ -4,18 +4,24 @@ import com.example.bisit.data.model.shop.BusinessDetailValidateRequest
 import com.example.bisit.data.model.shop.BusinessDetailValidateResponse
 import com.example.bisit.data.model.shop.BusinessValidateRequest
 import com.example.bisit.data.model.shop.BusinessValidateResponse
+import com.example.bisit.data.model.shop.ShopHolidayRequest
+import com.example.bisit.data.model.shop.ShopHolidayResponse
 import com.example.bisit.data.model.shop.ShopIndustryRequest
 import com.example.bisit.data.model.shop.ShopIndustryResponse
 import com.example.bisit.data.model.shop.ShopIntroduceRequest
 import com.example.bisit.data.model.shop.ShopIntroduceResponse
+import com.example.bisit.data.model.shop.ShopOperatingHoursRequest
+import com.example.bisit.data.model.shop.ShopOperatingHoursResponse
 import com.example.bisit.data.model.shop.ShopPhotoResponse
 import com.example.bisit.data.model.shop.ShopRegisterRequest
 import com.example.bisit.data.model.shop.ShopRegisterResponse
+import com.example.bisit.data.model.shop.ShopSetHolidayRequest
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
 
@@ -53,4 +59,22 @@ interface ShopApiService {
         @Path("shopId") shopId: Int,
         @Body request: ShopIndustryRequest
     ): Call<ShopIndustryResponse>
+
+    @POST("/api/shops/regist/{shopId}/holiday")
+    fun updateHolidaySettings(
+        @Path("shopId") shopId: Int,
+        @Body request: ShopHolidayRequest
+    ): Call<ShopHolidayResponse>
+
+    @PUT("/api/shops/regist/{shopId}/setholiday")
+    fun setHolidayDays(
+        @Path("shopId") shopId: Int,
+        @Body request: ShopSetHolidayRequest
+    ): Call<ShopOperatingHoursResponse>
+
+    @POST("/api/shops/regist/{shopId}/hours")
+    fun updateOperatingHours(
+        @Path("shopId") shopId: Int,
+        @Body request: ShopOperatingHoursRequest
+    ): Call<ShopOperatingHoursResponse>
 }
