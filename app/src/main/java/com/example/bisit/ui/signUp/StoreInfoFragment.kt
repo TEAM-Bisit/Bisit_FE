@@ -195,7 +195,7 @@ class StoreInfoFragment : Fragment() {
         })
     }
 
-    fun registerStoreAndNext(onSuccess: (Int) -> Unit) {
+    fun registerStoreAndNext(onSuccess: (Long) -> Unit) {
         val businessNo = signUpViewModel.businessRegNo.value ?: ""
         val name = binding.etStoreName.text.toString().trim()
         val contact = binding.etStoreContact.text.toString().trim()
@@ -218,10 +218,9 @@ class StoreInfoFragment : Fragment() {
         api.registerShop(request).enqueue(object : Callback<ShopRegisterResponse> {
             override fun onResponse(call: Call<ShopRegisterResponse>, response: Response<ShopRegisterResponse>) {
                 if (response.isSuccessful && response.body()?.success == true) {
-                    val shopId = response.body()?.data?.shopId ?: 0
+                    val shopId = response.body()?.data?.shopId ?: 0L
                     onSuccess(shopId)
                 } else {
-                    // 서버에서 보낸 에러 메시지를 다이얼로그에 표시 (지오코딩 실패 등)
                     val errorMsg = response.body()?.message ?: "가게 등록에 실패했습니다."
                     showDialog(errorMsg)
                 }

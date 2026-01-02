@@ -21,14 +21,14 @@ class SignUpViewModel : ViewModel() {
     private val _businessRegNo = MutableLiveData<String>()
     val businessRegNo: LiveData<String> = _businessRegNo
 
-    private val _shopId = MutableLiveData<Int>()
-    val shopId: LiveData<Int> = _shopId
+    private val _shopId = MutableLiveData<Long>()
+    val shopId: LiveData<Long> = _shopId
 
     fun setBusinessRegNo(no: String) {
         _businessRegNo.value = no
     }
 
-    fun setShopId(id: Int) {
+    fun setShopId(id: Long) {
         _shopId.value = id
     }
 }

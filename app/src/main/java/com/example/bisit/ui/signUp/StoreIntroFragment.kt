@@ -118,7 +118,7 @@ class StoreIntroFragment : Fragment() {
 
     fun uploadDataAndNext(onSuccess: () -> Unit) {
         val shopId = signUpViewModel.shopId.value ?: 2
-        val uploadedPhotoIds = mutableListOf<Int>()
+        val uploadedPhotoIds = mutableListOf<Long>()
         var uploadCount = 0
 
         // 사진이 아예 없는 경우 바로 소개글 등록으로 이동
@@ -159,7 +159,7 @@ class StoreIntroFragment : Fragment() {
         }
     }
 
-    private fun submitFinalIntroduce(shopId: Int, photoIds: List<Int>, onSuccess: () -> Unit) {
+    private fun submitFinalIntroduce(shopId: Long, photoIds: List<Long>, onSuccess: () -> Unit) {
         val introText = binding.etStoreIntro.text.toString().trim()
 
         val serviceChannel = if (binding.rbShopService.isChecked) "SHOP" else "VISIT"
@@ -170,12 +170,11 @@ class StoreIntroFragment : Fragment() {
             serviceChannel = serviceChannel
         )
 
-        // 통합된 storeApi 사용
         RetrofitClient.getStoreApi(requireContext()).updateIntroduce(shopId, request)
             .enqueue(object : Callback<ShopIntroduceResponse> {
                 override fun onResponse(call: Call<ShopIntroduceResponse>, response: Response<ShopIntroduceResponse>) {
-                    if (response.isSuccessful && response.body()?.success == true) {
-                        onSuccess() // 성공 시 다음 카테고리 단계로 이동
+                    if (response.isSuccessful) {
+                        onSuccess()
                     } else {
                         Toast.makeText(context, "매장 소개 등록에 실패했습니다.", Toast.LENGTH_SHORT).show()
                     }

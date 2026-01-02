@@ -42,7 +42,7 @@ class StoreHoursFragment : Fragment() {
     }
 
     fun saveAllHoursData(onSuccess: () -> Unit) {
-        val shopId = signUpViewModel.shopId.value ?: 2 // 테스트용 기본값 2
+        val shopId = signUpViewModel.shopId.value ?: 2L // 테스트용 기본값 2
         val api = RetrofitClient.getStoreApi(requireContext())
 
         val holidayReq = ShopHolidayRequest(
@@ -65,7 +65,7 @@ class StoreHoursFragment : Fragment() {
         })
     }
 
-    private fun saveHolidayDays(shopId: Int, api: ShopApiService, onSuccess: () -> Unit) {
+    private fun saveHolidayDays(shopId: Long, api: ShopApiService, onSuccess: () -> Unit) {
         val selectedDays = mutableListOf<String>()
         val dayMap = mapOf(
             binding.btnDayMon to "MONDAY",
@@ -99,7 +99,7 @@ class StoreHoursFragment : Fragment() {
         })
     }
 
-    private fun saveOperatingHours(shopId: Int, api: ShopApiService, onSuccess: () -> Unit) {
+    private fun saveOperatingHours(shopId: Long, api: ShopApiService, onSuccess: () -> Unit) {
         val opTimeParts = binding.tvOperatingTime.text.toString().split("  ~  ")
         val brTimeParts = binding.tvBreakTime.text.toString().split("  ~  ")
 

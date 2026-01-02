@@ -44,37 +44,37 @@ interface ShopApiService {
     @Multipart
     @POST("/api/shops/regist/{shopId}/photos")
     fun uploadPhoto(
-        @Path("shopId") shopId: Int,
+        @Path("shopId") shopId: Long,
         @Part file: MultipartBody.Part
     ): Call<ShopPhotoResponse>
 
     @POST("/api/shops/regist/{shopId}/introduce")
     fun updateIntroduce(
-        @Path("shopId") shopId: Int,
+        @Path("shopId") shopId: Long,
         @Body request: ShopIntroduceRequest
     ): Call<ShopIntroduceResponse>
 
     @POST("/api/shops/regist/{shopId}/industry")
     fun updateIndustry(
-        @Path("shopId") shopId: Int,
+        @Path("shopId") shopId: Long,
         @Body request: ShopIndustryRequest
     ): Call<ShopIndustryResponse>
 
     @POST("/api/shops/regist/{shopId}/holiday")
     fun updateHolidaySettings(
-        @Path("shopId") shopId: Int,
+        @Path("shopId") shopId: Long,
         @Body request: ShopHolidayRequest
     ): Call<ShopHolidayResponse>
 
     @PUT("/api/shops/regist/{shopId}/setholiday")
     fun setHolidayDays(
-        @Path("shopId") shopId: Int,
+        @Path("shopId") shopId: Long,
         @Body request: ShopSetHolidayRequest
     ): Call<ShopOperatingHoursResponse>
 
     @POST("/api/shops/regist/{shopId}/hours")
     fun updateOperatingHours(
-        @Path("shopId") shopId: Int,
+        @Path("shopId") shopId: Long,
         @Body request: ShopOperatingHoursRequest
     ): Call<ShopOperatingHoursResponse>
 }

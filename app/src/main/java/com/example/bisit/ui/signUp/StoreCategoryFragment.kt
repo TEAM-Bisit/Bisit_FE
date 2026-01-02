@@ -80,7 +80,7 @@ class StoreCategoryFragment : Fragment() {
     }
 
     fun saveIndustryAndNext(onSuccess: () -> Unit) {
-        val shopId = signUpViewModel.shopId.value ?: 2 // 테스트용 2번
+        val shopId = signUpViewModel.shopId.value ?: 2L // 테스트용 2번
         val categoryCode = selectedCategory ?: return
 
         val request = ShopIndustryRequest(category = categoryCode)
