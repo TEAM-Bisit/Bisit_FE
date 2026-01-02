@@ -42,4 +42,6 @@
     <color name="stepper_bar_active">@color/primary_blue</color>
     <color name="stepper_bar_inactive">#E0E0E0</color>
 
+
+
 </resources>

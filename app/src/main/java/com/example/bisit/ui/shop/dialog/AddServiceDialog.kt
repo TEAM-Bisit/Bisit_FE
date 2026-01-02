@@ -1,100 +1,254 @@
 package com.example.bisit.ui.shop.dialog
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.*
+import android.widget.LinearLayout
+import android.widget.NumberPicker
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import com.bumptech.glide.Glide
+import com.example.bisit.R
 import com.example.bisit.databinding.DialogAddServiceBinding
-import com.example.bisit.ui.shop.model.ServiceItem
+import com.example.bisit.data.model.shop.TreatmentResponse
 
-// 서비스 추가/수정 다이얼로그
 class AddServiceDialog(
-    private val prefill: ServiceItem? = null,
-    private val onSaved: (ServiceItem) -> Unit
+    private val prefill: TreatmentResponse? = null,
+    private val onSaved: (TreatmentResponse, Uri?) -> Unit
 ) : DialogFragment() {
 
-    private var _b: DialogAddServiceBinding? = null
-    private val b get() = _b!!
+    private var _binding: DialogAddServiceBinding? = null
+    private val binding get() = _binding!!
+
+    /* ===================== 상태 ===================== */
+
+    private var originItem: TreatmentResponse? = null
+    private var selectedImageUri: Uri? = null
+
+    /* ===================== Lifecycle ===================== */
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        isCancelable = false
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _b = DialogAddServiceBinding.inflate(inflater, container, false)
-        return b.root
-    }
-
-    // 시간/분 선택 BottomSheet 호출
-    private fun showDurationPicker() {
-        val currentH = b.etHour.text?.toString()?.replace("시간", "")?.toIntOrNull() ?: 0
-        val currentM = b.etMin.text?.toString()?.replace("분", "")?.toIntOrNull() ?: 0
-        TimePickerBottomSheet(currentH, currentM) { h, m ->
-            b.etHour.text = "${h}시간"
-            b.etMin.text = "${m}분"
-        }.show(parentFragmentManager, "durPick")
+        _binding = DialogAddServiceBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 수정 모드일 경우 데이터 미리 채우기
-        prefill?.let {
-            b.etTitle.setText(it.title)
-            b.etPrice.setText(it.price.toString())
-            val h = it.durationMin / 60
-            val m = it.durationMin % 60
-            b.etHour.text = "${h}시간"
-            b.etMin.text = "${m}분"
-            b.etDesc.setText(it.desc)
-        }
+        initClose()
+        initPrefill()
+        initInputWatcher()
+        initClickListeners()
+        updateButtonState(false)
+    }
 
-        // 시간/분 클릭 시 시간 선택
-        b.etHour.setOnClickListener { showDurationPicker() }
-        b.etMin.setOnClickListener { showDurationPicker() }
+    /* ===================== 초기화 ===================== */
 
-        // 추가 버튼 클릭 시 데이터 전달
-        b.btnAdd.setOnClickListener {
-            val title = b.etTitle.text?.toString().orEmpty()
-            val price = b.etPrice.text?.toString()?.toIntOrNull() ?: 0
-            val h = b.etHour.text?.toString()?.replace("시간", "")?.toIntOrNull() ?: 0
-            val m = b.etMin.text?.toString()?.replace("분", "")?.toIntOrNull() ?: 0
-            val desc = b.etDesc.text?.toString().orEmpty()
-
-            val item = (prefill ?: ServiceItem(0, title, desc, price)).copy(
-                title = title,
-                desc = desc,
-                price = price,
-                durationMin = h * 60 + m
-            )
-
-            onSaved(item)
+    private fun initClose() {
+        binding.btnClose.setOnClickListener {
             dismissAllowingStateLoss()
         }
     }
+
+    private fun initPrefill() {
+        if (prefill == null) {
+            binding.etHour.text = "00시간"
+            binding.etMin.text = "00분"
+            binding.btnAdd.text = getString(R.string.add)
+            return
+        }
+
+        originItem = prefill
+
+        binding.etTitle.setText(prefill.name)
+        binding.etPrice.setText(prefill.price.toString())
+        binding.etDesc.setText(prefill.description)
+        binding.etHour.text = "%02d시간".format(prefill.durationHours)
+        binding.etMin.text = "%02d분".format(prefill.durationMinutes)
+
+        prefill.photoUrl?.let { url ->
+            binding.ivImage.visibility = View.VISIBLE
+            binding.ivAddImage.visibility = View.GONE
+
+            Glide.with(requireContext())
+                .load(url)
+                .into(binding.ivImage)
+        }
+
+        binding.btnAdd.text = getString(R.string.edit)
+    }
+
+    private fun initInputWatcher() {
+        val watcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                validateForm()
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        }
+
+        binding.etTitle.addTextChangedListener(watcher)
+        binding.etPrice.addTextChangedListener(watcher)
+        binding.etDesc.addTextChangedListener(watcher)
+    }
+
+    private fun initClickListeners() {
+        binding.layoutImage.setOnClickListener { openImagePicker() }
+        binding.etHour.setOnClickListener { showDurationPicker() }
+        binding.etMin.setOnClickListener { showDurationPicker() }
+
+        binding.btnAdd.setOnClickListener {
+            if (!binding.btnAdd.isEnabled) return@setOnClickListener
+
+            val result = TreatmentResponse(
+                treatmentId = prefill?.treatmentId ?: 0L,
+                name = binding.etTitle.text.toString().trim(),
+                description = binding.etDesc.text.toString().trim(),
+                price = binding.etPrice.text.toString().toInt(),
+                durationHours = getHour(),
+                durationMinutes = getMinute(),
+                photoUrl = prefill?.photoUrl, // 서버에서 최종 갱신
+                isActive = true
+            )
+
+            onSaved(result, selectedImageUri)
+            dismissAllowingStateLoss()
+        }
+    }
+
+    /* ===================== 이미지 선택 ===================== */
+
+    private fun openImagePicker() {
+        imagePickerLauncher.launch(
+            Intent(Intent.ACTION_PICK).apply { type = "image/*" }
+        )
+    }
+
+    private val imagePickerLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
+
+            selectedImageUri = result.data?.data ?: return@registerForActivityResult
+
+            // ✅ 선택한 이미지 즉시 미리보기
+            binding.ivImage.visibility = View.VISIBLE
+            binding.ivAddImage.visibility = View.GONE
+            binding.ivImage.setImageURI(selectedImageUri)
+
+            validateForm()
+        }
+
+    /* ===================== 검증 ===================== */
+
+    private fun validateForm() {
+        val name = binding.etTitle.text.toString().trim()
+        val price = binding.etPrice.text.toString().toIntOrNull()
+        val duration = getHour() * 60 + getMinute()
+
+        val baseValid =
+            name.isNotEmpty() &&
+                    price != null &&
+                    duration > 0
+
+        val enabled =
+            if (originItem == null) {
+                baseValid
+            } else {
+                baseValid && (
+                        name != originItem!!.name ||
+                                price != originItem!!.price ||
+                                binding.etDesc.text.toString() != originItem!!.description ||
+                                getHour() != originItem!!.durationHours ||
+                                getMinute() != originItem!!.durationMinutes ||
+                                selectedImageUri != null
+                        )
+            }
+
+        updateButtonState(enabled)
+    }
+
+    private fun updateButtonState(enabled: Boolean) {
+        binding.btnAdd.isEnabled = enabled
+    }
+
+    /* ===================== 시간 선택 ===================== */
+
+    private fun showDurationPicker() {
+        val context = requireContext()
+
+        val hourPicker = NumberPicker(context).apply {
+            minValue = 0
+            maxValue = 12
+            value = getHour()
+            setFormatter { "%02d".format(it) }
+        }
+
+        val minutePicker = NumberPicker(context).apply {
+            minValue = 0
+            maxValue = 59
+            value = getMinute()
+            setFormatter { "%02d".format(it) }
+        }
+
+        val layout = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(32, 24, 32, 24)
+            addView(hourPicker, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            addView(minutePicker, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        }
+
+        AlertDialog.Builder(context)
+            .setTitle("소요 시간 선택")
+            .setView(layout)
+            .setPositiveButton("확인") { _, _ ->
+                binding.etHour.text = "%02d시간".format(hourPicker.value)
+                binding.etMin.text = "%02d분".format(minutePicker.value)
+                validateForm()
+            }
+            .setNegativeButton("취소", null)
+            .show()
+    }
+
+    private fun getHour(): Int =
+        binding.etHour.text.toString().replace("시간", "").toInt()
+
+    private fun getMinute(): Int =
+        binding.etMin.text.toString().replace("분", "").toInt()
+
+    /* ===================== Dialog 크기 ===================== */
 
     override fun onStart() {
         super.onStart()
         dialog?.window?.apply {
             setBackgroundDrawableResource(android.R.color.transparent)
 
-            val screenWidth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                val wm = requireActivity().windowManager.currentWindowMetrics
-                val insets = wm.windowInsets.getInsets(WindowInsets.Type.systemBars())
-                wm.bounds.width() - insets.left - insets.right
+            val width = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                requireActivity().windowManager.currentWindowMetrics.bounds.width()
             } else {
-                val displayMetrics = resources.displayMetrics
-                displayMetrics.widthPixels
+                resources.displayMetrics.widthPixels
             }
 
-            val width = (screenWidth * 0.806f).toInt()
-            val height = ViewGroup.LayoutParams.WRAP_CONTENT
-            setLayout(width, height)
+            setLayout((width * 0.806f).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT)
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _b = null
+        _binding = null
     }
 }

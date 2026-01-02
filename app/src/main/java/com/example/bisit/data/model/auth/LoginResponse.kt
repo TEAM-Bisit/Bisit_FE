@@ -9,5 +9,6 @@ data class LoginResponse(
 
 data class TokenData(
     val accessToken: String,
-    val refreshToken: String
+    val refreshToken: String,
+    val memberId: Long
 )

@@ -8,7 +8,7 @@ data class ShopRegisterResponse(
 )
 
 data class ShopRegisterData(
-    val shopId: Int,
+    val shopId: Long,
     val businessRegNO: String,
     val name: String,
     val phone: String,

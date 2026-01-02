@@ -9,30 +9,37 @@ import java.util.*
 object TimeUtil {
     fun toRelativeTimeKorean(isoString: String?): String {
         if (isoString.isNullOrBlank()) {
-            Log.d("TimeUtil", "isoString is null or blank")
             return ""
         }
         return try {
-            // 서버가 "2025-11-25T04:15:18.396Z" 같은 Z 포함 ISO를 주면 OffsetDateTime.parse 가능
-            Log.d("TimeUtil", "Parsing ISO string: $isoString")
-            val then = OffsetDateTime.parse(isoString)
-            val now = OffsetDateTime.now(then.offset) // 동일 오프셋으로 비교
-            val dur = Duration.between(then, now)
-
-            val seconds = dur.seconds
-            val result = when {
-                seconds < 60 -> "방금"
-                seconds < 60 * 60 -> "${seconds / 60}분 전"
-                seconds < 60 * 60 * 24 -> "${seconds / (60 * 60)}시간 전"
-                seconds < 60 * 60 * 24 * 30 -> "${seconds / (60 * 60 * 24)}일 전"
-                seconds < 60L * 60 * 24 * 365 -> "${seconds / (60L * 60 * 24 * 30)}개월 전"
-                else -> "${seconds / (60L * 60 * 24 * 365)}년 전"
+            // "2025-12-29T12:41:51.864Z" 또는 "2025-12-29T12:41:51" 등 다양한 형식 대응
+            val normalized = if (isoString.contains("T") && !isoString.contains("Z") && !isoString.contains("+")) {
+                isoString + "Z" // Offset이 없으면 UTC로 가정하거나 로컬로 처리해야 함. 일단 Z 추가하여 parse 가능하게 함
+            } else {
+                isoString
             }
-            Log.d("TimeUtil", "Parsed result: $result (seconds: $seconds)")
-            result
-        } catch (e: DateTimeParseException) {
+
+            val then = OffsetDateTime.parse(normalized)
+            val now = OffsetDateTime.now(then.offset)
+            val seconds = Duration.between(then, now).seconds
+
+            when {
+                seconds < 0 -> "방금" // 미래 시간인 경우 (서버-클라이언트 오차)
+                seconds < 60 -> "방금"
+                seconds < 3600 -> "${seconds / 60}분 전"
+                seconds < 86400 -> "${seconds / 3600}시간 전"
+                seconds < 2592000 -> "${seconds / 86400}일 전"
+                seconds < 31536000 -> "${seconds / 2592000}개월 전"
+                else -> "${seconds / 31536000}년 전"
+            }
+        } catch (e: Exception) {
             Log.e("TimeUtil", "Failed to parse date: $isoString", e)
-            isoString
+            // 파싱 실패 시 "YYYY-MM-DD" 부분만이라도 반환 (이상한 시간/밀리초 등 제거)
+            if (isoString.length >= 10) {
+                isoString.substring(0, 10).replace("T", " ")
+            } else {
+                isoString
+            }
         }
     }
 }

@@ -4,10 +4,17 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.example.bisit.MainActivity
 import com.example.bisit.R
 import com.example.bisit.databinding.FragmentMyPageLeaveBinding
+import com.example.bisit.data.api.RetrofitClient
+import com.example.bisit.data.model.auth.AuthResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class MyPageLeaveFragment : Fragment() {
 
@@ -24,9 +31,8 @@ class MyPageLeaveFragment : Fragment() {
             findNavController().popBackStack()
         }
 
-        // 탈퇴하기 버튼 클릭 등 다른 로직 추가 가능
         binding.btnLeave.setOnClickListener {
-            // 탈퇴 처리 후 원하는 화면 이동
+            performWithdrawal()
         }
 
         return binding.root
@@ -35,5 +41,26 @@ class MyPageLeaveFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun performWithdrawal() {
+        RetrofitClient.getAuthApi(requireContext()).withdraw()
+            .enqueue(object : Callback<AuthResponse> {
+                override fun onResponse(
+                    call: Call<AuthResponse>,
+                    response: Response<AuthResponse>
+                ) {
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        Toast.makeText(requireContext(), "회원탈퇴가 완료되었습니다", Toast.LENGTH_SHORT).show()
+                        (activity as? MainActivity)?.logout()
+                    } else {
+                        Toast.makeText(requireContext(), "회원탈퇴 실패", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
+                    Toast.makeText(requireContext(), "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 }

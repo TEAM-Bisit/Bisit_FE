@@ -50,7 +50,20 @@ class HomeListAdapter(
     override fun getItemCount() = items.size
 
     fun updateData(newList: List<CategoryShopItem>) {
-        items = newList
+        val oldSize = items.size
+        items = newList.toMutableList()
         notifyDataSetChanged()
+    }
+
+    fun addData(newList: List<CategoryShopItem>) {
+        val oldSize = items.size
+        (items as MutableList).addAll(newList)
+        notifyItemRangeInserted(oldSize, newList.size)
+    }
+
+    fun clearData() {
+        val oldSize = items.size
+        (items as MutableList).clear()
+        notifyItemRangeRemoved(0, oldSize)
     }
 }

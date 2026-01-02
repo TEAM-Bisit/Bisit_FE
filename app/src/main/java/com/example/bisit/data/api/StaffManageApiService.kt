@@ -38,4 +38,11 @@ interface StaffManageApiService {
     suspend fun getApprovedStaffs(
         @Path("shopId") shopId: Long
     ): ApiResponse<List<ApprovedStaffItem>>
+
+    // 직원 프로필 사진 업로드/수정
+    @Multipart
+    @PUT("/api/staff/profile/image")
+    fun uploadProfileImage(
+        @Part file: okhttp3.MultipartBody.Part
+    ): retrofit2.Call<com.example.bisit.data.model.member.MyProfileResponse>
 }

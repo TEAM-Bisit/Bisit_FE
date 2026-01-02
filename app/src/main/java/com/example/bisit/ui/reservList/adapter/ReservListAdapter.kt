@@ -8,12 +8,12 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.R
-import com.example.bisit.ui.reservList.model.ReservListItem
+import com.example.bisit.data.model.reservList.ReservationListItem
 import com.google.android.material.button.MaterialButton
 
 class ReservListAdapter(
-    private var items: List<ReservListItem>,
-    private val onClick: (ReservListItem) -> Unit
+    private var items: List<ReservationListItem>,
+    private val onClick: (ReservationListItem) -> Unit
 ) : RecyclerView.Adapter<ReservListAdapter.ViewHolder>() {
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -34,33 +34,50 @@ class ReservListAdapter(
         val item = items[position]
         val context = holder.itemView.context
 
-        // 시술명 / 날짜
-        holder.tvServiceName.text = item.serviceName
-        holder.tvDate.text = item.dateTime
+        /* ================= 시술명 / 날짜 ================= */
+        holder.tvServiceName.text = item.treatmentName
+        holder.tvDate.text = "${item.reservedDate} ${item.startTime}"
 
-        // 예약 상태
+        /* ================= 예약 상태 ================= */
         holder.tvStatus.text = item.status
-        if (item.status == "예약 확정") {
-            holder.tvStatus.setTextColor(ContextCompat.getColor(context, R.color.red_FE6B6B))
+
+        if (item.status == "CONFIRMED" || item.status == "COMPLETED") {
+            // 예약 확정
+            holder.tvStatus.setTextColor(
+                ContextCompat.getColor(context, R.color.blue_4076FF)
+            )
 
             holder.tvPaymentStatus.text = "입금 완료"
-            holder.tvPaymentStatus.setTextColor(ContextCompat.getColor(context, R.color.white))
-            holder.tvPaymentStatus.setBackgroundResource(R.drawable.bg_payment_confirmed)
+            holder.tvPaymentStatus.setTextColor(
+                ContextCompat.getColor(context, R.color.white)
+            )
+            holder.tvPaymentStatus.setBackgroundResource(
+                R.drawable.bg_payment_confirmed
+            )
         } else {
-            holder.tvStatus.setTextColor(ContextCompat.getColor(context, R.color.bottom_nav_unselected))
+            // 예약 확인 중 / 기타 상태
+            holder.tvStatus.setTextColor(
+                ContextCompat.getColor(context, R.color.bottom_nav_unselected)
+            )
 
             holder.tvPaymentStatus.text = "입금 완료"
-            holder.tvPaymentStatus.setTextColor(ContextCompat.getColor(context, R.color.gray_515965))
-            holder.tvPaymentStatus.setBackgroundResource(R.drawable.bg_payment_confirming)
+            holder.tvPaymentStatus.setTextColor(
+                ContextCompat.getColor(context, R.color.gray_515965)
+            )
+            holder.tvPaymentStatus.setBackgroundResource(
+                R.drawable.bg_payment_confirming
+            )
         }
 
-        // 상세보기 버튼
-        holder.btnDetail.setOnClickListener { onClick(item) }
+        /* ================= 상세보기 ================= */
+        holder.btnDetail.setOnClickListener {
+            onClick(item)
+        }
     }
 
     override fun getItemCount(): Int = items.size
 
-    fun updateList(newList: List<ReservListItem>) {
+    fun updateList(newList: List<ReservationListItem>) {
         val diffCallback = ReservListDiffCallback(items, newList)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
         items = newList
@@ -68,14 +85,26 @@ class ReservListAdapter(
     }
 
     class ReservListDiffCallback(
-        private val oldList: List<ReservListItem>,
-        private val newList: List<ReservListItem>
+        private val oldList: List<ReservationListItem>,
+        private val newList: List<ReservationListItem>
     ) : DiffUtil.Callback() {
-        override fun getOldListSize() = oldList.size
-        override fun getNewListSize() = newList.size
-        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int) =
-            oldList[oldItemPosition].id == newList[newItemPosition].id
-        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int) =
-            oldList[oldItemPosition] == newList[newItemPosition]
+
+        override fun getOldListSize(): Int = oldList.size
+        override fun getNewListSize(): Int = newList.size
+
+        override fun areItemsTheSame(
+            oldItemPosition: Int,
+            newItemPosition: Int
+        ): Boolean {
+            return oldList[oldItemPosition].reservationId ==
+                    newList[newItemPosition].reservationId
+        }
+
+        override fun areContentsTheSame(
+            oldItemPosition: Int,
+            newItemPosition: Int
+        ): Boolean {
+            return oldList[oldItemPosition] == newList[newItemPosition]
+        }
     }
 }
