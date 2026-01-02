@@ -245,6 +245,6 @@
     <string name="notice_content_count_default">0/50자</string>
     <string name="notice_submit">공지 등록하기</string>
 
-
+    <string name="review_visit_date">%1$s 방문</string>
 
 </resources>
