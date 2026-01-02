@@ -30,7 +30,7 @@ class SignUpActivity : AppCompatActivity() {
             "INFO" -> {
                 navGraph.setStartDestination(R.id.signUpInfoFragment)
             }
-            "OWNER_ONBOARDING", "OWNER_INTRO" -> { // 온보딩 테스트용
+            "OWNER_ONBOARDING" -> {
                 navGraph.setStartDestination(R.id.ownerOnboardingFragment)
             }
             else -> {

@@ -51,8 +51,8 @@ class AuthFragment : Fragment(), UserTypeDialog.UserTypeDialogListener {
             startActivity(Intent(requireContext(), LoginActivity::class.java))
         }
 
-        binding.naverBtn.setOnClickListener { // 온보딩 테스트용
-            loginViewModel.login(requireContext(), "rlatkwkd2", "123qwe")
+        binding.naverBtn.setOnClickListener {
+            // TODO
         }
 
         loginViewModel.loginResult.observe(viewLifecycleOwner) { isSuccess ->

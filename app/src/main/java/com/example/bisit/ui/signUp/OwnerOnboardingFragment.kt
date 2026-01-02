@@ -121,23 +121,10 @@ class OwnerOnboardingFragment : Fragment() {
 
         // 4. 초기 자식 프래그먼트(1단계) 로드
         if (savedInstanceState == null) {
-            val startDest = activity?.intent?.getStringExtra("START_DESTINATION")
-
-            if (startDest == "OWNER_INTRO") { // 테스트용
-                currentStep = 5
-
-                signUpViewModel.setShopId(2)
-
-                childFragmentManager.beginTransaction()
-                    .replace(R.id.owner_onboarding_nav_host, StoreHoursFragment.newInstance())
-                    .commit()
-            } else {
-                // 기본 1단계 시작
-                currentStep = 1
-                childFragmentManager.beginTransaction()
-                    .replace(R.id.owner_onboarding_nav_host, BusinessRegistrationFragment.newInstance())
-                    .commit()
-            }
+            currentStep = 1
+            childFragmentManager.beginTransaction()
+                .replace(R.id.owner_onboarding_nav_host, BusinessRegistrationFragment.newInstance())
+                .commit()
         }
 
         // 5. 초기 UI 상태 업데이트
