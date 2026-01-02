@@ -8,32 +8,33 @@ import com.example.bisit.databinding.DialogConfirmBinding
 
 class ConfirmDialog(
     private val message: String,
-    private val okText: String = "확인",
+    private val confirmText: String = "확인",
     private val cancelText: String = "닫기",
-    private val onOk: (() -> Unit)? = null
+    private val onConfirm: (() -> Unit)? = null
 ) : DialogFragment() {
 
-    private var _b: DialogConfirmBinding? = null
-    private val b get() = _b!!
+    private var _binding: DialogConfirmBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _b = DialogConfirmBinding.inflate(inflater, container, false)
-        return b.root
+        _binding = DialogConfirmBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        b.tvMessage.text = message
-        b.btnOk.text = okText
-        b.btnCancel.text = cancelText
 
-        b.btnCancel.setOnClickListener { dismiss() }
-        b.btnOk.setOnClickListener {
-            onOk?.invoke()
+        binding.tvMessage.text = message
+        binding.btnOk.text = confirmText
+        binding.btnCancel.text = cancelText
+
+        binding.btnCancel.setOnClickListener { dismiss() }
+        binding.btnOk.setOnClickListener {
+            onConfirm?.invoke()
             dismiss()
         }
     }
@@ -41,27 +42,25 @@ class ConfirmDialog(
     override fun onStart() {
         super.onStart()
         dialog?.window?.apply {
-            // 배경 투명하게
+            // 배경 투명
             setBackgroundDrawableResource(android.R.color.transparent)
 
-            // 화면 너비의 80.6%로 설정
+            // 화면 너비의 80.6%
             val screenWidth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val wm = requireActivity().windowManager.currentWindowMetrics
                 val insets = wm.windowInsets.getInsets(WindowInsets.Type.systemBars())
                 wm.bounds.width() - insets.left - insets.right
             } else {
-                val displayMetrics = resources.displayMetrics
-                displayMetrics.widthPixels
+                resources.displayMetrics.widthPixels
             }
 
             val width = (screenWidth * 0.806f).toInt()
-            val height = ViewGroup.LayoutParams.WRAP_CONTENT
-            setLayout(width, height)
+            setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT)
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _b = null
+        _binding = null
     }
 }

@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.R
 import com.example.bisit.data.model.shop.ReviewManageItem
 import com.example.bisit.databinding.ItemReviewBinding
+import com.example.bisit.util.DateFormatter
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -15,23 +16,28 @@ class ReviewAdapter(
     private val onMoreClick: (ReviewManageItem) -> Unit
 ) : ListAdapter<ReviewManageItem, ReviewAdapter.VH>(DIFF) {
 
-    companion object DIFF : DiffUtil.ItemCallback<ReviewManageItem>() {
-        override fun areItemsTheSame(
-            oldItem: ReviewManageItem,
-            newItem: ReviewManageItem
-        ): Boolean {
-            // reviewId가 있다면 그걸로 교체 권장
-            return oldItem.createdAt == newItem.createdAt
+    companion object {
+
+        private val DIFF = object : DiffUtil.ItemCallback<ReviewManageItem>() {
+            override fun areItemsTheSame(
+                oldItem: ReviewManageItem,
+                newItem: ReviewManageItem
+            ): Boolean {
+                return oldItem.reviewId == newItem.reviewId
+            }
+
+            override fun areContentsTheSame(
+                oldItem: ReviewManageItem,
+                newItem: ReviewManageItem
+            ): Boolean = oldItem == newItem
         }
 
-        override fun areContentsTheSame(
-            oldItem: ReviewManageItem,
-            newItem: ReviewManageItem
-        ): Boolean = oldItem == newItem
+        private val apiDateParser =
+            SimpleDateFormat("yyyy-MM-dd", Locale.KOREAN)
     }
 
-    inner class VH(val b: ItemReviewBinding) :
-        RecyclerView.ViewHolder(b.root)
+    inner class VH(val binding: ItemReviewBinding) :
+        RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
         return VH(
@@ -46,19 +52,24 @@ class ReviewAdapter(
     override fun onBindViewHolder(holder: VH, position: Int) {
         val item = getItem(position)
 
-        holder.b.apply {
+        holder.binding.apply {
 
-            // 날짜 (API 24 대응)
-            val dateString = item.visitDate.toString()
-            val date = java.sql.Date.valueOf(dateString)
-            val formatter = SimpleDateFormat("yyyy.MM.dd, E", Locale.KOREAN)
-            tvVisitDate.text = formatter.format(date) + " 방문"
+            // API 24 대응 날짜 처리
+            val parsedDate = apiDateParser.parse(item.visitDate)
+            val formattedDate = parsedDate?.let {
+                DateFormatter.formatReviewVisitDate(it)
+            } ?: ""
+
+            tvVisitDate.text =
+                root.context.getString(
+                    R.string.review_visit_date,
+                    formattedDate
+                )
 
             tvServiceName.text = item.serviceName
             tvCustomerName.text = item.reviewerName
             tvReviewContent.text = item.content
 
-            // 별점 처리
             val stars = listOf(star1, star2, star3, star4, star5)
             stars.forEachIndexed { index, imageView ->
                 imageView.setImageResource(

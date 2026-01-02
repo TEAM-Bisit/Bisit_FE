@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bisit.databinding.FragmentShopReviewsBinding
@@ -21,13 +22,13 @@ class ShopReviewsFragment : Fragment() {
 
     private lateinit var adapter: ReviewAdapter
 
-    // shopId 제공 VM
-    private val shopRegisterViewModel: ShopRegisterViewModel by activityViewModels()
+    private val shopRegisterViewModel: ShopRegisterViewModel by activityViewModels {
+        ShopRegisterViewModelFactory(requireContext().applicationContext)
+    }
 
-    // 리뷰 관리 VM
-    private lateinit var shopReviewsViewModel: ShopReviewsViewModel
+    private val shopReviewsViewModel: ShopReviewsViewModel by viewModels()
 
-    // 삭제 대상 리뷰 ID
+    /** 삭제 대상 리뷰 ID */
     private var selectedReviewId: Long? = null
 
     override fun onCreateView(
@@ -42,8 +43,6 @@ class ShopReviewsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        shopReviewsViewModel = ShopReviewsViewModel(requireContext())
-
         setupRecyclerView()
         observeShopId()
         observeViewModel()
@@ -55,7 +54,6 @@ class ShopReviewsFragment : Fragment() {
     private fun setupRecyclerView() {
         adapter = ReviewAdapter(
             onMoreClick = { review ->
-                // 삼 점 클릭 → 삭제 BottomSheet
                 selectedReviewId = review.reviewId
                 BottomActionSheet
                     .newInstance(BottomActionSheet.TYPE_REVIEW)
@@ -68,34 +66,30 @@ class ShopReviewsFragment : Fragment() {
     }
 
     /* ===================== shopId 연결 ===================== */
+
     private fun observeShopId() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             shopRegisterViewModel.shopId.collect { shopId ->
                 shopId?.let {
-                    shopReviewsViewModel.initShop(it)
+                    shopReviewsViewModel.setShopId(it)
+                    shopReviewsViewModel.fetchReviews()
                 }
             }
         }
     }
 
     /* ===================== ViewModel 관찰 ===================== */
+
     private fun observeViewModel() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             shopReviewsViewModel.reviews.collect { reviews ->
                 adapter.submitList(reviews)
             }
         }
 
-        lifecycleScope.launch {
-            shopReviewsViewModel.isLoading.collect { isLoading ->
-                binding.progressBar.visibility =
-                    if (isLoading) View.VISIBLE else View.GONE
-            }
-        }
-
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             shopReviewsViewModel.errorMessage.collect { message ->
-                // TODO: Snackbar / Toast 처리 가능
+                // TODO: Snackbar 또는 Toast 처리
             }
         }
     }
@@ -121,7 +115,6 @@ class ShopReviewsFragment : Fragment() {
         val reviewId = selectedReviewId ?: return
 
         ConfirmDialog(
-            title = "리뷰 삭제",
             message = "해당 리뷰를 삭제하시겠습니까?",
             onConfirm = {
                 shopReviewsViewModel.deleteReview(reviewId)
