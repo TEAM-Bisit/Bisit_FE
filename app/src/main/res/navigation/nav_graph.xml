@@ -119,10 +119,9 @@
         tools:layout="@layout/fragment_shop">
 
         <action
-            android:id="@+id/action_shopFragment_to_staffRequestsFragment"
-            app:destination="@id/staffRequestsFragment" />
+            android:id="@+id/action_shopFragment_to_staffManagementFragment"
+            app:destination="@id/staffManagementFragment" />
     </fragment>
-
 
     <fragment
         android:id="@+id/customerShopFragment"
@@ -337,15 +336,9 @@
         tools:layout="@layout/fragment_customer_pay_coupon"/>
 
     <fragment
-        android:id="@+id/staffRequestsFragment"
-        android:name="com.example.bisit.ui.staffManage.StaffRequestsFragment"
-        android:label="fragment_staff_requests"
-        tools:layout="@layout/fragment_staff_requests">
-
-        <argument
-            android:name="shopId"
-            app:argType="long" />
-    </fragment>
-
+        android:id="@+id/staffManagementFragment"
+        android:name="com.example.bisit.ui.staffManage.StaffManagementFragment"
+        android:label="fragment_staff_management"
+        tools:layout="@layout/fragment_staff_management" />
 
 </navigation>

@@ -28,7 +28,7 @@ class ShopFragment : Fragment() {
         ShopRegisterViewModelFactory(requireContext().applicationContext)
     }
 
-    /** 직원 신청 상태 ViewModel (Fragment scope) */
+    /** 직원 신청 상태 ViewModel (뱃지 표시용) */
     private lateinit var staffRequestViewModel: ShopStaffRequestViewModel
 
     override fun onCreateView(
@@ -43,7 +43,18 @@ class ShopFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        /** 직원 신청 ViewModel 초기화 */
+        setupStaffRequestViewModel()
+        setupViewPagerAndTabs()
+        setupStaffApplyNavigation()     // ⭐️ 무조건 이동
+        observeShopIdForBadgeOnly()     // ⭐️ 뱃지 표시만
+        observeStaffRequestState()
+
+        updateTabUI(0)
+    }
+
+    /* ===================== setup ===================== */
+
+    private fun setupStaffRequestViewModel() {
         val api = RetrofitClient.getStaffManageApi(requireContext())
         val repository = StaffManageRepository(api)
 
@@ -51,58 +62,10 @@ class ShopFragment : Fragment() {
             this,
             ShopStaffRequestViewModelFactory(repository)
         )[ShopStaffRequestViewModel::class.java]
-
-        /** shopId 관찰 (도착 시점에만 초기화) */
-        viewLifecycleOwner.lifecycleScope.launch {
-            shopRegisterViewModel.shopId.collect { shopId ->
-                if (shopId == null) return@collect
-
-                setupShopWithId(shopId)
-            }
-        }
-
-        /** 직원 신청 상태 관찰 → 아이콘 / 말풍선 반영 */
-        viewLifecycleOwner.lifecycleScope.launch {
-            staffRequestViewModel.state.collect { state ->
-                if (state.hasPendingRequest) {
-                    binding.ivStaffApply.setImageResource(
-                        R.drawable.ic_staff_new_apply
-                    )
-                    binding.ivStaffApplyBubble.visibility = View.VISIBLE
-                } else {
-                    binding.ivStaffApply.setImageResource(
-                        R.drawable.ic_staff_apply
-                    )
-                    binding.ivStaffApplyBubble.visibility = View.GONE
-                }
-            }
-        }
-
-        updateTabUI(0)
     }
 
-    /**
-     * shopId가 준비된 이후에만 호출되는 초기화 로직
-     */
-    private fun setupShopWithId(shopId: Long) {
-
-        /** Shop 진입 시 직원 신청 존재 여부 확인 */
-        staffRequestViewModel.checkPendingStaffExists(shopId)
-
-        /** 직원 신청 버튼 클릭 → StaffRequestsFragment 이동 */
-        binding.ivStaffApply.setOnClickListener {
-            val bundle = Bundle().apply {
-                putLong("shopId", shopId)
-            }
-            findNavController().navigate(
-                R.id.action_shopFragment_to_staffRequestsFragment,
-                bundle
-            )
-        }
-
-        /** ViewPager 설정 */
-        val pagerAdapter = ShopPagerAdapter(this, shopId)
-        binding.viewPager.adapter = pagerAdapter
+    private fun setupViewPagerAndTabs() {
+        binding.viewPager.adapter = ShopPagerAdapter(this)
 
         binding.tabBasic.setOnClickListener { binding.viewPager.currentItem = 0 }
         binding.tabReviews.setOnClickListener { binding.viewPager.currentItem = 1 }
@@ -118,10 +81,54 @@ class ShopFragment : Fragment() {
         )
     }
 
+    /**
+     * 직원 신청 페이지는 조건 없이 항상 이동 가능
+     */
+    private fun setupStaffApplyNavigation() {
+        binding.ivStaffApply.setOnClickListener {
+            findNavController().navigate(
+                R.id.action_shopFragment_to_staffManagementFragment
+            )
+        }
+    }
+
+    /* ===================== observe ===================== */
+
+    /**
+     * shopId는 '새 직원 신청 있음/없음' 뱃지 표시 용도
+     * 네비게이션 / 접근 제어와는 무관
+     */
+    private fun observeShopIdForBadgeOnly() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            shopRegisterViewModel.shopId.collect { shopId ->
+                if (shopId != null) {
+                    staffRequestViewModel.checkPendingStaffExists(shopId)
+                }
+                // shopId 없어도 아무것도 막지 않음
+            }
+        }
+    }
+
+    private fun observeStaffRequestState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            staffRequestViewModel.state.collect { state ->
+                if (state.hasPendingRequest) {
+                    binding.ivStaffApply.setImageResource(R.drawable.ic_staff_new_apply)
+                    binding.ivStaffApplyBubble.visibility = View.VISIBLE
+                } else {
+                    binding.ivStaffApply.setImageResource(R.drawable.ic_staff_apply)
+                    binding.ivStaffApplyBubble.visibility = View.GONE
+                }
+            }
+        }
+    }
+
+    /* ===================== UI ===================== */
+
     private fun updateTabUI(position: Int) {
-        val inactiveColor = "#9AA1AF".toColorInt()
-        val activeColor = "#6D7583".toColorInt()
-        val indicatorColor = "#4076FF".toColorInt()
+        val inactive = "#9AA1AF".toColorInt()
+        val active = "#6D7583".toColorInt()
+        val indicator = "#4076FF".toColorInt()
 
         listOf(
             binding.indicatorBasic,
@@ -135,24 +142,24 @@ class ShopFragment : Fragment() {
             binding.tvReviews,
             binding.tvServices,
             binding.tvNotices
-        ).forEach { it.setTextColor(inactiveColor) }
+        ).forEach { it.setTextColor(inactive) }
 
         when (position) {
             0 -> {
-                binding.indicatorBasic.setBackgroundColor(indicatorColor)
-                binding.tvBasic.setTextColor(activeColor)
+                binding.indicatorBasic.setBackgroundColor(indicator)
+                binding.tvBasic.setTextColor(active)
             }
             1 -> {
-                binding.indicatorReviews.setBackgroundColor(indicatorColor)
-                binding.tvReviews.setTextColor(activeColor)
+                binding.indicatorReviews.setBackgroundColor(indicator)
+                binding.tvReviews.setTextColor(active)
             }
             2 -> {
-                binding.indicatorServices.setBackgroundColor(indicatorColor)
-                binding.tvServices.setTextColor(activeColor)
+                binding.indicatorServices.setBackgroundColor(indicator)
+                binding.tvServices.setTextColor(active)
             }
             3 -> {
-                binding.indicatorNotices.setBackgroundColor(indicatorColor)
-                binding.tvNotices.setTextColor(activeColor)
+                binding.indicatorNotices.setBackgroundColor(indicator)
+                binding.tvNotices.setTextColor(active)
             }
         }
     }
