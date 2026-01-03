@@ -181,7 +181,6 @@ class TossPayActivity : AppCompatActivity() {
                 handler: android.webkit.SslErrorHandler?,
                 error: android.net.http.SslError?
             ) {
-                // SSL Error Log
                 Log.e(TAG, "SSL Error: ${error.toString()}")
                 if (BuildConfig.DEBUG) {
                     Log.w(TAG, "DEBUG mode: Proceeding despite SSL error")
