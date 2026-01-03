@@ -14,6 +14,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.R
 import com.example.bisit.data.api.RetrofitClient
 import com.example.bisit.data.repository.staffManage.StaffManageRepository
+import com.example.bisit.ui.shop.ShopRegisterViewModel
+import com.example.bisit.ui.shop.ShopRegisterViewModelFactory
 import com.example.bisit.ui.staffManage.adapter.StaffListAdapter
 import com.example.bisit.ui.staffManage.modal.DeleteCompleteDialog
 import com.example.bisit.ui.staffManage.modal.DeleteStaffDialog
@@ -21,13 +23,18 @@ import kotlinx.coroutines.launch
 
 class StaffListFragment : Fragment() {
 
-    // StaffManage 전체에서 공유하는 ViewModel
+    // 직원 관리 ViewModel (기존 그대로)
     private val viewModel: StaffManageViewModel by activityViewModels {
         StaffManageViewModelFactory(
             StaffManageRepository(
                 RetrofitClient.getStaffManageApi(requireContext())
             )
         )
+    }
+
+    // shopId 단일 소스
+    private val shopRegisterViewModel: ShopRegisterViewModel by activityViewModels {
+        ShopRegisterViewModelFactory(requireContext().applicationContext)
     }
 
     private lateinit var adapter: StaffListAdapter
@@ -50,15 +57,20 @@ class StaffListFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
 
-        // 승인된 직원 목록
+        // 승인된 직원 목록 관찰
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.approvedStaffs.collect { list ->
                 adapter.submitList(list)
             }
         }
 
-        // 최초 로드
-        viewModel.loadApprovedStaffs(getShopId())
+        // shopId 도착 시점에만 API 호출
+        viewLifecycleOwner.lifecycleScope.launch {
+            shopRegisterViewModel.shopId.collect { shopId ->
+                shopId ?: return@collect
+                viewModel.loadApprovedStaffs(shopId)
+            }
+        }
 
         val sortToggle = view.findViewById<ImageView>(R.id.ivSortList)
         sortToggle.setOnClickListener {
@@ -71,23 +83,18 @@ class StaffListFragment : Fragment() {
     private fun showDeleteDialog(staffId: Long) {
         DeleteStaffDialog(
             onConfirm = {
-                // 직원 삭제 (리스트 즉시 반영)
-                viewModel.deleteStaff(getShopId(), staffId)
+                val shopId = shopRegisterViewModel.shopId.value ?: return@DeleteStaffDialog
 
-                // ️기존 삭제 확인 모달 닫기
+                viewModel.deleteStaff(shopId, staffId)
+
                 (parentFragmentManager.findFragmentByTag("delete_staff")
                         as? DeleteStaffDialog)?.dismiss()
 
-                // 삭제 완료 모달 표시
                 DeleteCompleteDialog().show(
                     parentFragmentManager,
                     "delete_complete"
                 )
             }
         ).show(parentFragmentManager, "delete_staff")
-    }
-
-    private fun getShopId(): Long {
-        return requireArguments().getLong("shopId")
     }
 }
