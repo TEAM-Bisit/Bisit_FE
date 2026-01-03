@@ -126,6 +126,9 @@
         <action
             android:id="@+id/action_customerShopFragment_to_shopDesignerFragment"
             app:destination="@id/shopDesignerFragment" />
+        <action
+            android:id="@+id/action_customerShopFragment_to_customerShopMoreReviewFragment"
+            app:destination="@id/customerShopMoreReviewFragment" />
     </fragment>
 
     <fragment
@@ -139,6 +142,19 @@
         <action
             android:id="@+id/action_shopDesignerFragment_to_homeListFragment"
             app:destination="@id/homeListFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/customerShopMoreReviewFragment"
+        android:name="com.example.bisit.ui.customerShop.CustomerShopMoreReviewFragment"
+        android:label="fragment_customer_shop_more_review"
+        tools:layout="@layout/fragment_customer_shop_more_review">
+        <argument
+            android:name="shopId"
+            app:argType="long" />
+        <action
+            android:id="@+id/action_customerShopMoreReviewFragment_to_customerReserveFragment"
+            app:destination="@id/customerReserveFragment" />
     </fragment>
 
     <fragment
@@ -161,6 +177,25 @@
         <action
             android:id="@+id/action_customerPayFragment_to_customerPayCouponFragment"
             app:destination="@+id/customerPayCouponFragment"/>
+        <action
+            android:id="@+id/action_customerPayFragment_to_customerReserveCompleteFragment"
+            app:destination="@id/customerReserveCompleteFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/customerReserveCompleteFragment"
+        android:name="com.example.bisit.ui.customerReserve.CustomerReserveCompleteFragment"
+        android:label="fragment_customer_reserve_complete"
+        tools:layout="@layout/fragment_customer_reserve_complete">
+        <argument android:name="shopName" app:argType="string"/>
+        <argument android:name="staffName" app:argType="string"/>
+        <argument android:name="serviceName" app:argType="string"/>
+        <argument android:name="reservedDate" app:argType="string"/>
+        <argument android:name="reservedTime" app:argType="string"/>
+        <argument android:name="orderId" app:argType="string"/>
+        <argument android:name="reservationId" app:argType="long"/>
     </fragment>
 
     <fragment

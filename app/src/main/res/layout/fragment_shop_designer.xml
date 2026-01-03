@@ -68,7 +68,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="#F6F6F6">
+            android:background="@color/white">
 
             <TextView
                 android:id="@+id/tvReserveTitle"
@@ -89,7 +89,7 @@
                 android:orientation="vertical"
                 android:paddingTop="16dp"
                 android:paddingBottom="32dp"
-                android:background="#F6F6F6">
+                android:background="@color/white">
 
                 <TextView
                     android:id="@+id/tvDesignerListTitle"
@@ -114,7 +114,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
-                android:background="#F6F6F6" />
+                android:background="@color/white" />
         </LinearLayout>
     </ScrollView>
 
