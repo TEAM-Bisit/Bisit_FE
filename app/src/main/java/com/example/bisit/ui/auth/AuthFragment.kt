@@ -1,14 +1,18 @@
 package com.example.bisit.ui.auth
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import com.example.bisit.MainActivity
 import com.example.bisit.databinding.FragmentAuthBinding
+import com.example.bisit.ui.dialog.CommonInfoDialog
 import com.example.bisit.ui.login.LoginActivity
 import com.example.bisit.ui.login.LoginViewModel
 import com.example.bisit.ui.signUp.SignUpActivity
@@ -23,6 +27,20 @@ class AuthFragment : Fragment(), UserTypeDialog.UserTypeDialogListener {
     private val tapTimestamps = LongArray(requiredTaps)
 
     private val loginViewModel: LoginViewModel by viewModels()
+
+    private val socialLoginLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val accessToken = result.data?.getStringExtra("ACCESS_TOKEN")
+            val refreshToken = result.data?.getStringExtra("REFRESH_TOKEN")
+
+            if (accessToken != null && refreshToken != null) {
+                // 추출한 토큰을 LoginViewModel을 통해 저장하고 후속 작업 진행
+                loginViewModel.handleSocialLoginSuccess(requireContext(), accessToken, refreshToken)
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,17 +73,36 @@ class AuthFragment : Fragment(), UserTypeDialog.UserTypeDialogListener {
             // TODO
         }
 
+        binding.kakaoBtn.setOnClickListener {
+            val intent = Intent(requireContext(), SocialLoginActivity::class.java)
+            socialLoginLauncher.launch(intent)
+        }
+
         loginViewModel.loginResult.observe(viewLifecycleOwner) { isSuccess ->
             if (isSuccess) {
-                // 로그인 성공 시 사장님 온보딩으로 이동하도록 신호 전달
-                val intent = Intent(requireContext(), SignUpActivity::class.java).apply {
-                    putExtra("START_DESTINATION", "OWNER_INTRO")
+                val userType = loginViewModel.userType.value
+                when (userType) {
+                    "owner", "customer" -> {
+                        // 이미 가입된 유저라면 메인 화면으로 이동
+                        val intent = Intent(requireContext(), MainActivity::class.java).apply {
+                            putExtra("USER_TYPE", userType)
+                        }
+                        startActivity(intent)
+                        activity?.finish()
+                    }
+                    "none" -> {
+                        val intent = Intent(requireContext(), SignUpActivity::class.java)
+                        startActivity(intent)
+                        activity?.finish()
+                    }
                 }
-                startActivity(intent)
-                activity?.finish()
             } else {
-                // 실패 시 토스트 등 알림 처리
-                Toast.makeText(context, "임시 로그인 실패: ${loginViewModel.errorMessage.value}", Toast.LENGTH_SHORT).show()
+                // 소셜 로그인 실패 시에도 상세 에러 코드에 따라 다이얼로그 처리 가능
+                val code = loginViewModel.errorCode.value
+                val message = loginViewModel.errorMessage.value ?: "소셜 로그인에 실패했습니다."
+
+                // LoginCredentialsFragment에서 만든 showWrongPasswordDialog 등을 동일하게 호출
+                showErrorDialog(message)
             }
         }
     }
@@ -95,6 +132,14 @@ class AuthFragment : Fragment(), UserTypeDialog.UserTypeDialogListener {
             putExtra("START_DESTINATION", "USER_TYPE")
         }
         startActivity(intent)
+    }
+
+    private fun showErrorDialog(msg: String) {
+        val dialog = CommonInfoDialog(
+            message = msg,
+            onConfirm = { /* 확인 버튼 클릭 시 동작이 필요하면 여기에 작성 */ }
+        )
+        dialog.show(parentFragmentManager, "ErrorDialog")
     }
 
     override fun onDestroyView() {
