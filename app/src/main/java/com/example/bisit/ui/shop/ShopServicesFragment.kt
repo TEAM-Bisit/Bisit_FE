@@ -141,7 +141,7 @@ class ShopServicesFragment : Fragment() {
     private fun showDeleteConfirm(item: TreatmentResponse) {
         ConfirmDialog(
             message = "서비스를 삭제하시겠어요?",
-            onOk = {
+            onConfirm = {
                 shopId?.let {
                     shopServiceViewModel.deleteTreatment(
                         treatmentId = item.treatmentId,

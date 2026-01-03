@@ -116,7 +116,13 @@
         android:id="@+id/shopFragment"
         android:name="com.example.bisit.ui.shop.ShopFragment"
         android:label="fragment_shop"
-        tools:layout="@layout/fragment_shop" />
+        tools:layout="@layout/fragment_shop">
+
+        <action
+            android:id="@+id/action_shopFragment_to_staffRequestsFragment"
+            app:destination="@id/staffRequestsFragment" />
+    </fragment>
+
 
     <fragment
         android:id="@+id/customerShopFragment"
@@ -294,6 +300,17 @@
         android:name="com.example.bisit.ui.customerPay.CustomerPayCouponFragment"
         android:label="fragment_customer_pay_coupon"
         tools:layout="@layout/fragment_customer_pay_coupon"/>
+
+    <fragment
+        android:id="@+id/staffRequestsFragment"
+        android:name="com.example.bisit.ui.staffManage.StaffRequestsFragment"
+        android:label="fragment_staff_requests"
+        tools:layout="@layout/fragment_staff_requests">
+
+        <argument
+            android:name="shopId"
+            app:argType="long" />
+    </fragment>
 
 
 </navigation>
