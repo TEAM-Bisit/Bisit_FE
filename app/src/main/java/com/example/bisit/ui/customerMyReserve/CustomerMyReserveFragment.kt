@@ -23,6 +23,7 @@ import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import retrofit2.Response
+import com.example.bisit.ui.dialog.CustomTwoButtonDialog
 
 class CustomerMyReserveFragment : Fragment(R.layout.fragment_customer_my_reserve) {
 
@@ -142,18 +143,21 @@ class CustomerMyReserveFragment : Fragment(R.layout.fragment_customer_my_reserve
     }
 
     private fun confirmReservation(reservationId: String) {
-        AlertDialog.Builder(requireContext())
-            .setTitle("시술 확정")
-            .setMessage("시술 완료를 확정하시겠습니까?")
-            .setPositiveButton("확정하기") { _, _ ->
+        CustomTwoButtonDialog(
+            title = "시술 확정",
+            subtitle = "시술 완료를 확정하시겠습니까?",
+            positiveButtonText = "확정하기",
+            negativeButtonText = "취소",
+            onPositiveClick = {
                 lifecycleScope.launch {
                     try {
                         val api = RetrofitClient.getReservationApi(requireContext())
                         val response = api.confirmReservation(reservationId.toLong())
                         if (response.isSuccessful && response.body()?.success == true) {
-                            Toast.makeText(requireContext(), "시술이 확정되었습니다.", Toast.LENGTH_SHORT).show()
-                            // Refresh current tab (Completed)
-                            fetchReservations(1)
+                            Toast.makeText(requireContext(), "시술이 확정되었습니다 (OK).", Toast.LENGTH_SHORT).show()
+                            // Refresh current tab (Completed) -> Changed to local update
+                            // fetchReservations(1)
+                            adapter.markAsConfirmed(reservationId)
                         } else {
                             Log.e("CustomerMyReserve", "Failed to confirm reservation: ${response.code()}")
                             Toast.makeText(requireContext(), "시술 확정에 실패했습니다.", Toast.LENGTH_SHORT).show()
@@ -164,11 +168,12 @@ class CustomerMyReserveFragment : Fragment(R.layout.fragment_customer_my_reserve
                     }
                 }
             }
-            .setNegativeButton("닫기", null)
-            .show()
+        ).show(childFragmentManager, "ConfirmDialog")
     }
 
     private fun fetchReservations(position: Int) {
+        // Debug Toast to check if this is called unexpectedly
+        // Toast.makeText(requireContext(), "Fetching list: $position", Toast.LENGTH_SHORT).show()
 
 
         lifecycleScope.launch {

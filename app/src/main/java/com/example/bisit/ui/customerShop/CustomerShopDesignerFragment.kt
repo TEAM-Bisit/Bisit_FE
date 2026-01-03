@@ -46,7 +46,10 @@ class CustomerShopDesignerFragment : Fragment() {
         btnHome = view.findViewById(R.id.btnHome)
         
         // arguments에서 shopId 가져오기
-        shopId = arguments?.getLong("shopId") ?: 3L
+        shopId = arguments?.getLong("shopId") ?: -1L
+        if (shopId == -1L) {
+             Log.e("CustomerShopDesignerFragment", "Invalid shopId")
+        }
         shopName = arguments?.getString("shopName") ?: ""
 
         recyclerDesigner.layoutManager = LinearLayoutManager(requireContext())

@@ -27,6 +27,17 @@ class CustomerMyReserveAdapter(
         notifyDataSetChanged()
     }
 
+    fun markAsConfirmed(reservationId: String) {
+        items = items.map {
+            if (it.reservationId == reservationId) {
+                it.copy(isConfirmed = true)
+            } else {
+                it
+            }
+        }
+        notifyDataSetChanged()
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(viewType, parent, false)
         return ViewHolder(view)
@@ -83,7 +94,20 @@ class CustomerMyReserveAdapter(
             btnDoneDetail?.setOnClickListener { onDetailClick(item) }
 
             val btnDoneConfirm = itemView.findViewById<Button>(R.id.btn_done_confirm)
-            btnDoneConfirm?.setOnClickListener { onConfirmClick(item) }
+            
+            // 확정 여부에 따른 UI 처리
+            if (item.isConfirmed) {
+                btnDoneConfirm?.isEnabled = false
+                btnDoneConfirm?.text = "확정됨"
+                btnDoneConfirm?.setTextColor(android.graphics.Color.parseColor("#888888"))
+                btnDoneConfirm?.setBackgroundResource(R.drawable.bg_button_outline) // Use outline or gray bg
+            } else {
+                btnDoneConfirm?.isEnabled = true
+                btnDoneConfirm?.text = "확정하기"
+                btnDoneConfirm?.setTextColor(android.graphics.Color.WHITE)
+                btnDoneConfirm?.setBackgroundResource(R.drawable.bg_button_filled)
+                btnDoneConfirm?.setOnClickListener { onConfirmClick(item) }
+            }
 
 
             val btnCancelDetail = itemView.findViewById<Button>(R.id.btn_cancel_detail)
