@@ -22,7 +22,8 @@ import com.example.bisit.databinding.ItemShopDetailBinding
 class CustomerShopDetailAdapter(
     private val items: List<CustomerShopUiItem>,
     servicesLists: List<List<ServiceItem>> = emptyList(),
-    reviewsLists: List<List<ReviewItem>> = emptyList()
+    reviewsLists: List<List<ReviewItem>> = emptyList(),
+    private val onReviewMoreClick: () -> Unit // Callback for "Review More" button
 ) : RecyclerView.Adapter<CustomerShopDetailAdapter.ShopDetailViewHolder>() {
 
     private val expandedPositions = mutableSetOf<Int>()
@@ -98,7 +99,9 @@ class CustomerShopDetailAdapter(
             }
 
             val reviewsForThis = reviewsLists.getOrNull(pos) ?: emptyList()
-            reviewsForThis.forEach { rev ->
+            // Limit to 3 items
+            val displayReviews = reviewsForThis.take(3)
+            displayReviews.forEach { rev ->
                 val view = inflater.inflate(R.layout.item_shop_review, binding.containerReviewItems, false)
                 view.findViewById<TextView>(R.id.tvReviewContent)?.text = rev.content
                 view.findViewById<TextView>(R.id.tvReviewDate)?.text = "${rev.date} 방문"
@@ -120,6 +123,16 @@ class CustomerShopDetailAdapter(
                 binding.containerReviewItems.addView(view)
             }
 
+            // Handle "Review More" button visibility
+            if (reviewsForThis.size >= 4) {
+                 binding.btnReviewMore.visibility = if (binding.containerReviewItems.visibility == View.VISIBLE) View.VISIBLE else View.GONE
+                 binding.btnReviewMore.setOnClickListener {
+                     onReviewMoreClick()
+                 }
+            } else {
+                binding.btnReviewMore.visibility = View.GONE
+            }
+
             // Update tab info text count
             fun updateTabInfo(isService: Boolean) {
                 if (isService) {
@@ -132,6 +145,7 @@ class CustomerShopDetailAdapter(
             binding.tabService.setOnClickListener {
                 binding.containerServiceItems.visibility = View.VISIBLE
                 binding.containerReviewItems.visibility = View.GONE
+                binding.btnReviewMore.visibility = View.GONE // Reset
                 binding.tabService.setTextColor(ContextCompat.getColor(binding.root.context, R.color.black))
                 binding.tabReview.setTextColor(ContextCompat.getColor(binding.root.context, R.color.gray))
                 binding.tabService.setBackgroundResource(R.drawable.bg_tab_selected)
@@ -142,6 +156,10 @@ class CustomerShopDetailAdapter(
             binding.tabReview.setOnClickListener {
                 binding.containerServiceItems.visibility = View.GONE
                 binding.containerReviewItems.visibility = View.VISIBLE
+                // Show button only if review tab selected AND enough reviews
+                if (reviewsForThis.size >= 4) {
+                    binding.btnReviewMore.visibility = View.VISIBLE
+                }
                 binding.tabService.setTextColor(ContextCompat.getColor(binding.root.context, R.color.gray))
                 binding.tabReview.setTextColor(ContextCompat.getColor(binding.root.context, R.color.black))
                 binding.tabService.setBackgroundResource(R.drawable.bg_tab_unselected)

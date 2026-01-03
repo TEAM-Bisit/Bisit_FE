@@ -120,5 +120,6 @@ dependencies {
     implementation("com.github.tosspayments:payment-sdk-android:0.1.21")
 
     // log
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 }
