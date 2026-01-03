@@ -5,20 +5,57 @@
     android:layout_height="match_parent"
     android:background="#F8F8F8">
 
-    <!-- 헤더 타이틀 -->
-    <TextView
-        android:id="@+id/tvTitle"
-        android:text="매장 관리"
-        android:textColor="#222222"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:letterSpacing="0.04"
-        android:layout_marginStart="18dp"
+    <!-- ================= 헤더 영역 ================= -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:layout_marginTop="39dp"
         android:layout_marginBottom="16dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp">
 
+        <!-- 제목 -->
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="매장 관리"
+            android:textColor="#222222"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.04" />
+
+        <!-- 직원 신청 영역 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- 말풍선 (새 직원 신청 있을 때만 표시) -->
+            <ImageView
+                android:id="@+id/ivStaffApplyBubble"
+                android:layout_width="130dp"
+                android:layout_height="26dp"
+                android:src="@drawable/ic_staff_apply_bubble"
+                android:visibility="gone"
+                android:contentDescription="새 직원 신청 안내" />
+
+            <!-- 직원 신청 아이콘 -->
+            <ImageView
+                android:id="@+id/ivStaffApply"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="4dp"
+                android:src="@drawable/ic_staff_apply"
+                android:contentDescription="직원 신청" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ================= 탭 영역 ================= -->
     <LinearLayout
         android:id="@+id/tabContainer"
         android:layout_width="match_parent"
@@ -38,12 +75,12 @@
 
             <TextView
                 android:id="@+id/tvBasic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="@string/tab_basic"
                 android:textColor="#6D7583"
                 android:textSize="14sp"
-                android:paddingHorizontal="4dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:paddingHorizontal="4dp" />
 
             <View
                 android:id="@+id/indicatorBasic"
@@ -64,12 +101,12 @@
 
             <TextView
                 android:id="@+id/tvReviews"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="@string/tab_reviews"
                 android:textColor="#9AA1AF"
                 android:textSize="14sp"
-                android:paddingHorizontal="4dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:paddingHorizontal="4dp" />
 
             <View
                 android:id="@+id/indicatorReviews"
@@ -90,12 +127,12 @@
 
             <TextView
                 android:id="@+id/tvServices"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="@string/tab_services"
                 android:textColor="#9AA1AF"
                 android:textSize="14sp"
-                android:paddingHorizontal="4dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:paddingHorizontal="4dp" />
 
             <View
                 android:id="@+id/indicatorServices"
@@ -115,12 +152,12 @@
 
             <TextView
                 android:id="@+id/tvNotices"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="@string/tab_notices"
                 android:textColor="#9AA1AF"
                 android:textSize="14sp"
-                android:paddingHorizontal="4dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:paddingHorizontal="4dp" />
 
             <View
                 android:id="@+id/indicatorNotices"
@@ -131,18 +168,18 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- 콘텐츠 영역 -->
+    <!-- ================= 콘텐츠 영역 ================= -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="#F0F2F5"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="#F0F2F5">
 
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/viewPager"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
+            android:layout_height="match_parent" />
     </LinearLayout>
+
 </LinearLayout>
