@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.R
 import com.example.bisit.data.model.shop.ServiceItem
 import com.example.bisit.data.model.customerShop.CustomerShopUiItem
+import com.example.bisit.data.model.shop.ReviewItem
 import com.example.bisit.databinding.DialogCopyAddressBinding
 import com.example.bisit.databinding.ItemShopDetailBinding
 
