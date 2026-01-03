@@ -181,11 +181,17 @@ class TossPayActivity : AppCompatActivity() {
                 handler: android.webkit.SslErrorHandler?,
                 error: android.net.http.SslError?
             ) {
-                // SSL Error Log
                 Log.e(TAG, "SSL Error: ${error.toString()}")
-                // 개발 환경(Sandbox)이나 특정 상황에서 SSL 인증서 문제 무시 (주의: 프로덕션에서는 제거 권장)
-                // 현재 에러가 "SSL error code 1" (Invalid)이므로, 일단 Proceed 하여 테스트
-                 handler?.proceed() 
+                
+                // 프로덕션 환경에서는 SSL 오류를 허용하지 않음
+                if (BuildConfig.DEBUG) {
+                    Log.w(TAG, "DEBUG mode: Proceeding despite SSL error")
+                    handler?.proceed()
+                } else {
+                    handler?.cancel()
+                    Toast.makeText(this@TossPayActivity, "보안 연결에 실패했습니다", Toast.LENGTH_SHORT).show()
+                    finish()
+                }
             }
         }
         
