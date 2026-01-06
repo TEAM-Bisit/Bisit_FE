@@ -40,6 +40,14 @@ class CustomerShopDetailAdapter(
             binding.tvReview.text = item.review
             binding.tvRating.text = item.rating
             binding.tvSummary.text = item.summary
+
+            // 상단 별점 표시 로직 (5개 이미지 기준)
+            val starRow = binding.starRow
+            val ratingVal = item.rating.toDoubleOrNull() ?: 0.0
+            for (i in 0 until starRow.childCount) {
+                val star = starRow.getChildAt(i)
+                star.alpha = if (i < ratingVal.toInt()) 1.0f else 0.3f
+            }
             binding.tvAddress.text = item.address
             binding.tvOpenInfo.text = item.openInfo
             binding.tvPhone.text = item.phone

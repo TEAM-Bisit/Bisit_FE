@@ -20,7 +20,7 @@ data class ReservationDetailData(
     val shopAddress: String,
     val canConfirm: Boolean,
     val cancellationReason: String?,
-    val cancellationReason: String?,
+
     val canceledAt: String?,
     val isReviewed: Boolean = false
 )

@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -62,6 +63,10 @@ class CustomerShopDesignerFragment : Fragment() {
         }
 
         recyclerDesigner.adapter = designerAdapter
+        
+        val tvShopName = view.findViewById<TextView>(R.id.tvShopName)
+        tvShopName.text = if (shopName.isNotEmpty()) shopName else "가공"
+        
         updateBookButtonState()
 
         btnBack.setOnClickListener {
@@ -80,7 +85,7 @@ class CustomerShopDesignerFragment : Fragment() {
                     putLong("shopId", shopId)
                     putString("staffName", selectedStaff.staffName)
                     putString("staffImage", selectedStaff.image)
-                    putInt("reviewCount", selectedStaff.reviewCount)
+                    putInt("treatmentCount", selectedStaff.treatmentCount)
                     putString("staffDescription", selectedStaff.description)
                     putString("shopName", shopName)
                 }

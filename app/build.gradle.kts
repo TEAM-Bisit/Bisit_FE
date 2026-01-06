@@ -18,6 +18,7 @@ val ncpKeyId = localProps.getProperty("ncp.access.key.id") ?: ""
 val ncpSecretKey = localProps.getProperty("ncp.secret.key") ?: ""
 val baseServerUrl = localProps.getProperty("server.base.url") ?: ""
 val naverMapClientId = localProps.getProperty("naver.maps.client.id") ?: ""
+val naverMapClientSecret = localProps.getProperty("naver.maps.client.secret") ?: ""
 
 val tossClientKey = localProps.getProperty("TOSS_CLIENT_KEY") ?: ""
 
@@ -37,6 +38,9 @@ android {
         buildConfigField("String", "NCP_KEY_ID", "\"$ncpKeyId\"")
         buildConfigField("String", "NCP_SECRET_KEY", "\"$ncpSecretKey\"")
         buildConfigField("String", "BASE_SERVER_URL", "\"$baseServerUrl\"")
+
+        buildConfigField("String", "NAVER_MAP_CLIENT_ID", "\"$naverMapClientId\"")
+        buildConfigField("String", "NAVER_MAP_CLIENT_SECRET", "\"$naverMapClientSecret\"")
 
         buildConfigField("String", "TOSS_CLIENT_KEY", "\"$tossClientKey\"")
 
