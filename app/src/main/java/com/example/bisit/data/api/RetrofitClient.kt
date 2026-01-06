@@ -17,7 +17,11 @@ object RetrofitClient {
     private val naverClient by lazy {
         Log.i("NaverAuthDebug", "🚀 Initializing naverClient (lazy init hit)")
         val loggingInterceptor = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+            level = if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.BODY
+            } else {
+                HttpLoggingInterceptor.Level.NONE
+            }
         }
         OkHttpClient.Builder()
             .connectTimeout(20, TimeUnit.SECONDS)
@@ -25,9 +29,6 @@ object RetrofitClient {
             .addInterceptor { chain ->
                 val apiKeyId = BuildConfig.NAVER_MAP_CLIENT_ID
                 val apiKey = BuildConfig.NAVER_MAP_CLIENT_SECRET
-                
-                Log.i("NaverAuthDebug", "🔑 Interceptor hit for request: ${chain.request().url}")
-                Log.i("NaverAuthDebug", "ID starts with: ${apiKeyId.take(3)}, Secret starts with: ${apiKey.take(3)}")
 
                 if (apiKeyId.isEmpty() || apiKey.isEmpty()) {
                     Log.e("NaverAuthDebug", "❌ ERROR: One or more keys are EMPTY!")
