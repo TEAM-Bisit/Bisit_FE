@@ -47,17 +47,23 @@
         android:paddingStart="18dp"
         android:paddingEnd="18dp">
 
-        <ImageView
-            android:layout_width="14dp"
-            android:layout_height="14dp"
-            android:src="@drawable/ic_home_star"
-            android:contentDescription="별 아이콘"
-            android:layout_marginEnd="4dp"/>
+        <LinearLayout
+            android:id="@+id/starRow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <ImageView android:layout_width="14dp" android:layout_height="14dp" android:src="@drawable/ic_home_star" android:alpha="1.0" />
+            <ImageView android:layout_width="14dp" android:layout_height="14dp" android:src="@drawable/ic_home_star" android:alpha="1.0" />
+            <ImageView android:layout_width="14dp" android:layout_height="14dp" android:src="@drawable/ic_home_star" android:alpha="1.0" />
+            <ImageView android:layout_width="14dp" android:layout_height="14dp" android:src="@drawable/ic_home_star" android:alpha="1.0" />
+            <ImageView android:layout_width="14dp" android:layout_height="14dp" android:src="@drawable/ic_home_star" android:alpha="1.0" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tvRating"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
             android:text="4.8"
             android:textColor="#222222"
             android:textSize="13sp"

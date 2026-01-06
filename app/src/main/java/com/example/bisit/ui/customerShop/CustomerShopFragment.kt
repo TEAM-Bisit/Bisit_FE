@@ -169,7 +169,7 @@ class CustomerShopFragment : Fragment() {
             name = data.shopName ?: "",
             category = data.category ?: "",
             review = "리뷰 ${data.reviewCount ?: 0}개",
-            rating = (data.averageRating?.toString() ?: "0.0"),
+            rating = String.format("%.1f", data.averageRating ?: 0.0),
             summary = data.shortIntro ?: "",
             address = "${data.address ?: ""} ${data.detailAddress ?: ""}".trim(),
             openInfo = data.todayBusinessHours?.replace(" ~ ", "~") ?: "",

@@ -123,7 +123,7 @@ class CustomerPayFragment : Fragment() {
             staffName = it.getString("staffName", "")
             shopName = it.getString("shopName", "")
             staffImage = it.getString("staffImage")
-            reviewCount = it.getInt("reviewCount", 0)
+            reviewCount = it.getInt("treatmentCount", 0)
             staffDescription = it.getString("staffDescription")
         }
 
@@ -136,6 +136,7 @@ class CustomerPayFragment : Fragment() {
         setupPayButton()
         setupAddressSearch()
         setupTextWatchers()
+        updatePriceWithCoupon()
 
         findNavController().currentBackStackEntry?.savedStateHandle?.getLiveData<ApplicableCoupon>("selectedCoupon")
             ?.observe(viewLifecycleOwner) { coupon ->
@@ -282,6 +283,8 @@ class CustomerPayFragment : Fragment() {
         val info = binding.layoutReservationInfo
         info.tvMachineName.text = shopName.ifEmpty { "매장명 없음" }
         info.tvStaffName.text = staffName.ifEmpty { "디자이너 없음" }
+        info.tvReviewCount.text = "최근 시술 ${reviewCount}회"
+        info.tvStaffDescription.text = staffDescription ?: ""
         info.tvSchedule.text = formatScheduleText(selectedDate, selectedTime)
         info.tvServiceInfo.text = serviceName.ifEmpty { "서비스 정보 없음" }
         if (!staffImage.isNullOrEmpty()) {

@@ -14,18 +14,34 @@ object RetrofitClient {
     private const val NAVER_BASE_URL = "https://naveropenapi.apigw.ntruss.com/"
     private const val TAG = "RetrofitClient"
 
-    private val naverClient = OkHttpClient.Builder()
-        .connectTimeout(20, TimeUnit.SECONDS)
-        .readTimeout(20, TimeUnit.SECONDS)
-        .addInterceptor { chain ->
-            Log.d(TAG, "NCP Key ID exists: ${BuildConfig.NCP_KEY_ID.isNotEmpty()}")
-            val request = chain.request().newBuilder()
-                .addHeader("X-NCP-APIGW-API-KEY-ID", BuildConfig.NCP_KEY_ID)
-                .addHeader("X-NCP-APIGW-API-KEY", BuildConfig.NCP_SECRET_KEY)
-                .build()
-            chain.proceed(request)
+    private val naverClient by lazy {
+        Log.i("NaverAuthDebug", "🚀 Initializing naverClient (lazy init hit)")
+        val loggingInterceptor = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
         }
-        .build()
+        OkHttpClient.Builder()
+            .connectTimeout(20, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS)
+            .addInterceptor { chain ->
+                val apiKeyId = BuildConfig.NAVER_MAP_CLIENT_ID
+                val apiKey = BuildConfig.NAVER_MAP_CLIENT_SECRET
+                
+                Log.i("NaverAuthDebug", "🔑 Interceptor hit for request: ${chain.request().url}")
+                Log.i("NaverAuthDebug", "ID starts with: ${apiKeyId.take(3)}, Secret starts with: ${apiKey.take(3)}")
+
+                if (apiKeyId.isEmpty() || apiKey.isEmpty()) {
+                    Log.e("NaverAuthDebug", "❌ ERROR: One or more keys are EMPTY!")
+                }
+
+                val request = chain.request().newBuilder()
+                    .addHeader("X-NCP-APIGW-API-KEY-ID", apiKeyId)
+                    .addHeader("X-NCP-APIGW-API-KEY", apiKey)
+                    .build()
+                chain.proceed(request)
+            }
+            .addInterceptor(loggingInterceptor)
+            .build()
+    }
 
     val geocodingApi: NaverGeocodingApiService by lazy {
         Retrofit.Builder()
@@ -34,6 +50,15 @@ object RetrofitClient {
             .client(naverClient)
             .build()
             .create(NaverGeocodingApiService::class.java)
+    }
+
+    val naverSearchApi: NaverSearchApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(NAVER_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(naverClient)
+            .build()
+            .create(NaverSearchApiService::class.java)
     }
 
 
