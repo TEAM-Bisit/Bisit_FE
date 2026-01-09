@@ -57,6 +57,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private var nextCursor: Long? = null
     private var isLoading = false
+    
+    // Instant search debounce
+    private var searchHandler = Handler(Looper.getMainLooper())
+    private var searchRunnable: Runnable? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -112,6 +116,42 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 performSearch()
                 true
             } else false
+        }
+
+        setupInstantSearch()
+    }
+
+    private fun setupInstantSearch() {
+        binding.etSearch.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                searchRunnable?.let { searchHandler.removeCallbacks(it) }
+                
+                val query = s?.toString()?.trim() ?: ""
+                if (query.length >= 1) { // 한 글자만 써도 검색 시작
+                    searchRunnable = Runnable {
+                        performInstantSearch(query)
+                    }
+                    searchHandler.postDelayed(searchRunnable!!, 500) // 500ms 디바운스
+                } else {
+                    allSearchResults.clear()
+                    updateSearchResults()
+                }
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+    }
+
+    private fun performInstantSearch(query: String) {
+        if (query.isNotBlank()) {
+            nextCursor = null
+            allSearchResults.clear()
+            
+            // Search Internal Shops
+            fetchShopsByName(query)
+            
+            // Search Naver Places (External)
+            fetchNaverPlaces(query)
         }
     }
 
@@ -314,7 +354,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             position = latLng
             map = naverMap
         }
-        naverMap.moveCamera(CameraUpdate.scrollTo(latLng))
+        naverMap.moveCamera(CameraUpdate.scrollTo(latLng).animate(com.naver.maps.map.CameraAnimation.Easing))
+        naverMap.moveCamera(CameraUpdate.zoomTo(15.0).animate(com.naver.maps.map.CameraAnimation.Easing))
     }
 
     override fun onRequestPermissionsResult(
@@ -418,7 +459,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             when (item) {
                 is SearchResultItem.InternalShop -> {
                     val latLng = LatLng(item.shop.latitude, item.shop.longitude)
-                    naverMap.moveCamera(CameraUpdate.scrollTo(latLng))
+                    naverMap.moveCamera(CameraUpdate.scrollTo(latLng).animate(com.naver.maps.map.CameraAnimation.Easing))
+                    naverMap.moveCamera(CameraUpdate.zoomTo(15.0).animate(com.naver.maps.map.CameraAnimation.Easing))
                 }
                 is SearchResultItem.ExternalPlace -> {
                     // Naver Search results coords are in KATECH. 

@@ -82,7 +82,7 @@ class CustomerPayFragment : Fragment() {
                     putString("staffName", staffName)
                     putString("serviceName", serviceName)
                     putString("reservedDate", selectedDate)
-                    putString("reservedTime", if (selectedTime.length == 5) "$selectedTime:00" else selectedTime)
+                    putString("reservedTime", if (selectedTime.length > 5) selectedTime.substring(0, 5) else selectedTime)
                     // ActivityResult doesn't give orderId directly unless we saved it or pass it back. 
                     // Luckily we saved `currentOrderId` and `currentReservationId` in `createReservation`.
                     // But wait, `paymentLauncher` callback may not have access to local variables if process killed? 
@@ -185,7 +185,7 @@ class CustomerPayFragment : Fragment() {
 
         val addressLine = if (binding.tvSelectedAddress.text != "주소를 선택해주세요") binding.tvSelectedAddress.text.toString() else null
         val addressDetail = binding.etDetailAddress.text.toString().trim().ifEmpty { null }
-        val formattedTime = if (selectedTime.length == 5) "$selectedTime:00" else selectedTime
+        val formattedTime = if (selectedTime.length > 5) selectedTime.substring(0, 5) else selectedTime
 
         // 이미 생성된 예약이 있다면 재사용 (409 Conflict 방지)
         if (currentReservationId != null && currentOrderId != null) {
