@@ -27,7 +27,7 @@ class TossPayActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
     private lateinit var progressBar: ProgressBar
-    private var amount: Int = 0
+    private var amount: Long = 0L
     private var orderId: String = ""
     private var orderName: String = ""
 
@@ -52,11 +52,11 @@ class TossPayActivity : AppCompatActivity() {
         webView = findViewById(R.id.webView)
         progressBar = findViewById(R.id.progressBar)
 
-        amount = intent.getIntExtra(EXTRA_AMOUNT, 0)
+        amount = intent.getIntExtra(EXTRA_AMOUNT, 0).toLong()
         orderId = intent.getStringExtra(EXTRA_ORDER_ID) ?: ""
         orderName = intent.getStringExtra(EXTRA_ORDER_NAME) ?: "주문"
 
-        if (amount == 0 || orderId.isEmpty()) {
+        if (amount == 0L || orderId.isEmpty()) {
             Log.e(TAG, "Invalid payment data: amount=$amount, orderId=$orderId")
             Toast.makeText(this, "결제 정보가 올바르지 않습니다", Toast.LENGTH_SHORT).show()
             finish()
@@ -132,11 +132,11 @@ class TossPayActivity : AppCompatActivity() {
                 }
 
                 return when {
-                    url.startsWith("tosspayments://success") -> {
+                    url.startsWith("http://success") || url.startsWith("https://success") || url.startsWith("tosspayments://success") -> {
                         handlePaymentSuccess(url)
                         true
                     }
-                    url.startsWith("tosspayments://fail") -> {
+                    url.startsWith("http://fail") || url.startsWith("https://fail") || url.startsWith("tosspayments://fail") -> {
                         handlePaymentFailure(url)
                         true
                     }
@@ -357,8 +357,8 @@ class TossPayActivity : AppCompatActivity() {
                         paymentWidget.requestPayment({
                             orderId: '$orderId',
                             orderName: '$orderName',
-                            successUrl: 'tosspayments://success',
-                            failUrl: 'tosspayments://fail',
+                            successUrl: window.location.origin + '/success',
+                            failUrl: window.location.origin + '/fail',
                             customerEmail: 'test@test.com',
                             customerName: '테스트',
                             customerMobilePhone: '01012345678'
@@ -386,7 +386,7 @@ class TossPayActivity : AppCompatActivity() {
             val uri = Uri.parse(url)
             val paymentKey = uri.getQueryParameter("paymentKey") ?: ""
             val returnedOrderId = uri.getQueryParameter("orderId") ?: ""
-            val returnedAmount = uri.getQueryParameter("amount")?.toIntOrNull() ?: 0
+            val returnedAmount = uri.getQueryParameter("amount")?.toLongOrNull() ?: 0L
 
             Log.d(TAG, "Payment Success - paymentKey: $paymentKey, orderId: $returnedOrderId, amount: $returnedAmount")
 
@@ -408,7 +408,7 @@ class TossPayActivity : AppCompatActivity() {
         }
     }
 
-    private fun confirmPayment(paymentKey: String, orderId: String, amount: Int) {
+    private fun confirmPayment(paymentKey: String, orderId: String, amount: Long) {
         progressBar.visibility = View.VISIBLE
         
         val request = PaymentConfirmRequest(
