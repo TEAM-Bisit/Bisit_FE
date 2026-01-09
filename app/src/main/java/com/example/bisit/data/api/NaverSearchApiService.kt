@@ -7,7 +7,7 @@ import retrofit2.http.Header
 import retrofit2.http.Query
 
 interface NaverSearchApiService {
-    @GET("map-place/v1/search")
+    @GET("v1/search/local.json")
     suspend fun searchLocal(
         @Query("query") query: String,
         @Query("display") display: Int = 10,
