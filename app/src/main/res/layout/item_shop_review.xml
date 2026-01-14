@@ -83,10 +83,10 @@
                     android:layout_marginTop="6dp" />
 
                 <LinearLayout
-                    android:id="@+id/starRow"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
+                    android:gravity="center_vertical"
                     android:layout_marginTop="6dp">
 
                     <ImageView
@@ -95,29 +95,15 @@
                         android:src="@drawable/ic_home_star"
                         android:contentDescription="별" />
 
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_home_star"
-                        android:contentDescription="별" />
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_home_star"
-                        android:contentDescription="별" />
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_home_star"
-                        android:contentDescription="별" />
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_home_star"
-                        android:contentDescription="별" />
+                    <TextView
+                        android:id="@+id/tvRating"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="5.0"
+                        android:textSize="13sp"
+                        android:textColor="#222222"
+                        android:textStyle="bold"
+                        android:layout_marginStart="4dp" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>

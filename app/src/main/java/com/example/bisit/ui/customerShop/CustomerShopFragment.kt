@@ -178,7 +178,7 @@ class CustomerShopFragment : Fragment() {
             noticeTime = noticeRel ?: "",
             weeklyOpenHours = weeklyList,
             intro = introData?.intro,
-            photos = introData?.photos?.map { it.url }
+            photos = data.photos ?: introData?.photos?.map { it.url }
         )
 
         Log.d("CustomerShopFragment", "shopDetailItem created: ${shopDetailItem.name}")

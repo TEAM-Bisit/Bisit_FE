@@ -112,8 +112,12 @@ class TossPayActivity : AppCompatActivity() {
                         
                         val packageName = intent.`package`
                         if (packageName != null) {
-                           startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName")))
-                           return true
+                            try {
+                                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName")))
+                            } catch (e: Exception) {
+                                // Ignore
+                            }
+                            return true
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, "Bad URI: $url", e)

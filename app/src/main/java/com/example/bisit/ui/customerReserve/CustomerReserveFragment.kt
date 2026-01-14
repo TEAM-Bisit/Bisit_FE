@@ -568,24 +568,12 @@ class CustomerReserveFragment : Fragment() {
                 // 3. In availability set (from API)
                 val isInSet = normalizedAvailableSet.contains(slotTime)
 
-                // 4. Force open boundary slots (but only if not in past and not in break)
-                val isBoundaryStart = (breakFrom != null && slotTime == subtract30Minutes(breakFrom))
-                val isBoundaryEnd = (slotTime == breakTo)
-                
-                // [CRITICAL FIX] 17:00(breakTo) and 14:30(before breakFrom) MUST be open if NOT past and NOT in break
-                var isAvailable = (isInSet || isBoundaryStart || isBoundaryEnd) && !isPast && !isInBreak
-                
-                // Override for 17:00 persistence
-                if (isBoundaryEnd && !isPast && !isInBreak) {
-                    isAvailable = true
-                    Log.d("CustomerReserveFragment", "[BOUNDARY FORCE] $slotTime is breakTo. Forcing OPEN.")
-                }
-                if (isBoundaryStart && !isPast && !isInBreak) {
-                    isAvailable = true
-                    Log.d("CustomerReserveFragment", "[BOUNDARY FORCE] $slotTime is before break. Forcing OPEN.")
-                }
+                // [FIX] Trust the server's availableTimes (isInSet) instead of forcing boundary slots.
+                // Forcing boundary slots (like 14:00 if break ends at 14:00) can lead to RESERVATION400
+                // if the server considers those slots unavailable.
+                val isAvailable = isInSet && !isPast && !isInBreak
 
-                Log.d("CustomerReserveFragment", "[SLOT CHECK] $slotTime | FINAL OK:$isAvailable | inSet:$isInSet | isBoundS:$isBoundaryStart | isBoundE:$isBoundaryEnd | inBreak:$isInBreak | isPast:$isPast")
+                Log.d("CustomerReserveFragment", "[SLOT CHECK] $slotTime | FINAL OK:$isAvailable | inSet:$isInSet | inBreak:$isInBreak | isPast:$isPast")
 
                 val button = createTimeButton(
                     time = slotTime,

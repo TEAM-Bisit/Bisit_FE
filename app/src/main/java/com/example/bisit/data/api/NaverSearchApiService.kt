@@ -12,6 +12,7 @@ interface NaverSearchApiService {
         @Query("query") query: String,
         @Query("display") display: Int = 10,
         @Query("start") start: Int = 1,
-        @Query("sort") sort: String = "random"
+        @Query("sort") sort: String = "random",
+        @Query("coordinate") coordinate: String = "wgs84"
     ): Response<NaverSearchResponse>
 }
