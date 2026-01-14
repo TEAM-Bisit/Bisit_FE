@@ -100,6 +100,11 @@ class CustomerPayFragment : Fragment() {
         } else if (isAdded) {
             Toast.makeText(requireContext(), "결제가 취소되었습니다.", Toast.LENGTH_SHORT).show()
             binding.btnPay.isEnabled = true
+            // 결제 취소 시 생성된 예약 취소 요청 (슬롯 해제)
+            val resId = currentReservationId
+            if (resId != null) {
+                cancelPendingReservation(resId)
+            }
         }
     }
 
@@ -194,7 +199,7 @@ class CustomerPayFragment : Fragment() {
                 // 여기서는 totalPrice를 fallback으로 쓰거나, API 응답에서 저장해둔 값을 써야 함.
                 // 편의상 createReservation 응답에서 amount도 저장하거나, 일단 totalPrice 사용 (쿠폰 적용 등 고려 필요)
                 // *주의*: 정확한 금액을 위해 currentAmount 도 저장하는 것이 좋음.
-                putExtra(TossPayActivity.EXTRA_AMOUNT, currentFinalAmount ?: totalPrice) 
+                putExtra(TossPayActivity.EXTRA_AMOUNT, (currentFinalAmount?.toLong() ?: totalPrice.toLong())) 
                 putExtra(TossPayActivity.EXTRA_ORDER_ID, currentOrderId)
                 putExtra(TossPayActivity.EXTRA_ORDER_NAME, serviceName)
             }
@@ -232,7 +237,7 @@ class CustomerPayFragment : Fragment() {
                     currentFinalAmount = reservation.finalAmount
 
                     val intent = Intent(currentContext, TossPayActivity::class.java).apply {
-                        putExtra(TossPayActivity.EXTRA_AMOUNT, reservation.finalAmount)
+                        putExtra(TossPayActivity.EXTRA_AMOUNT, reservation.finalAmount.toLong())
                         putExtra(TossPayActivity.EXTRA_ORDER_ID, reservation.orderId)
                         putExtra(TossPayActivity.EXTRA_ORDER_NAME, serviceName)
                     }
@@ -246,6 +251,28 @@ class CustomerPayFragment : Fragment() {
                     Toast.makeText(currentContext, "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
                     binding.btnPay.isEnabled = true
                 }
+            }
+        }
+    }
+
+    private fun cancelPendingReservation(reservationId: Long) {
+        val currentContext = context ?: return
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val api = RetrofitClient.getReservationApi(currentContext)
+                // CancelReservationRequest might need a reason
+                val request = com.example.bisit.data.model.reservation.CancelReservationRequest(
+                    cancelReason = "결제 중단"
+                )
+                val response = api.cancelReservation(reservationId, request)
+                if (response.isSuccessful) {
+                    Log.d("CustomerPayFragment", "Pending reservation canceled successfully: $reservationId")
+                    resetCurrentReservation() // Reset IDs so they can try again if they change something
+                } else {
+                    Log.e("CustomerPayFragment", "Failed to cancel pending reservation: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                Log.e("CustomerPayFragment", "Error canceling pending reservation", e)
             }
         }
     }

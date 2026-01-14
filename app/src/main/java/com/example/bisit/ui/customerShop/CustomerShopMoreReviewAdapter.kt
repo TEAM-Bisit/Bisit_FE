@@ -18,7 +18,7 @@ class CustomerShopMoreReviewAdapter(
         val tvReviewer: TextView = view.findViewById(R.id.tvReviewer)
         val tvServiceName: TextView = view.findViewById(R.id.tvServiceName)
         val tvManager: TextView = view.findViewById(R.id.tvManager)
-        val starRow: LinearLayout = view.findViewById(R.id.starRow)
+        val tvRating: TextView = view.findViewById(R.id.tvRating)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewViewHolder {
@@ -36,11 +36,8 @@ class CustomerShopMoreReviewAdapter(
         holder.tvServiceName.text = rev.serviceName ?: "기본 서비스"
         holder.tvManager.text = rev.staffName ?: "상점 원장님"
 
-        // 별점 표시
-        for (i in 0 until holder.starRow.childCount) {
-            val star = holder.starRow.getChildAt(i)
-            star.alpha = if (i < rev.rating) 1.0f else 0.2f
-        }
+        // 별점 표시 (1개 이미지 + 숫자)
+        holder.tvRating.text = String.format("%.1f", rev.rating.toDouble())
     }
 
     override fun getItemCount(): Int = reviews.size

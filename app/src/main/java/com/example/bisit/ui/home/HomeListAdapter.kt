@@ -36,13 +36,7 @@ class HomeListAdapter(
         holder.binding.tvReviewCount.text = "(${item.reviewCount})"
         holder.binding.tvBusinessHours.text = item.businessHours ?: ""
 
-        // 별점 표시 로직 (5개 이미지 기준)
-        val starRow = holder.binding.starRow
-        for (i in 0 until starRow.childCount) {
-            val star = starRow.getChildAt(i)
-            star.alpha = if (i < item.averageRating.toInt()) 1.0f else 0.3f
-        }
-
+        // 별점 표시 로직 (1개 이미지 + 숫자)
         android.util.Log.d("HomeListAdapter", "Binding shop: ${item.shopName}, rating: $formattedRating, photos: ${item.photos}")
 
         val imageAdapter =

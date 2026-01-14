@@ -23,6 +23,7 @@ import com.example.bisit.data.model.map.ShopMapItem
 import com.example.bisit.data.model.map.SearchResultItem
 import com.example.bisit.databinding.FragmentMapBinding
 import com.naver.maps.geometry.LatLng
+import com.naver.maps.geometry.Tm128
 import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapView
@@ -148,10 +149,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             allSearchResults.clear()
             
             // Search Internal Shops
-            fetchShopsByName(query)
+            fetchShopsByName(query, moveCamera = false)
             
             // Search Naver Places (External)
-            fetchNaverPlaces(query)
+            fetchNaverPlaces(query, moveCamera = false)
         }
     }
 
@@ -184,10 +185,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             searchResultAdapter.submitList(emptyList<SearchResultItem>())
             
             // Search Internal Shops
-            fetchShopsByName(query)
+            fetchShopsByName(query, moveCamera = true)
             
             // Search Naver Places (External)
-            fetchNaverPlaces(query)
+            fetchNaverPlaces(query, moveCamera = true)
             
             Toast.makeText(context ?: return, "'$query' 검색 중...", Toast.LENGTH_SHORT).show()
         } else {
@@ -203,7 +204,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         binding.etSearch.clearFocus()
     }
 
-    private fun fetchNaverPlaces(query: String) {
+    private fun fetchNaverPlaces(query: String, moveCamera: Boolean = false) {
         Log.d(TAG, "fetchNaverPlaces: query='$query'")
         // Debugging NCP Keys
         Log.d(TAG, "NCP_CLIENT_ID exists: ${BuildConfig.NAVER_MAP_CLIENT_ID.isNotEmpty()}")
@@ -221,7 +222,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     val externalResults = items.map { SearchResultItem.ExternalPlace(it) }
                     
                     allSearchResults.addAll(externalResults as List<SearchResultItem>)
-                    updateSearchResults()
+                    updateSearchResults(moveCameraToFirst = moveCamera)
                 } else {
                     val errorBody = response.errorBody()?.string()
                     Log.e(TAG, "fetchNaverPlaces FAIL: code=${response.code()}, body=$errorBody")
@@ -235,7 +236,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    private fun updateSearchResults() {
+    private fun updateSearchResults(moveCameraToFirst: Boolean = false) {
         if (_binding == null) return
         val resultsToShow = allSearchResults.take(5)
         Log.d(TAG, "updateSearchResults: totalSearchResults=${allSearchResults.size}, showing=${resultsToShow.size}")
@@ -244,11 +245,69 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             binding.rvSearchSuggestions.visibility = View.VISIBLE
             binding.rvSearchSuggestions.bringToFront()
             searchResultAdapter.submitList(resultsToShow)
+            
+            if (moveCameraToFirst && resultsToShow.isNotEmpty()) {
+                val first = resultsToShow[0]
+                navigateToSearchResult(first)
+            }
         } else {
             binding.rvSearchSuggestions.visibility = View.GONE
         }
     }
-    private fun fetchShopsByName(name: String) {
+
+    private fun navigateToSearchResult(item: SearchResultItem) {
+        when (item) {
+            is SearchResultItem.InternalShop -> {
+                val latLng = LatLng(item.shop.latitude, item.shop.longitude)
+                showMarker(latLng, false) // Don't add a new marker if it's already there? Actually showMarker adds a search marker.
+                // Let's just move camera directly for shops
+                val cameraUpdate = CameraUpdate.scrollAndZoomTo(latLng, 15.0)
+                    .animate(com.naver.maps.map.CameraAnimation.Easing)
+                naverMap.moveCamera(cameraUpdate)
+            }
+            is SearchResultItem.ExternalPlace -> {
+                // Naver Local Search results (with coordinate=wgs84) return 10^7 scaled values
+                // Example: 1269707021 -> 126.9707021
+                val rawX = item.place.mapx.toDoubleOrNull()
+                val rawY = item.place.mapy.toDoubleOrNull()
+
+                if (rawX != null && rawY != null) {
+                    val finalLng = if (rawX > 1000) rawX / 10_000_000.0 else rawX
+                    val finalLat = if (rawY > 1000) rawY / 10_000_000.0 else rawY
+                    
+                    val latLng = LatLng(finalLat, finalLng)
+                    Log.d(TAG, "ExternalPlace conversion (WGS84): mapx=$rawX, mapy=$rawY -> LatLng=${latLng.latitude}, ${latLng.longitude}")
+                    
+                    if (latLng.latitude in 33.0..43.0 && latLng.longitude in 124.0..132.0) {
+                        showMarker(latLng, true)
+                    } else {
+                        Log.e(TAG, "Converted WGS84 coordinate still outside Korea: $latLng. Trying Tm128 fallback.")
+                        // Fallback: maybe it's still TM128? (though unlikely with wgs84 param)
+                        val tmLatLng = Tm128(rawX, rawY).toLatLng()
+                        if (tmLatLng.latitude in 33.0..43.0 && tmLatLng.longitude in 124.0..132.0) {
+                             showMarker(tmLatLng, true)
+                        } else {
+                             fallbackToAddressSearch(item)
+                        }
+                    }
+                } else {
+                    fallbackToAddressSearch(item)
+                }
+            }
+        }
+    }
+
+    private fun fallbackToAddressSearch(item: SearchResultItem.ExternalPlace) {
+        val addressToSearch = if (item.place.roadAddress != null && item.place.roadAddress.isNotEmpty()) {
+            item.place.roadAddress
+        } else {
+            item.place.address
+        }
+        if (addressToSearch != null && addressToSearch.isNotEmpty()) {
+            searchAddress(addressToSearch)
+        }
+    }
+    private fun fetchShopsByName(name: String, moveCamera: Boolean = false) {
         val currentContext = context ?: return // Fragment 분리 체크
         viewLifecycleOwner.lifecycleScope.launch {
             isLoading = true
@@ -262,7 +321,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     
                     val internalResults = shops.map { SearchResultItem.InternalShop(it) }
                     allSearchResults.addAll(internalResults as List<SearchResultItem>)
-                    updateSearchResults()
+                    updateSearchResults(moveCameraToFirst = moveCamera)
                     
                     // Show markers for internal shops
                     shops.forEach { addShopMarker(it) }
@@ -347,15 +406,18 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             })
     }
 
-    private fun showMarker(latLng: LatLng) {
+    private fun showMarker(latLng: LatLng, moveCamera: Boolean = true) {
         if (!::naverMap.isInitialized) return
         searchMarker?.map = null
         searchMarker = Marker().apply {
             position = latLng
             map = naverMap
         }
-        naverMap.moveCamera(CameraUpdate.scrollTo(latLng).animate(com.naver.maps.map.CameraAnimation.Easing))
-        naverMap.moveCamera(CameraUpdate.zoomTo(15.0).animate(com.naver.maps.map.CameraAnimation.Easing))
+        if (moveCamera) {
+            val cameraUpdate = CameraUpdate.scrollAndZoomTo(latLng, 15.0)
+                .animate(com.naver.maps.map.CameraAnimation.Easing)
+            naverMap.moveCamera(cameraUpdate)
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -456,28 +518,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private fun setupSearchResultList() {
         searchResultAdapter = MapSearchResultAdapter { item ->
             // On Item Click
-            when (item) {
-                is SearchResultItem.InternalShop -> {
-                    val latLng = LatLng(item.shop.latitude, item.shop.longitude)
-                    naverMap.moveCamera(CameraUpdate.scrollTo(latLng).animate(com.naver.maps.map.CameraAnimation.Easing))
-                    naverMap.moveCamera(CameraUpdate.zoomTo(15.0).animate(com.naver.maps.map.CameraAnimation.Easing))
-                }
-                is SearchResultItem.ExternalPlace -> {
-                    // Naver Search results coords are in KATECH. 
-                    // Best way to get LatLng is to use Geocoding API with the address provided.
-                    val addressToSearch = if (item.place.roadAddress != null && item.place.roadAddress.isNotEmpty()) {
-                        item.place.roadAddress
-                    } else {
-                        item.place.address
-                    }
-                    
-                    if (addressToSearch != null && addressToSearch.isNotEmpty()) {
-                        searchAddress(addressToSearch)
-                    } else {
-                        Toast.makeText(context, "위치 정보를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
+            navigateToSearchResult(item)
             
             binding.rvSearchSuggestions.visibility = View.GONE
             

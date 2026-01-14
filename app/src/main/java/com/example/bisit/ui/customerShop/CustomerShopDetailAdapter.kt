@@ -41,13 +41,8 @@ class CustomerShopDetailAdapter(
             binding.tvRating.text = item.rating
             binding.tvSummary.text = item.summary
 
-            // 상단 별점 표시 로직 (5개 이미지 기준)
-            val starRow = binding.starRow
-            val ratingVal = item.rating.toDoubleOrNull() ?: 0.0
-            for (i in 0 until starRow.childCount) {
-                val star = starRow.getChildAt(i)
-                star.alpha = if (i < ratingVal.toInt()) 1.0f else 0.3f
-            }
+            // 상단 별점 표시 로직 (1개 이미지 + 숫자)
+            // binding.tvRating.text is already set above
             binding.tvAddress.text = item.address
             binding.tvOpenInfo.text = item.openInfo
             binding.tvPhone.text = item.phone
@@ -119,14 +114,8 @@ class CustomerShopDetailAdapter(
                 view.findViewById<TextView>(R.id.tvServiceName)?.text = rev.serviceName ?: "기본 서비스"
                 view.findViewById<TextView>(R.id.tvManager)?.text = rev.staffName ?: "상점 원장님"
                 
-                // 별점 표시 (5개 이미지 기준)
-                val starRow = view.findViewById<LinearLayout>(R.id.starRow)
-                if (starRow != null) {
-                    for (i in 0 until starRow.childCount) {
-                        val star = starRow.getChildAt(i)
-                        star.alpha = if (i < rev.rating) 1.0f else 0.2f
-                    }
-                }
+                // 별점 표시 (1개 이미지 + 숫자)
+                view.findViewById<TextView>(R.id.tvRating)?.text = String.format("%.1f", rev.rating.toDouble())
                 
                 binding.containerReviewItems.addView(view)
             }
