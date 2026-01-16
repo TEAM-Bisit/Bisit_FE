@@ -10,5 +10,7 @@ data class MemberRoleResponse(
 data class MemberRoleData(
     val memberId: Int,
     val name: String,
-    val role: String
+    val role: String,
+    val accessToken: String,
+    val refreshToken: String
 )
