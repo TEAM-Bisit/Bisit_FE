@@ -21,4 +21,8 @@
     <style name="MyPopupMenuStyle" parent="Widget.AppCompat.PopupMenu">
         <item name="android:popupBackground">@drawable/bg_day_selection_selector</item>
     </style>
+
+    <style name="Theme.Bisit.Main" parent="Theme.Bisit">
+        <item name="android:windowDisablePreview">true</item>
+    </style>
 </resources>
