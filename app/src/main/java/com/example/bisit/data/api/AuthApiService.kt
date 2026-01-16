@@ -33,4 +33,7 @@ interface AuthApiService {
 
     @GET("/api/auth/check/phone-number")
     fun checkPhoneNumber(@Query("phoneNumber") phoneNumber: String): Call<CommonResponse<Boolean>>
+
+    @GET("/api/auth/check/email")
+    fun checkEmail(@Query("email") email: String): Call<CommonResponse<Boolean>>
 }
