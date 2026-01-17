@@ -45,37 +45,26 @@ class FindIdFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.btnVerify.setOnClickListener {
-            // TODO: 서버에 인증번호 전송 요청 (binding.etPhone.text.toString())
-            viewModel.isVerificationUiVisibleInput.value = true // UI 상태 변경
+            val phone = binding.etPhone.text.toString()
+            if (phone.isNotBlank()) {
+                viewModel.sendVerificationCode(requireContext(), phone)
+            }
         }
 
         binding.btnConfirmVerification.setOnClickListener {
-            // TODO: 서버에 인증번호 확인 요청 (binding.etVerificationCode.text.toString())
-
-            // (임시) 성공 시 다이얼로그 표시
-            val dialog = CommonInfoDialog(
-                message = "인증이 완료되었습니다.",
-                onConfirm = {
-                    viewModel.isPhoneVerifiedInput.value = true // 인증 완료 상태로 변경
-                }
-            )
-            dialog.show(parentFragmentManager, "VerificationCompleteDialog")
+            val phone = binding.etPhone.text.toString()
+            val code = binding.etVerificationCode.text.toString()
+            if (code.length == 6) {
+                viewModel.verifyCode(requireContext(), phone, code)
+            }
         }
 
         binding.btnFindId.setOnClickListener {
-            val name = binding.etName.text.toString().ifBlank { "사용자" }
-            val foundId = "bisi******t123"
+            val name = binding.etName.text.toString()
+            val phone = binding.etPhone.text.toString()
 
-            // FindIdDialog를 생성할 때
-            val dialog = FindIdDialog(
-                name = name,
-                foundId = foundId,
-                // "닫힐 때" 이 코드를 실행하라고 람다를 넘겨줌
-                onDismissCallback = {
-                    showCustomMessageDialog() // 닫히면 이어서 CustomDialog를 띄움
-                }
-            )
-            dialog.show(parentFragmentManager, "FindIdDialog")
+            // API 호출
+            viewModel.findId(requireContext(), name, phone)
         }
     }
 
@@ -145,6 +134,30 @@ class FindIdFragment : Fragment() {
             }
             // 인증 상태가 변경되었으므로, '아이디 찾기' 버튼 상태 갱신
             checkAllFieldsAndEnableFindIdButton()
+        }
+
+        // 아이디 찾기 성공 시 결과 다이얼로그 표시
+        viewModel.foundId.observe(viewLifecycleOwner) { id ->
+            id?.let {
+                val name = binding.etName.text.toString().ifBlank { "사용자" }
+                val dialog = FindIdDialog(
+                    name = name,
+                    foundId = it,
+                    onDismissCallback = { showCustomMessageDialog() }
+                )
+                dialog.show(parentFragmentManager, "FindIdDialog")
+            }
+        }
+
+        // 에러 발생 시 토스트 또는 안내 표시
+        viewModel.errorMessage.observe(viewLifecycleOwner) { msg ->
+            msg?.let {
+                CommonInfoDialog(
+                    message = it.toString(),
+                    onConfirm = {
+                    }
+                ).show(parentFragmentManager, "ErrorDialog")
+            }
         }
     }
 

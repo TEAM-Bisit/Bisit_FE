@@ -1,6 +1,7 @@
 package com.example.bisit.data.api
 
 import com.example.bisit.data.model.auth.AuthResponse
+import com.example.bisit.data.model.auth.FindIdRequest
 import com.example.bisit.data.model.auth.LoginRequest
 import com.example.bisit.data.model.auth.LoginResponse
 import com.example.bisit.data.model.signUp.SignUpRequest
@@ -33,4 +34,7 @@ interface AuthApiService {
 
     @GET("/api/auth/check/phone-number")
     fun checkPhoneNumber(@Query("phoneNumber") phoneNumber: String): Call<CommonResponse<Boolean>>
+
+    @POST("/api/auth/find-id")
+    fun findId(@Body request: FindIdRequest): Call<CommonResponse<String>>
 }
