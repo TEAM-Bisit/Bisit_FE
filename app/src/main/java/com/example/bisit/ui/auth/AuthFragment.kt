@@ -3,10 +3,10 @@ package com.example.bisit.ui.auth
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -28,16 +28,25 @@ class AuthFragment : Fragment(), UserTypeDialog.UserTypeDialogListener {
 
     private val loginViewModel: LoginViewModel by viewModels()
 
+    // 1️⃣ 소셜 로그인 결과 수신 런처
     private val socialLoginLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            val accessToken = result.data?.getStringExtra("ACCESS_TOKEN")
-            val refreshToken = result.data?.getStringExtra("REFRESH_TOKEN")
+            val data = result.data
+            val accessToken = data?.getStringExtra("ACCESS_TOKEN")
+            val refreshToken = data?.getStringExtra("REFRESH_TOKEN")
 
-            if (accessToken != null && refreshToken != null) {
-                // 추출한 토큰을 LoginViewModel을 통해 저장하고 후속 작업 진행
-                loginViewModel.handleSocialLoginSuccess(requireContext(), accessToken, refreshToken)
+            // socialLoginLauncher 내부 수정
+            if (accessToken != null) {
+                Log.d("LoginSuccess", "소셜 토큰 수신 완료 -> ViewModel로 전달")
+
+                // [수정] requireContext()를 추가하고, refreshToken이 null일 경우 빈 문자열("") 등을 전달합니다.
+                loginViewModel.handleSocialLoginSuccess(
+                    requireContext(),
+                    accessToken,
+                    refreshToken ?: ""
+                )
             }
         }
     }
@@ -53,69 +62,77 @@ class AuthFragment : Fragment(), UserTypeDialog.UserTypeDialogListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.logoImg.setOnClickListener {
-            handleLogoTaps()
-        }
+        // 로고 클릭 (디버그용)
+        binding.logoImg.setOnClickListener { handleLogoTaps() }
 
+        // 회원가입 버튼
         binding.signupText.setOnClickListener {
             val intent = Intent(requireContext(), SignUpActivity::class.java).apply {
-                // 유형 선택을 건너뛰고 정보 입력 화면으로 가라는 신호 전달
                 putExtra("START_DESTINATION", "INFO")
             }
             startActivity(intent)
         }
 
+        // 일반 로그인 버튼
         binding.loginBtn.setOnClickListener {
             startActivity(Intent(requireContext(), LoginActivity::class.java))
         }
 
-        binding.naverBtn.setOnClickListener {
-            val intent = Intent(requireContext(), SocialLoginActivity::class.java).apply {
-                putExtra("PROVIDER", "naver")
-            }
-            socialLoginLauncher.launch(intent)
-        }
+        // 네이버/카카오 로그인 버튼
+        binding.naverBtn.setOnClickListener { launchSocialLogin("naver") }
+        binding.kakaoBtn.setOnClickListener { launchSocialLogin("kakao") }
 
-        binding.kakaoBtn.setOnClickListener {
-            val intent = Intent(requireContext(), SocialLoginActivity::class.java).apply {
-                putExtra("PROVIDER", "kakao")
-            }
-            socialLoginLauncher.launch(intent)
-        }
+        // 2️⃣ 로그인 결과 관찰 (소셜 로그인과 일반 로그인 공통 사용)
+        setupLoginObserver()
+    }
 
+    private fun launchSocialLogin(provider: String) {
+        val intent = Intent(requireContext(), SocialLoginActivity::class.java).apply {
+            putExtra("PROVIDER", provider)
+        }
+        socialLoginLauncher.launch(intent)
+    }
+
+    private fun setupLoginObserver() {
         loginViewModel.loginResult.observe(viewLifecycleOwner) { isSuccess ->
             if (isSuccess) {
+                // ViewModel이 처리를 완료하면 저장된 userType을 가져와 이동합니다.
                 val userType = loginViewModel.userType.value
-                when (userType) {
-                    "owner", "customer" -> {
-                        // 이미 가입된 유저라면 메인 화면으로 이동
-                        val intent = Intent(requireContext(), MainActivity::class.java).apply {
-                            putExtra("USER_TYPE", userType)
-                        }
-                        startActivity(intent)
-                        activity?.finish()
-                    }
-                    "none" -> {
-                        val intent = Intent(requireContext(), SignUpActivity::class.java)
-                        startActivity(intent)
-                        activity?.finish()
-                    }
-                }
+                handleUserTypeNavigation(userType)
             } else {
-                // 소셜 로그인 실패 시에도 상세 에러 코드에 따라 다이얼로그 처리 가능
-                val code = loginViewModel.errorCode.value
-                val message = loginViewModel.errorMessage.value ?: "소셜 로그인에 실패했습니다."
-
-                // LoginCredentialsFragment에서 만든 showWrongPasswordDialog 등을 동일하게 호출
+                val message = loginViewModel.errorMessage.value ?: "로그인에 실패했습니다."
                 showErrorDialog(message)
             }
         }
     }
 
+    private fun handleUserTypeNavigation(userType: String?) {
+        val type = userType?.lowercase() ?: "none"
+        Log.d("Navigation", "이동할 유저 타입: $type")
+
+        if (type == "owner" || type == "customer") {
+            // 이미 가입된 유저 -> 메인 화면으로 이동
+            val intent = Intent(requireContext(), MainActivity::class.java).apply {
+                putExtra("USER_TYPE", type)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            startActivity(intent)
+            requireActivity().finish()
+        } else {
+            // 신규 유저 ("none") -> 역할 선택(회원가입) 화면으로 이동
+            val intent = Intent(requireContext(), SignUpActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            startActivity(intent)
+            requireActivity().finish()
+        }
+    }
+
+    // --- 이하 로고 탭 및 다이얼로그 처리 로직 (기존과 동일) ---
+
     private fun handleLogoTaps() {
         System.arraycopy(tapTimestamps, 1, tapTimestamps, 0, tapTimestamps.size - 1)
         tapTimestamps[tapTimestamps.size - 1] = System.currentTimeMillis()
-
         if (tapTimestamps[0] >= (System.currentTimeMillis() - tapTimeWindow)) {
             tapTimestamps.fill(0)
             showUserTypeDialog()
@@ -132,19 +149,8 @@ class AuthFragment : Fragment(), UserTypeDialog.UserTypeDialogListener {
         (activity as? AuthActivity)?.navigateToMainActivity(userType)
     }
 
-    private fun launchSignUpActivityWithUserType() {
-        val intent = Intent(requireContext(), SignUpActivity::class.java).apply {
-            putExtra("START_DESTINATION", "USER_TYPE")
-        }
-        startActivity(intent)
-    }
-
     private fun showErrorDialog(msg: String) {
-        val dialog = CommonInfoDialog(
-            message = msg,
-            onConfirm = { /* 확인 버튼 클릭 시 동작이 필요하면 여기에 작성 */ }
-        )
-        dialog.show(parentFragmentManager, "ErrorDialog")
+        CommonInfoDialog(message = msg, onConfirm = { }).show(parentFragmentManager, "ErrorDialog")
     }
 
     override fun onDestroyView() {

@@ -38,17 +38,28 @@ class SocialLoginActivity : AppCompatActivity() {
                 val url = request?.url.toString()
                 Log.d("WebViewURL", "URL 이동 감지: $url")
 
-                if (url.contains("accessToken=")) {
-                    val uri = Uri.parse(url)
-                    val intent = Intent().apply {
-                        putExtra("ACCESS_TOKEN", uri.getQueryParameter("accessToken"))
-                        putExtra("REFRESH_TOKEN", uri.getQueryParameter("refreshToken"))
+                // 1. [수정] 백엔드가 보내는 "access_token=" (언더바 포함) 형식을 감지합니다.
+                if (url.contains("access_token=")) {
+                    // [핵심] '#' 뒤에 토큰이 오므로, '#'을 '?'로 바꿔야 Uri.parse가 파라미터로 인식합니다.
+                    val fixedUrl = url.replace("#", "?")
+                    val uri = Uri.parse(fixedUrl)
+
+                    // [수정] 키값도 백엔드 규격에 맞춰 "access_token", "refresh_token"으로 가져옵니다.
+                    val accessToken = uri.getQueryParameter("access_token")
+                    val refreshToken = uri.getQueryParameter("refresh_token")
+
+                    if (accessToken != null) {
+                        val intent = Intent().apply {
+                            putExtra("ACCESS_TOKEN", accessToken)
+                            putExtra("REFRESH_TOKEN", refreshToken)
+                        }
+                        setResult(RESULT_OK, intent)
+                        finish() // 토큰을 챙겼으므로 웹뷰를 닫고 이전 화면으로 돌아갑니다.
+                        return true // 웹뷰가 이 주소로 실제 접속하는 것을 막습니다. (400 에러 방지)
                     }
-                    setResult(RESULT_OK, intent)
-                    finish()
-                    return true
                 }
 
+                // 2. 외부 앱 실행 (카카오톡, 네이버 앱 등) 처리 로직
                 if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("javascript:")) {
                     try {
                         val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
