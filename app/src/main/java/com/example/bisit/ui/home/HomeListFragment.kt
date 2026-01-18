@@ -15,6 +15,12 @@ import com.example.bisit.R
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 
 class HomeListFragment : Fragment() {
 
@@ -31,6 +37,23 @@ class HomeListFragment : Fragment() {
     private var isLoading: Boolean = false
 
     private val TAG = "HomeListFragment"
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var userLat: Double? = null
+    private var userLng: Double? = null
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
+            fetchCurrentLocation {
+                resetPaginationAndLoad()
+            }
+        } else {
+            Toast.makeText(requireContext(), "위치 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,10 +80,48 @@ class HomeListFragment : Fragment() {
         setupRecyclerView()
         setupInfiniteScroll()
 
-        loadShopList()
-
         binding.btnBack.setOnClickListener {
             findNavController().popBackStack()
+        }
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+        checkLocationPermissionAndLoad()
+    }
+
+    private fun checkLocationPermissionAndLoad() {
+        val fineLocation = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+        val coarseLocation = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
+
+        if (fineLocation == PackageManager.PERMISSION_GRANTED || coarseLocation == PackageManager.PERMISSION_GRANTED) {
+            fetchCurrentLocation {
+                resetPaginationAndLoad()
+            }
+        } else {
+            requestPermissionLauncher.launch(arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ))
+        }
+    }
+
+    private fun fetchCurrentLocation(onComplete: () -> Unit) {
+        try {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null) {
+                    userLat = location.latitude
+                    userLng = location.longitude
+                    Log.d(TAG, "현재 위치 가져오기 성공: $userLat, $userLng")
+                } else {
+                    Log.w(TAG, "현재 위치를 가져올 수 없음 (null) -> 테스트를 위해 대구 좌표로 설정")
+                    // 테스트를 위해 대구 좌표로 설정 (가게 주소가 대구임)
+                    userLat = 35.8714
+                    userLng = 128.6014
+                }
+                onComplete()
+            }
+        } catch (e: SecurityException) {
+            Log.e(TAG, "위치 권한 오류", e)
+            onComplete()
         }
     }
 
@@ -129,6 +190,7 @@ class HomeListFragment : Fragment() {
         
         Log.d(TAG, "===== loadShopList() 호출됨 (cursor=$cursor) =====")
         Log.d(TAG, "요청 파라미터 → category=$currentCategory, sort=$currentSortType")
+        Log.d(TAG, "토큰 존재 여부: ${com.example.bisit.data.api.TokenManager.getAccessToken(requireContext()) != null}")
 
         lifecycleScope.launch {
             try {
@@ -136,10 +198,10 @@ class HomeListFragment : Fragment() {
                 
                 val resp = api.getShopsByCategory(
                     category = currentCategory,
-                    lat = 37.5665,     // TODO: 실제 위치 넣기
-                    lng = 126.9780,
+                    lat = userLat,
+                    lng = userLng,
                     sortType = currentSortType,
-                    cursor = cursor
+                    cursor = cursor ?: 0L // 첫 페이지일 경우 0L 전달
                 )
 
                 Log.d(TAG, "API 응답 성공: size=${resp.data.content.size}, hasNext=${resp.data.hasNext}, nextCursor=${resp.data.nextCursor}")

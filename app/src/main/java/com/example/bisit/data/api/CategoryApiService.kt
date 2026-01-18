@@ -12,7 +12,7 @@ interface CategoryApiService {
         @Query("userLatitude") lat: Double?,
         @Query("userLongitude") lng: Double?,
         @Query("sortType") sortType: String = "DISTANCE",
-        @Query("cursor") cursor: Long? = null,
+        @Query("cursor") cursor: Long = 0,
         @Query("size") size: Int = 20
     ): CategoryShopResponse
 

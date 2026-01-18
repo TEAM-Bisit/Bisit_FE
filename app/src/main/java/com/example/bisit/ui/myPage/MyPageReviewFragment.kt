@@ -122,7 +122,7 @@ class MyPageReviewFragment : Fragment() {
         val btnClose = dialogView.findViewById<View>(R.id.btnClose)
         val etReview = dialogView.findViewById<EditText>(R.id.etReview)
         val tvTextCount = dialogView.findViewById<TextView>(R.id.tvTextCount)
-        val btnSummit = dialogView.findViewById<View>(R.id.btnSummit)
+        val btnSummit = dialogView.findViewById<TextView>(R.id.btnSummit) // Changed to TextView if it is indeed a TextView with text
 
         val star1 = dialogView.findViewById<ImageView>(R.id.star1)
         val star2 = dialogView.findViewById<ImageView>(R.id.star2)
@@ -137,6 +137,16 @@ class MyPageReviewFragment : Fragment() {
         var currentScore = review.rating // Use rating instead of score
         val stars = listOf(star1, star2, star3, star4, star5)
 
+        fun updateSubmitButton(length: Int) {
+            if (length > 0) {
+                btnSummit.isEnabled = true
+                btnSummit.setTextColor(Color.parseColor("#007AFF")) // Blue color for active
+            } else {
+                btnSummit.isEnabled = false
+                btnSummit.setTextColor(Color.LTGRAY) // Gray color for inactive
+            }
+        }
+
         fun updateStars(score: Int) {
             currentScore = score
             stars.forEachIndexed { index, imageView ->
@@ -148,6 +158,7 @@ class MyPageReviewFragment : Fragment() {
             }
         }
         updateStars(currentScore)
+        updateSubmitButton(review.content.length)
 
         stars.forEachIndexed { index, imageView ->
             imageView.setOnClickListener { updateStars(index + 1) }
@@ -158,6 +169,7 @@ class MyPageReviewFragment : Fragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val textLength = s?.length ?: 0
                 tvTextCount.text = "$textLength/30자"
+                updateSubmitButton(textLength)
             }
             override fun afterTextChanged(s: Editable?) {}
         })
@@ -168,8 +180,7 @@ class MyPageReviewFragment : Fragment() {
 
         btnSummit.setOnClickListener {
             val content = etReview.text.toString()
-            val reservationId = "dummy_reservation_id" 
-            val request = ReviewRequest(reservationId, currentScore, content)
+            val request = com.example.bisit.data.model.review.ReviewUpdateRequest(currentScore, content)
 
             RetrofitClient.getReviewApi(requireContext()).updateReview(review.reviewId, request)
                 .enqueue(object : Callback<ReviewUpdateResponse> {

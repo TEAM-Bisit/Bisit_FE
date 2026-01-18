@@ -176,26 +176,22 @@ class CustomerReserveFragment : Fragment() {
             if (isAutoScrolling) return@OnScrollChangedListener
 
             val scrollY = bind.scrollView.scrollY
+            
+            // Section offsets - using parent containers for better boundary detection
+            // 0: Designer Info / Top
+            // 1: Date/Time (starts around line 94 in XML)
+            // 2: Service Menu (starts around line 202 in XML)
+            // 3: Visit Type (starts around line 240 in XML)
 
-            // Force step 0 at the very top
-            if (scrollY == 0) {
-                if (currentStep != 0) {
-                    currentStep = 0
-                    (bind.stepProgressView as? StepProgressView)?.setCurrentStep(currentStep)
-                }
-                return@OnScrollChangedListener
-            }
+            // Finding the parent LinearLayouts for these sections
+            val dateTimeSection = bind.layoutTimeSlots.parent as View
+            val serviceSection = bind.layoutServiceMenuSection.parent as View
+            val visitSection = bind.radioGroupVisitType.parent as View
 
-            val serviceSectionTop = bind.layoutServiceMenuSection.top
-            val visitSectionTop = bind.radioGroupVisitType.top
-
-            if (serviceSectionTop == 0 || visitSectionTop == 0) return@OnScrollChangedListener
-
-            // Adjusted thresholds to be more responsive
             val step = when {
-                scrollY >= visitSectionTop - 300 -> 3
-                scrollY >= serviceSectionTop - 300 -> 2
-                scrollY >= 200 -> 1
+                scrollY >= visitSection.top - 150 -> 3
+                scrollY >= serviceSection.top - 150 -> 2
+                scrollY >= dateTimeSection.top - 150 -> 1
                 else -> 0
             }
 
@@ -858,38 +854,23 @@ class CustomerReserveFragment : Fragment() {
     }
 
     private fun updateStepProgress() {
-        var progress = 0
-        if (selectedDate != null) progress = 1
-        if (selectedTime != null) progress = 2
-        if (selectedTreatment != null) progress = 3
-        if (selectedVisitType != null) progress = 4
-        
-        // Map to 0-3 range for StepProgressView (which has 4 steps)
-        // Step 0: Date/Time (combined logic in UI flow, but here separated)
-        // Let's align with scroll listener logic:
-        // 0: Initial
-        // 1: Date Selected
-        // 2: Time Selected
-        // 3: Service Selected
-        
-        // Actually, let's just update based on what's done
-        // The scroll listener updates currentStep based on scroll position.
-        // Here we might want to advance the step index if we want to show progress.
-        // But the StepProgressView seems to be about "current active step" rather than "completed steps".
-        // So maybe we don't need to force set it here unless we want to jump.
-        // Let's just leave it to scroll listener or manual jumps.
-        
-        // However, the error log says updateStepProgress is missing.
-        // So I must provide it.
-        // Let's make it check completion and maybe update UI if needed.
-        
-        if (isAllStepsComplete()) {
-             // Maybe highlight all?
-        }
+        // ...Existing progress logic if any...
+        updateNextButton()
     }
 
     private fun updateNextButton() {
-        binding?.btnNextStep?.isEnabled = isAllStepsComplete()
+        val isComplete = isAllStepsComplete()
+        binding?.btnNextStep?.apply {
+            isEnabled = isComplete
+            // Visual feedback for disabled state
+            if (isComplete) {
+                backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#4076FF"))
+                alpha = 1.0f
+            } else {
+                backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#E0E0E0"))
+                alpha = 0.5f
+            }
+        }
     }
 
     private fun isAllStepsComplete(): Boolean {
