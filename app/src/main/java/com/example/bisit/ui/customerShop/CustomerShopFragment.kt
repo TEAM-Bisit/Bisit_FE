@@ -57,7 +57,7 @@ class CustomerShopFragment : Fragment() {
         }
 
         binding.rvShopDetail.layoutManager = LinearLayoutManager(requireContext())
-        adapter = CustomerShopDetailAdapter(emptyList(), emptyList(), emptyList())
+        adapter = CustomerShopDetailAdapter(emptyList(), emptyList(), emptyList()) {}
         binding.rvShopDetail.adapter = adapter
 
         binding.shopBack.setOnClickListener { parentFragmentManager.popBackStack() }
@@ -169,7 +169,7 @@ class CustomerShopFragment : Fragment() {
             name = data.shopName ?: "",
             category = data.category ?: "",
             review = "리뷰 ${data.reviewCount ?: 0}개",
-            rating = (data.averageRating?.toString() ?: "0.0"),
+            rating = String.format("%.1f", data.averageRating ?: 0.0),
             summary = data.shortIntro ?: "",
             address = "${data.address ?: ""} ${data.detailAddress ?: ""}".trim(),
             openInfo = data.todayBusinessHours?.replace(" ~ ", "~") ?: "",
@@ -178,7 +178,7 @@ class CustomerShopFragment : Fragment() {
             noticeTime = noticeRel ?: "",
             weeklyOpenHours = weeklyList,
             intro = introData?.intro,
-            photos = introData?.photos?.map { it.url }
+            photos = data.photos ?: introData?.photos?.map { it.url }
         )
 
         Log.d("CustomerShopFragment", "shopDetailItem created: ${shopDetailItem.name}")
@@ -189,14 +189,30 @@ class CustomerShopFragment : Fragment() {
 
         // Create or update adapter
         if (!::adapter.isInitialized) {
-            adapter = CustomerShopDetailAdapter(listOf(shopDetailItem), listOf(services), listOf(reviews))
+            adapter = CustomerShopDetailAdapter(listOf(shopDetailItem), listOf(services), listOf(reviews)) {
+                navigateToMoreReviews()
+            }
             binding.rvShopDetail.adapter = adapter
             Log.d("CustomerShopFragment", "Adapter initialized with ${adapter.itemCount} items, ${services.size} services, ${reviews.size} reviews")
         } else {
             // If adapter already exists, we need to recreate with new shop data
-            adapter = CustomerShopDetailAdapter(listOf(shopDetailItem), listOf(services), listOf(reviews))
+            adapter = CustomerShopDetailAdapter(listOf(shopDetailItem), listOf(services), listOf(reviews)) {
+                navigateToMoreReviews()
+            }
             binding.rvShopDetail.adapter = adapter
             Log.d("CustomerShopFragment", "Adapter recreated with updated shop data")
+        }
+    }
+
+    private fun navigateToMoreReviews() {
+        try {
+            val bundle = Bundle().apply {
+                putLong("shopId", shopId)
+            }
+            findNavController().navigate(R.id.action_customerShopFragment_to_customerShopMoreReviewFragment, bundle)
+        } catch (e: Exception) {
+            Log.e("CustomerShopFragment", "Nav Error", e)
+            Toast.makeText(requireContext(), "화면 이동 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
         }
     }
 

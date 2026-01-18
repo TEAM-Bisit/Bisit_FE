@@ -55,4 +55,8 @@ class StaffManageRepository(
     suspend fun getApprovedStaffs(shopId: Long): List<ApprovedStaffItem> {
         return api.getApprovedStaffs(shopId).data
     }
+
+    suspend fun hasPendingStaff(shopId: Long): Boolean {
+        return api.getPendingStaffs(shopId).data.isNotEmpty()
+    }
 }

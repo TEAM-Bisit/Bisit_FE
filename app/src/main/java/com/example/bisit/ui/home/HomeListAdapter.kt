@@ -31,11 +31,13 @@ class HomeListAdapter(
 
         holder.binding.tvName.text = item.shopName
         holder.binding.tvCategory.text = item.category
-        holder.binding.tvRating.text = item.averageRating.toString()
+        val formattedRating = String.format("%.1f", item.averageRating)
+        holder.binding.tvRating.text = formattedRating
         holder.binding.tvReviewCount.text = "(${item.reviewCount})"
         holder.binding.tvBusinessHours.text = item.businessHours ?: ""
 
-        android.util.Log.d("HomeListAdapter", "Binding shop: ${item.shopName}, photos: ${item.photos}")
+        // 별점 표시 로직 (1개 이미지 + 숫자)
+        android.util.Log.d("HomeListAdapter", "Binding shop: ${item.shopName}, rating: $formattedRating, photos: ${item.photos}")
 
         val imageAdapter =
             HomeListImageAdapter(item.photos, item.hasVisitService ?: false)

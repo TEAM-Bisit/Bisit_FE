@@ -110,9 +110,16 @@ class CustomerMyReserveDetailFragment : Fragment() {
                     tvStatus.setTextColor(resources.getColor(R.color.muted_gray, null))
                 }
 
-                btnReview.isEnabled = isCompleted || data.status.uppercase() == "CUSTOMER_CONFIRMED"
+                // Review button logic
+                val canReview = (isCompleted || data.status.uppercase() == "CUSTOMER_CONFIRMED") && !data.isReviewed
+                btnReview.isEnabled = canReview
                 btnReview.alpha = if (btnReview.isEnabled) 1.0f else 0.5f
-                btnReview.text = if (btnReview.isEnabled) "리뷰 작성하기" else "리뷰 작성 불가"
+                if (data.isReviewed) {
+                    btnReview.text = "작성 완료"
+                } else {
+                    btnReview.text = if (isCompleted || data.status.uppercase() == "CUSTOMER_CONFIRMED") "리뷰 작성하기" else "리뷰 작성 불가"
+                }
+                
                 btnReview.setOnClickListener {
                     showReviewDialog()
                 }

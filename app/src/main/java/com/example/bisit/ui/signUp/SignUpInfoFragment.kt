@@ -34,6 +34,8 @@ class SignUpInfoFragment : Fragment() {
 
     private val smsApi by lazy { RetrofitClient.getSmsApi(requireContext()) }
 
+    private val authApi by lazy { RetrofitClient.getAuthApi(requireContext()) }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -61,7 +63,8 @@ class SignUpInfoFragment : Fragment() {
         }
 
         binding.btnNext.setOnClickListener {
-            showTermsSheet()
+            val email = binding.etEmail.text.toString()
+            checkEmailAndProceed(email)
         }
 
         val blockHyphenFilter = InputFilter { source, start, end, dest, dstart, dend ->
@@ -280,6 +283,36 @@ class SignUpInfoFragment : Fragment() {
             }
             override fun onFailure(call: retrofit2.Call<SmsResponse>, t: Throwable) {
                 showErrorDialog("네트워크 오류로 인증번호를 보낼 수 없습니다.")
+            }
+        })
+    }
+
+    private fun checkEmailAndProceed(email: String) {
+        authApi.checkEmail(email).enqueue(object : retrofit2.Callback<CommonResponse<Boolean>> {
+            override fun onResponse(
+                call: retrofit2.Call<CommonResponse<Boolean>>,
+                response: retrofit2.Response<CommonResponse<Boolean>>
+            ) {
+                if (response.isSuccessful) {
+                    val isAvailable = response.body()?.data == true
+
+                    if (isAvailable) {
+                        // 중복되지 않으면 약관 시트 표시
+                        showTermsSheet()
+                    } else {
+                        // 중복된 경우 다이얼로그 표시
+                        CommonInfoDialog(
+                            message = "이미 존재하는 이메일입니다.",
+                            onConfirm = { }
+                        ).show(parentFragmentManager, "EmailDuplicateDialog")
+                    }
+                } else {
+                    showErrorDialog("이미 존재하는 이메일입니다.")
+                }
+            }
+
+            override fun onFailure(call: retrofit2.Call<CommonResponse<Boolean>>, t: Throwable) {
+                showErrorDialog("네트워크 오류가 발생했습니다.")
             }
         })
     }

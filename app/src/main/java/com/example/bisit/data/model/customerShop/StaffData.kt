@@ -6,5 +6,6 @@ data class StaffData(
     val description: String?,
     val image: String?,
     val averageRating: Double,
-    val reviewCount: Int
+    val reviewCount: Int,
+    val treatmentCount: Int
 )

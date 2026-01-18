@@ -15,6 +15,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.widget.CompoundButtonCompat
+import com.example.bisit.data.model.customerShop.BusinessHourItem
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -24,6 +25,8 @@ import com.example.bisit.R
 import com.example.bisit.data.api.RetrofitClient
 import com.example.bisit.data.model.reservation.TreatmentData
 import com.example.bisit.databinding.FragmentCustomerReserveBinding
+import com.example.bisit.data.model.shop.ShopDetailResponse
+import com.example.bisit.data.model.shop.WeeklyBusinessHour
 import com.example.bisit.widget.StepProgressView
 import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.launch
@@ -62,13 +65,14 @@ class CustomerReserveFragment : Fragment() {
     private var shopId: Long = -1L
     private var staffName: String = ""
     private var staffImage: String? = null
-    private var reviewCount: Int = 0
+    private var treatmentCount: Int = 0
     private var shopName: String = ""
     private var staffDescription: String? = null
 
     // API data
     private var availableTimes: List<String> = emptyList()
     private var treatments: List<TreatmentData> = emptyList()
+    private var storedBusinessHours: List<BusinessHourItem>? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -81,7 +85,7 @@ class CustomerReserveFragment : Fragment() {
         shopId = arguments?.getLong("shopId") ?: -1L
         staffName = arguments?.getString("staffName") ?: ""
         staffImage = arguments?.getString("staffImage")
-        reviewCount = arguments?.getInt("reviewCount", 0) ?: 0
+        treatmentCount = arguments?.getInt("treatmentCount", 0) ?: 0
         shopName = arguments?.getString("shopName") ?: ""
         staffDescription = arguments?.getString("staffDescription")
 
@@ -95,6 +99,10 @@ class CustomerReserveFragment : Fragment() {
 
         setupDesignerInfo()
         setupDesignerComment()
+
+        // Set dynamic shop name
+        val tvShopName = binding?.root?.findViewById<TextView>(R.id.tvShopName)
+        tvShopName?.text = if (shopName.isNotEmpty()) shopName else "매장 정보"
 
         setupStepProgress()
         setupCalendar()
@@ -150,7 +158,7 @@ class CustomerReserveFragment : Fragment() {
                     putString("serviceName", getSelectedServiceName())
                     putString("staffName", staffName)
                     putString("staffImage", staffImage)
-                    putInt("reviewCount", reviewCount)
+                    putInt("treatmentCount", treatmentCount)
                     putString("staffDescription", staffDescription)
                     putString("shopName", shopName)
                 }
@@ -208,23 +216,23 @@ class CustomerReserveFragment : Fragment() {
 
     private fun setupCalendar() {
         calendarAdapter = CalendarAdapter { date ->
-            val isFirstSelection = selectedDate == null
+            val isDateChanged = selectedDate?.timeInMillis != date.timeInMillis
+
             selectedDate = date
             calendarAdapter.setSelectedDate(date)
+
+            if (isDateChanged) {
+                resetTimeSelection()
+            }
+
             val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             val dateStr = dateFormat.format(date.time)
+
             loadStaffAvailability(staffId, dateStr)
-        if (isFirstSelection) {
-                // Scroll to the calendar card instead of time slots to keep calendar visible
-                val calendarCard = binding?.rvCalendar?.parent?.parent as? View
-                if (calendarCard != null) {
-                    smoothScrollToView(calendarCard)
-                } else {
-                    smoothScrollToView(binding?.layoutTimeSlots ?: return@CalendarAdapter)
-                }
-            }
+
             updateStepProgress()
         }
+
 
         binding?.rvCalendar?.apply {
             layoutManager = GridLayoutManager(requireContext(), 7)
@@ -251,12 +259,14 @@ class CustomerReserveFragment : Fragment() {
             try {
                 val api = RetrofitClient.getCustomerShopApi(requireContext())
                 val response = api.getShopDetail(shopId)
-                
+
                 if (response.isSuccessful && response.body() != null) {
-                    val shopData = response.body()!!.data
+                    val shopData = response.body()?.data
+                    // API 응답 타입에 맞춰 BusinessHourItem으로 처리 (혹은 WeeklyBusinessHour)
+                    val businessHours = shopData?.weeklyBusinessHours ?: emptyList()
                     val closedDays = mutableSetOf<Int>()
-                    
-                    shopData?.weeklyBusinessHours?.forEach { hour ->
+
+                    businessHours.forEach { hour ->
                         if (hour.isClosed == true) {
                             val dayConstant = mapDayToCalendar(hour.day)
                             if (dayConstant != -1) {
@@ -264,11 +274,17 @@ class CustomerReserveFragment : Fragment() {
                             }
                         }
                     }
-                    
+
                     if (closedDays.isNotEmpty()) {
                         Log.d("CustomerReserveFragment", "Closed days: $closedDays")
                         calendarAdapter.setClosedDays(closedDays)
                     }
+
+                    // 전역 변수에 저장
+                    storedBusinessHours = businessHours
+
+                    // 신규: 상세 영업시간 API 추가 호출 (브레이크 타임 정확도 향상)
+                    loadDetailedBusinessHours(shopId)
                 }
             } catch (e: Exception) {
                 Log.e("CustomerReserveFragment", "Error loading shop details", e)
@@ -276,16 +292,37 @@ class CustomerReserveFragment : Fragment() {
         }
     }
 
+    private fun loadDetailedBusinessHours(shopId: Long) {
+        lifecycleScope.launch {
+            try {
+                val api = RetrofitClient.getShopApi(requireContext())
+                val response = api.getBusinessHours(shopId)
+                if (response.isSuccessful && response.body() != null) {
+                    storedBusinessHours = response.body()?.data
+                    Log.d("CustomerReserveFragment", "Loaded detailed business hours: ${storedBusinessHours?.size}")
+                    // 영업시간이 새로 로드되면 달력 UI와 슬롯을 갱신할 수 있음
+                    selectedDate?.let { date ->
+                        val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date.time)
+                        renderAvailableTimes(availableTimes, dateStr)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("CustomerReserveFragment", "Error loading detailed business hours", e)
+            }
+        }
+    }
+
     private fun mapDayToCalendar(day: String?): Int {
         if (day == null) return -1
-        return when (day.uppercase(Locale.ROOT)) {
-            "SUNDAY", "SUN", "일", "일요일" -> Calendar.SUNDAY
-            "MONDAY", "MON", "월", "월요일" -> Calendar.MONDAY
-            "TUESDAY", "TUE", "화", "화요일" -> Calendar.TUESDAY
-            "WEDNESDAY", "WED", "수", "수요일" -> Calendar.WEDNESDAY
-            "THURSDAY", "THU", "목", "목요일" -> Calendar.THURSDAY
-            "FRIDAY", "FRI", "금", "금요일" -> Calendar.FRIDAY
-            "SATURDAY", "SAT", "토", "토요일" -> Calendar.SATURDAY
+        val normalized = day.uppercase(Locale.ROOT)
+        return when {
+            normalized.contains("SUN") || normalized.contains("일요일") || normalized == "일" -> Calendar.SUNDAY
+            normalized.contains("MON") || normalized.contains("월요일") || normalized == "월" -> Calendar.MONDAY
+            normalized.contains("TUE") || normalized.contains("화요일") || normalized == "화" -> Calendar.TUESDAY
+            normalized.contains("WED") || normalized.contains("수요일") || normalized == "수" -> Calendar.WEDNESDAY
+            normalized.contains("THU") || normalized.contains("목요일") || normalized == "목" -> Calendar.THURSDAY
+            normalized.contains("FRI") || normalized.contains("금요일") || normalized == "금" -> Calendar.FRIDAY
+            normalized.contains("SAT") || normalized.contains("토요일") || normalized == "토" -> Calendar.SATURDAY
             else -> -1
         }
     }
@@ -331,32 +368,32 @@ class CustomerReserveFragment : Fragment() {
                 val api = RetrofitClient.getReservationApi(requireContext())
                 val response = api.getStaffAvailability(staffId, date)
 
-                Log.d("CustomerReserveFragment", "API Response Code: ${response.code()}")
-                
                 if (response.isSuccessful && response.body() != null) {
                     val availabilityResponse = response.body()!!
-                    Log.d("CustomerReserveFragment", "Response Body: $availabilityResponse")
-                    
+
                     if (availabilityResponse.success && availabilityResponse.data != null) {
                         val data = availabilityResponse.data
-                        staffName = data.staffName
-                        availableTimes = data.availableTimes
-                        treatments = data.treatments
+                        staffName = data.staffName ?: ""
+                        availableTimes = data.availableTimes ?: emptyList()
+
+                        // 핵심 수정: filterNotNull()을 사용하여 List<TreatmentData>로 변환합니다.
+                        val filteredTreatments = data.treatments?.filterNotNull() ?: emptyList()
+                        treatments = filteredTreatments
 
                         renderAvailableTimes(availableTimes, date)
-                        renderTreatments(treatments)
+                        renderTreatments(filteredTreatments)
 
-                        Log.d("CustomerReserveFragment", "Loaded ${availableTimes.size} time slots and ${treatments.size} treatments")
+                        Log.d("CustomerReserveFragment", "Loaded ${availableTimes.size} slots and ${filteredTreatments.size} treatments")
                     } else {
                         Log.w("CustomerReserveFragment", "Empty availability data or success=false")
-                        Toast.makeText(requireContext(), "예약 가능한 시간이 없습니다 (데이터 없음).", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "예약 가능한 시간이 없습니다.", Toast.LENGTH_SHORT).show()
                         clearTimeSlots()
                         clearTreatments()
                     }
                 } else {
                     val errorBody = response.errorBody()?.string()
                     Log.e("CustomerReserveFragment", "API call failed: ${response.code()}, Body: $errorBody")
-                    Toast.makeText(requireContext(), "예약 정보를 불러오는데 실패했습니다: ${response.code()}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "정보를 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Log.e("CustomerReserveFragment", "Error loading availability", e)
@@ -365,44 +402,109 @@ class CustomerReserveFragment : Fragment() {
         }
     }
 
-    private fun renderAvailableTimes(times: List<String>, date: String) {
+    private fun renderAvailableTimes(availableTimes: List<String>, date: String) {
         val bind = binding ?: return
         bind.layoutTimeSlots.removeAllViews()
+        
+        Log.d("CustomerReserveFragment", "renderAvailableTimes called: date=$date, availableTimesCount=${availableTimes.size}")
+        Log.d("CustomerReserveFragment", "availableTimes content: $availableTimes")
 
-        // Filter out past times if the selected date is today
+        // 1. Find Open/Close time for the date
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val cal = Calendar.getInstance()
+        cal.time = dateFormat.parse(date) ?: Date()
+        val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
+
+        val dayString = when (dayOfWeek) {
+            Calendar.SUNDAY -> "SUN"
+            Calendar.MONDAY -> "MON"
+            Calendar.TUESDAY -> "TUE"
+            Calendar.WEDNESDAY -> "WED"
+            Calendar.THURSDAY -> "THU"
+            Calendar.FRIDAY -> "FRI"
+            Calendar.SATURDAY -> "SAT"
+            else -> ""
+        }
+        val targetDay = mapDayToCalendar(dayString)
+
+        val businessHour = storedBusinessHours?.find { 
+            mapDayToCalendar(it.day) == targetDay
+        }
+
+        // Default range if not found (e.g., 10:00 - 20:00)
+        val openTime = businessHour?.openFrom ?: "10:00"
+        val closeTime = businessHour?.openTo ?: "20:00"
+
+        // Generate full slots
+        val fullSlots = generateTimeSlots(openTime, closeTime)
+
         val now = Calendar.getInstance()
         val todayStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(now.time)
         val currentHourMinute = SimpleDateFormat("HH:mm", Locale.getDefault()).format(now.time)
 
-        val filteredTimes = if (date == todayStr) {
-            times.filter { it > currentHourMinute }
-        } else {
-            times
+        val isToday = (date == todayStr)
+        Log.d("CustomerReserveFragment", "renderAvailableTimes: date=$date, today=$todayStr, isToday=$isToday, now=$currentHourMinute")
+
+        val morningTimes = mutableListOf<String>()
+        val afternoonTimes = mutableListOf<String>()
+
+        fullSlots.forEach { time ->
+            if (time < "12:00") morningTimes.add(time) else afternoonTimes.add(time)
         }
 
-        if (filteredTimes.isEmpty()) {
-            val emptyText = TextView(requireContext()).apply {
-                text = "예약 가능한 시간이 없습니다. (마감)"
-                textSize = 14f
-                setTextColor(Color.parseColor("#999999"))
-                setPadding(0, dpToPx(16), 0, dpToPx(16))
-            }
-            bind.layoutTimeSlots.addView(emptyText)
-            return
-        }
-
-        val morningTimes = filteredTimes.filter { it < "12:00" }
-        val afternoonTimes = filteredTimes.filter { it >= "12:00" }
+        // Pre-calculate break info and normalize to "HH:mm"
+        val rawBf = businessHour?.breakFrom
+        val rawBt = businessHour?.breakTo
+        val bf = rawBf?.let { if (it.length >= 5) it.substring(0, 5) else it }
+        val bt = rawBt?.let { if (it.length >= 5) it.substring(0, 5) else it }
+        
+        Log.d("CustomerReserveFragment", "Break time for $dayString: normalized $bf - $bt (raw: $rawBf - $rawBt)")
 
         if (morningTimes.isNotEmpty()) {
             addSectionTitle("오전")
-            addTimeGrid(morningTimes, emptySet())
+            addTimeGrid(morningTimes, availableTimes, date, bf, bt, isToday, currentHourMinute)
         }
-
         if (afternoonTimes.isNotEmpty()) {
             addSectionTitle("오후")
-            addTimeGrid(afternoonTimes, emptySet())
+            addTimeGrid(afternoonTimes, availableTimes, date, bf, bt, isToday, currentHourMinute)
         }
+    }
+
+    private fun generateTimeSlots(
+        openTime: String,
+        closeTime: String,
+        intervalMinutes: Int = 30
+    ): List<String> {
+
+        val result = mutableListOf<String>()
+        val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+        val startDate = sdf.parse(openTime) ?: return emptyList()
+        val endDate = sdf.parse(closeTime) ?: return emptyList()
+
+        val cal = Calendar.getInstance()
+        cal.time = startDate
+
+        while (cal.time.before(endDate)) {
+            result.add(sdf.format(cal.time))
+            cal.add(Calendar.MINUTE, intervalMinutes)
+        }
+
+        return result
+    }
+
+
+
+    private fun addMinutes(time: String, minutes: Int): String {
+        val parts = time.split(":")
+        var h = parts[0].toInt()
+        var m = parts[1].toInt()
+        m += minutes
+        if (m >= 60) {
+            h += m / 60
+            m %= 60
+        }
+        return String.format(Locale.US, "%02d:%02d", h, m)
     }
 
     private fun clearTimeSlots() {
@@ -426,10 +528,23 @@ class CustomerReserveFragment : Fragment() {
         bind.layoutTimeSlots.addView(textView)
     }
 
-    private fun addTimeGrid(times: List<String>, disabledTimes: Set<String>) {
+    private fun addTimeGrid(
+        times: List<String>, 
+        availableSet: List<String>, 
+        date: String,
+        breakFrom: String?,
+        breakTo: String?,
+        isToday: Boolean,
+        currentHM: String
+    ) {
         val bind = binding ?: return
         val context = requireContext()
         val chunks = times.chunked(4)
+
+        // API might return HH:mm:ss, normalize it
+        val normalizedAvailableSet = availableSet.map { 
+            if (it.length >= 5) it.substring(0, 5) else it
+        }.toSet()
 
         chunks.forEach { chunk ->
             val row = LinearLayout(context).apply {
@@ -441,8 +556,30 @@ class CustomerReserveFragment : Fragment() {
                 setPadding(0, 0, 0, dpToPx(8))
             }
 
-            chunk.forEach { time ->
-                val button = createTimeButton(time, disabledTimes.contains(time))
+            chunk.forEach { slotTime ->
+                // 1. Check if past
+                val isPast = isToday && (slotTime <= currentHM)
+                
+                // 2. Break time blocking
+                val isInBreak = if (!breakFrom.isNullOrEmpty() && !breakTo.isNullOrEmpty()) {
+                    slotTime >= breakFrom && slotTime < breakTo
+                } else false
+
+                // 3. In availability set (from API)
+                val isInSet = normalizedAvailableSet.contains(slotTime)
+
+                // [FIX] Trust the server's availableTimes (isInSet) instead of forcing boundary slots.
+                // Forcing boundary slots (like 14:00 if break ends at 14:00) can lead to RESERVATION400
+                // if the server considers those slots unavailable.
+                val isAvailable = isInSet && !isPast && !isInBreak
+
+                Log.d("CustomerReserveFragment", "[SLOT CHECK] $slotTime | FINAL OK:$isAvailable | inSet:$isInSet | inBreak:$isInBreak | isPast:$isPast")
+
+                val button = createTimeButton(
+                    time = slotTime,
+                    enabled = isAvailable
+                )
+                button.setTag(R.id.tag_original_enabled, isAvailable)
                 val params = LinearLayout.LayoutParams(0, dpToPx(40), 1f)
                 params.setMargins(dpToPx(4), 0, dpToPx(4), 0)
                 button.layoutParams = params
@@ -463,37 +600,102 @@ class CustomerReserveFragment : Fragment() {
         }
     }
 
-    private fun createTimeButton(time: String, disabled: Boolean): Button {
-        return Button(requireContext()).apply {
-            // Format time to show only HH:mm (remove seconds if present)
-            text = formatTimeDisplay(time)
-            setBackgroundResource(R.drawable.bg_time_slot_selector)
-            setTextColor(ContextCompat.getColor(context, R.color.black))
-            textSize = 13f
-            isAllCaps = false
-            stateListAnimator = null
-            isEnabled = !disabled
-            isSelected = false
-
-            setOnClickListener {
-                if (!isEnabled) return@setOnClickListener
-                handleTimeSelection(this, time)
-            }
+    private fun subtract30Minutes(time: String): String {
+        try {
+            val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+            val date = sdf.parse(time) ?: return ""
+            val cal = Calendar.getInstance()
+            cal.time = date
+            cal.add(Calendar.MINUTE, -30)
+            return sdf.format(cal.time)
+        } catch (e: Exception) {
+            return ""
         }
     }
 
+    private fun createTimeButton(
+        time: String,
+        enabled: Boolean
+    ): Button {
+        return Button(requireContext()).apply {
+            text = formatTimeDisplay(time)
+            tag = time
+            isAllCaps = false
+            textSize = 13f
+            stateListAnimator = null
+
+            setBackgroundResource(R.drawable.bg_time_slot_selector)
+
+            isEnabled = enabled
+            alpha = if (enabled) 1.0f else 0.35f
+            setTextColor(ContextCompat.getColor(context, R.color.black))
+
+            if (enabled) {
+                setOnClickListener {
+                    handleTimeSelection(this, time)
+                }
+            }
+            // ❗ enabled=false → 클릭 리스너 자체 없음
+        }
+    }
+
+
+    private fun isTimeCurrentlySelectable(button: Button): Boolean {
+        val time = button.tag as? String ?: return false
+
+        // 1. 과거 시간 차단
+        val now = Calendar.getInstance()
+        val todayStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(now.time)
+        val currentHM = SimpleDateFormat("HH:mm", Locale.getDefault()).format(now.time)
+
+        val selectedDateStr = selectedDate?.let {
+            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(it.time)
+        }
+
+        if (selectedDateStr == todayStr && time <= currentHM) {
+            return false
+        }
+
+        // 2. duration 차단
+        val duration = selectedTreatment?.durationMin
+        val start = selectedTime
+        if (duration != null && start != null && button != selectedButton) {
+            if (isBlockedByDuration(time, start, duration)) {
+                return false
+            }
+        }
+
+        return true
+    }
+
+
     private fun handleTimeSelection(clicked: Button, time: String) {
-        val bind = binding ?: return
-        val isFirstSelection = selectedTime == null
-        clearAllTimeSelections()
-        clicked.isSelected = true
+        // 이전 선택 해제
+        selectedButton?.let {
+            it.isSelected = false
+            it.alpha = 1.0f
+            it.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+        }
+
+        // 새 선택 설정
         selectedButton = clicked
         selectedTime = time
-        clicked.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-        if (isFirstSelection) smoothScrollToView(bind.layoutServiceMenuSection)
+
+        clicked.isSelected = true
+        clicked.alpha = 1.0f
+        clicked.setTextColor(Color.WHITE)
+
+        if (selectedTreatment != null && selectedTime != null) {
+            updateTimeButtonsByDuration()
+        }
+
+
         updateStepProgress()
         updateNextButton()
     }
+
+
+
 
     private fun clearAllTimeSelections() {
         val bind = binding ?: return
@@ -527,7 +729,7 @@ class CustomerReserveFragment : Fragment() {
         val tvRecentCount = root.findViewById<TextView>(R.id.tvRecentCount)
         val ivProfile = root.findViewById<android.widget.ImageView>(R.id.ivProfile)
         
-        Log.d("CustomerReserveFragment", "setupDesignerInfo: staffName='$staffName', reviewCount=$reviewCount")
+        Log.d("CustomerReserveFragment", "setupDesignerInfo: staffName='$staffName', treatmentCount=$treatmentCount")
 
         // Set designer info
         if (staffName.isNotEmpty()) {
@@ -535,7 +737,7 @@ class CustomerReserveFragment : Fragment() {
         } else {
             tvDesignerName?.text = "디자이너 이름 없음"
         }
-        tvRecentCount?.text = "최근 시술 ${reviewCount}회"
+        tvRecentCount?.text = "최근 시술 ${treatmentCount}회"
         
         // Load designer image
         if (!staffImage.isNullOrEmpty() && ivProfile != null) {
@@ -728,4 +930,99 @@ class CustomerReserveFragment : Fragment() {
             resources.displayMetrics
         ).toInt()
     }
+    private fun isBlockedByDuration(
+        candidate: String,
+        start: String,
+        durationMin: Int
+    ): Boolean {
+
+        val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+        val startDate = sdf.parse(start) ?: return false
+        val candidateDate = sdf.parse(candidate) ?: return false
+
+        val cal = Calendar.getInstance()
+        cal.time = startDate
+        cal.add(Calendar.MINUTE, durationMin)
+
+        val endDate = cal.time
+
+        return candidateDate.after(startDate) && candidateDate.before(endDate)
+    }
+
+
+    private fun updateTimeButtonsByDuration() {
+        val bind = binding ?: return
+        val duration = selectedTreatment?.durationMin ?: return
+        val start = selectedTime ?: return
+
+        updateButtonsRecursive(bind.layoutTimeSlots, start, duration)
+    }
+
+    private fun updateButtonsRecursive(
+        view: View,
+        start: String,
+        duration: Int
+    ) {
+        if (view is ViewGroup) {
+            for (i in 0 until view.childCount) {
+                updateButtonsRecursive(view.getChildAt(i), start, duration)
+            }
+            return
+        }
+
+        if (view !is Button) return
+
+        val time = view.tag as? String ?: return
+
+        // 🔒 선택된 버튼은 절대 건드리지 않음
+        if (view == selectedButton) {
+            return
+        }
+
+        val blocked = isBlockedByDuration(time, start, duration)
+
+        if (blocked) {
+            view.alpha = 0.4f
+            view.isEnabled = false
+        } else {
+            view.alpha = 1.0f
+        }
+
+        view.isSelected = false
+        view.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+    }
+
+    private fun resetTimeSelection() {
+        selectedTime = null
+        selectedButton = null
+
+        val bind = binding ?: return
+        resetButtonsRecursive(bind.layoutTimeSlots)
+
+        updateStepProgress()
+        updateNextButton()
+    }
+
+    private fun resetButtonsRecursive(view: View) {
+        if (view is ViewGroup) {
+            for (i in 0 until view.childCount) {
+                resetButtonsRecursive(view.getChildAt(i))
+            }
+            return
+        }
+
+        if (view !is Button) return
+
+        val originalEnabled = view.getTag(R.id.tag_original_enabled) as? Boolean ?: true
+
+        view.isSelected = false
+        view.alpha = if (originalEnabled) 1.0f else 0.35f
+        view.isEnabled = originalEnabled
+        view.setBackgroundResource(R.drawable.bg_time_slot_selector)
+        view.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+    }
+
+
+
 }

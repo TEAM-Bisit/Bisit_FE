@@ -8,6 +8,8 @@ import com.example.bisit.data.model.auth.PasswordResetRequest
 import com.example.bisit.data.model.auth.PasswordSendCodeRequest
 import com.example.bisit.data.model.auth.PasswordVerifyCodeRequest
 import com.example.bisit.data.model.auth.PasswordVerifyResponse
+import com.example.bisit.data.model.auth.ReissueRequest
+import com.example.bisit.data.model.auth.ReissueResponse
 import com.example.bisit.data.model.signUp.SignUpRequest
 import com.example.bisit.data.model.signUp.SignUpResponse
 import com.example.bisit.data.model.todayReservation.CommonResponse
@@ -16,6 +18,7 @@ import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.PATCH
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Query
 
@@ -50,4 +53,13 @@ interface AuthApiService {
 
     @POST("/api/auth/password/reset")
     fun passwordReset(@Body request: PasswordResetRequest): Call<CommonResponse<String>>
+
+    @GET("/api/auth/check/email")
+    fun checkEmail(@Query("email") email: String): Call<CommonResponse<Boolean>>
+
+    @POST("/api/auth/reissue")
+    fun reissue(
+        @Header("Cookie") refreshTokenCookie: String,
+        @Query("authProvider") authProvider: String
+    ): Call<ReissueResponse>
 }

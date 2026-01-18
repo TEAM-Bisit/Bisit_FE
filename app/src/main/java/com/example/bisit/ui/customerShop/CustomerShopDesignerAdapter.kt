@@ -37,7 +37,9 @@ class CustomerShopDesignerAdapter(
     override fun onBindViewHolder(holder: VH, position: Int) {
         val item = items[position]
         holder.tvName.text = item.staffName
-        holder.tvRole.text = "사장님" // API에서 role 정보가 없으므로 기본값 사용
+        holder.tvName.text = item.staffName
+        holder.tvRole.text = "" // API does not provide role
+        holder.tvRole.visibility = View.GONE
         holder.tvIntro.text = item.description ?: "소개가 없습니다."
         holder.tvRating.text = String.format("%.1f", item.averageRating)
         holder.tvReviewCount.text = "리뷰 ${item.reviewCount}개"
