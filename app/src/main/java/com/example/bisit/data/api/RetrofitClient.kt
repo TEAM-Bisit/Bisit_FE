@@ -12,28 +12,63 @@ import java.util.concurrent.TimeUnit
 object RetrofitClient {
 
     private const val NAVER_BASE_URL = "https://naveropenapi.apigw.ntruss.com/"
+    private const val OPEN_NAVER_BASE_URL = "https://openapi.naver.com/"
     private const val TAG = "RetrofitClient"
-
-    private val naverClient = OkHttpClient.Builder()
-        .connectTimeout(20, TimeUnit.SECONDS)
-        .readTimeout(20, TimeUnit.SECONDS)
-        .addInterceptor { chain ->
-            Log.d(TAG, "NCP Key ID exists: ${BuildConfig.NCP_KEY_ID.isNotEmpty()}")
-            val request = chain.request().newBuilder()
-                .addHeader("X-NCP-APIGW-API-KEY-ID", BuildConfig.NCP_KEY_ID)
-                .addHeader("X-NCP-APIGW-API-KEY", BuildConfig.NCP_SECRET_KEY)
-                .build()
-            chain.proceed(request)
+ 
+    private val ncpClient by lazy {
+        Log.i("NaverAuthDebug", "🚀 Initializing ncpClient (NCP - Geocoding)")
+        val loggingInterceptor = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
         }
-        .build()
+        OkHttpClient.Builder()
+            .connectTimeout(20, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS)
+            .addInterceptor { chain ->
+                val request = chain.request().newBuilder()
+                    .addHeader("X-NCP-APIGW-API-KEY-ID", BuildConfig.NAVER_MAP_CLIENT_ID)
+                    .addHeader("X-NCP-APIGW-API-KEY", BuildConfig.NAVER_MAP_CLIENT_SECRET)
+                    .build()
+                chain.proceed(request)
+            }
+            .addInterceptor(loggingInterceptor)
+            .build()
+    }
 
+    private val openNaverClient by lazy {
+        Log.i("NaverAuthDebug", "🚀 Initializing openNaverClient (Developers - Search)")
+        val loggingInterceptor = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+        OkHttpClient.Builder()
+            .connectTimeout(20, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS)
+            .addInterceptor { chain ->
+                val request = chain.request().newBuilder()
+                    .addHeader("X-Naver-Client-Id", BuildConfig.NAVER_DEV_CLIENT_ID)
+                    .addHeader("X-Naver-Client-Secret", BuildConfig.NAVER_DEV_CLIENT_SECRET)
+                    .build()
+                chain.proceed(request)
+            }
+            .addInterceptor(loggingInterceptor)
+            .build()
+    }
+ 
     val geocodingApi: NaverGeocodingApiService by lazy {
         Retrofit.Builder()
             .baseUrl(NAVER_BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
-            .client(naverClient)
+            .client(ncpClient)
             .build()
             .create(NaverGeocodingApiService::class.java)
+    }
+ 
+    val naverSearchApi: NaverSearchApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(OPEN_NAVER_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(openNaverClient)
+            .build()
+            .create(NaverSearchApiService::class.java)
     }
 
 

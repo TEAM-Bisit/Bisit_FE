@@ -23,11 +23,16 @@ import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import retrofit2.Response
+import com.example.bisit.ui.dialog.CustomTwoButtonDialog
 
 class CustomerMyReserveFragment : Fragment(R.layout.fragment_customer_my_reserve) {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: CustomerMyReserveAdapter
+    
+    // 신규: 정렬 상태 관리 (초기값: 내림차순 - 최신순)
+    private var currentSortDirection = "desc"
+    private var currentTabPosition = 0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -65,12 +70,36 @@ class CustomerMyReserveFragment : Fragment(R.layout.fragment_customer_my_reserve
 
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
-
-                fetchReservations(tab?.position ?: 0)
+                currentTabPosition = tab?.position ?: 0
+                fetchReservations(currentTabPosition)
             }
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
+
+        // 정렬 버튼 클릭 리스너 설정
+        val tvSortStandard = view.findViewById<android.widget.TextView>(R.id.tvSortStandard)
+        val ivSortIcon = view.findViewById<android.widget.ImageView>(R.id.ivSortIcon)
+
+        val sortClickListener = View.OnClickListener {
+            toggleSortDirection(tvSortStandard)
+        }
+        
+        tvSortStandard?.setOnClickListener(sortClickListener)
+        ivSortIcon?.setOnClickListener(sortClickListener)
+        
+        // 초기 정렬 텍스트 설정
+        tvSortStandard?.let { updateSortText(it) }
+    }
+
+    private fun toggleSortDirection(tvSortStandard: android.widget.TextView) {
+        currentSortDirection = if (currentSortDirection == "desc") "asc" else "desc"
+        updateSortText(tvSortStandard)
+        fetchReservations(currentTabPosition)
+    }
+
+    private fun updateSortText(tvSortStandard: android.widget.TextView) {
+        tvSortStandard.text = if (currentSortDirection == "desc") "최신순" else "오래된순"
     }
 
     private fun showCancelDialog(item: MyReserveItem) {
@@ -142,18 +171,21 @@ class CustomerMyReserveFragment : Fragment(R.layout.fragment_customer_my_reserve
     }
 
     private fun confirmReservation(reservationId: String) {
-        AlertDialog.Builder(requireContext())
-            .setTitle("시술 확정")
-            .setMessage("시술 완료를 확정하시겠습니까?")
-            .setPositiveButton("확정하기") { _, _ ->
+        CustomTwoButtonDialog(
+            title = "시술 확정",
+            subtitle = "시술 완료를 확정하시겠습니까?",
+            positiveButtonText = "확정하기",
+            negativeButtonText = "취소",
+            onPositiveClick = {
                 lifecycleScope.launch {
                     try {
                         val api = RetrofitClient.getReservationApi(requireContext())
                         val response = api.confirmReservation(reservationId.toLong())
                         if (response.isSuccessful && response.body()?.success == true) {
-                            Toast.makeText(requireContext(), "시술이 확정되었습니다.", Toast.LENGTH_SHORT).show()
-                            // Refresh current tab (Completed)
-                            fetchReservations(1)
+                            Toast.makeText(requireContext(), "시술이 확정되었습니다 (OK).", Toast.LENGTH_SHORT).show()
+                            // Refresh current tab (Completed) -> Changed to local update
+                            // fetchReservations(1)
+                            adapter.markAsConfirmed(reservationId)
                         } else {
                             Log.e("CustomerMyReserve", "Failed to confirm reservation: ${response.code()}")
                             Toast.makeText(requireContext(), "시술 확정에 실패했습니다.", Toast.LENGTH_SHORT).show()
@@ -164,21 +196,22 @@ class CustomerMyReserveFragment : Fragment(R.layout.fragment_customer_my_reserve
                     }
                 }
             }
-            .setNegativeButton("닫기", null)
-            .show()
+        ).show(childFragmentManager, "ConfirmDialog")
     }
 
     private fun fetchReservations(position: Int) {
+        // Debug Toast to check if this is called unexpectedly
+        // Toast.makeText(requireContext(), "Fetching list: $position", Toast.LENGTH_SHORT).show()
 
 
         lifecycleScope.launch {
             try {
                 val api = RetrofitClient.getReservationApi(requireContext())
                 val response = when (position) {
-                    0 -> api.getScheduledReservations()
-                    1 -> api.getCompletedReservations()
-                    2 -> api.getCanceledReservations()
-                    else -> api.getScheduledReservations()
+                    0 -> api.getScheduledReservations(sortDirection = currentSortDirection)
+                    1 -> api.getCompletedReservations(sortDirection = currentSortDirection)
+                    2 -> api.getCanceledReservations(sortDirection = currentSortDirection)
+                    else -> api.getScheduledReservations(sortDirection = currentSortDirection)
                 }
                 
                 if (response.isSuccessful && response.body()?.success == true) {

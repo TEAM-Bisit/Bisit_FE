@@ -16,4 +16,6 @@ class FindPasswordViewModel : ViewModel() {
 
     val isVerificationUiVisibleInput: MutableLiveData<Boolean> = _isVerificationUiVisible
     val isPhoneVerifiedInput: MutableLiveData<Boolean> = _isPhoneVerified
+
+    var resetToken: String? = null
 }

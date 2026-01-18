@@ -52,6 +52,10 @@ class CustomerPayFragment : Fragment() {
 
     private var selectedCoupon: ApplicableCoupon? = null
 
+    // 중복 예약 방지 (409 Error Fix)
+    private var currentReservationId: Long? = null
+    private var currentOrderId: String? = null
+
     private val addressLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result: ActivityResult ->
@@ -71,11 +75,36 @@ class CustomerPayFragment : Fragment() {
             val paymentSuccess = result.data?.getBooleanExtra(TossPayActivity.RESULT_PAYMENT_SUCCESS, false) ?: false
             if (paymentSuccess && isAdded) {
                 Toast.makeText(requireContext(), "결제 및 예약이 완료되었습니다!", Toast.LENGTH_LONG).show()
-                findNavController().popBackStack()
+                Toast.makeText(requireContext(), "결제가 완료되었습니다.", Toast.LENGTH_SHORT).show()
+                
+                val bundle = Bundle().apply {
+                    putString("shopName", shopName)
+                    putString("staffName", staffName)
+                    putString("serviceName", serviceName)
+                    putString("reservedDate", selectedDate)
+                    putString("reservedTime", if (selectedTime.length > 5) selectedTime.substring(0, 5) else selectedTime)
+                    // ActivityResult doesn't give orderId directly unless we saved it or pass it back. 
+                    // Luckily we saved `currentOrderId` and `currentReservationId` in `createReservation`.
+                    // But wait, `paymentLauncher` callback may not have access to local variables if process killed? 
+                    // `currentOrderId` is a member variable, should be fine if activity/fragment not destroyed.
+                    // If destroyed, we have a problem. But standard flow usually keeps fragment instance in backstack.
+                    putString("orderId", currentOrderId ?: "") 
+                    putLong("reservationId", currentReservationId ?: -1L)
+                }
+                
+                findNavController().navigate(
+                    R.id.action_customerPayFragment_to_customerReserveCompleteFragment, 
+                    bundle
+                )
             }
         } else if (isAdded) {
             Toast.makeText(requireContext(), "결제가 취소되었습니다.", Toast.LENGTH_SHORT).show()
             binding.btnPay.isEnabled = true
+            // 결제 취소 시 생성된 예약 취소 요청 (슬롯 해제)
+            val resId = currentReservationId
+            if (resId != null) {
+                cancelPendingReservation(resId)
+            }
         }
     }
 
@@ -99,7 +128,7 @@ class CustomerPayFragment : Fragment() {
             staffName = it.getString("staffName", "")
             shopName = it.getString("shopName", "")
             staffImage = it.getString("staffImage")
-            reviewCount = it.getInt("reviewCount", 0)
+            reviewCount = it.getInt("treatmentCount", 0)
             staffDescription = it.getString("staffDescription")
         }
 
@@ -112,10 +141,12 @@ class CustomerPayFragment : Fragment() {
         setupPayButton()
         setupAddressSearch()
         setupTextWatchers()
+        updatePriceWithCoupon()
 
         findNavController().currentBackStackEntry?.savedStateHandle?.getLiveData<ApplicableCoupon>("selectedCoupon")
             ?.observe(viewLifecycleOwner) { coupon ->
                 selectedCoupon = coupon
+                resetCurrentReservation() // 쿠폰 변경 시 가격 달라지므로 예약 ID 초기화
                 updatePriceWithCoupon()
             }
 
@@ -159,7 +190,22 @@ class CustomerPayFragment : Fragment() {
 
         val addressLine = if (binding.tvSelectedAddress.text != "주소를 선택해주세요") binding.tvSelectedAddress.text.toString() else null
         val addressDetail = binding.etDetailAddress.text.toString().trim().ifEmpty { null }
-        val formattedTime = if (selectedTime.length == 5) "$selectedTime:00" else selectedTime
+        val formattedTime = if (selectedTime.length > 5) selectedTime.substring(0, 5) else selectedTime
+
+        // 이미 생성된 예약이 있다면 재사용 (409 Conflict 방지)
+        if (currentReservationId != null && currentOrderId != null) {
+            val intent = Intent(currentContext, TossPayActivity::class.java).apply {
+                // 저장해둔 값이 있다면 사용 (단, 이전에 받아온 finalAmount가 필요할 수 있음. 
+                // 여기서는 totalPrice를 fallback으로 쓰거나, API 응답에서 저장해둔 값을 써야 함.
+                // 편의상 createReservation 응답에서 amount도 저장하거나, 일단 totalPrice 사용 (쿠폰 적용 등 고려 필요)
+                // *주의*: 정확한 금액을 위해 currentAmount 도 저장하는 것이 좋음.
+                putExtra(TossPayActivity.EXTRA_AMOUNT, (currentFinalAmount?.toLong() ?: totalPrice.toLong())) 
+                putExtra(TossPayActivity.EXTRA_ORDER_ID, currentOrderId)
+                putExtra(TossPayActivity.EXTRA_ORDER_NAME, serviceName)
+            }
+            paymentLauncher.launch(intent)
+            return
+        }
 
         val request = ReservationRequest(
             shopId = shopId,
@@ -184,8 +230,14 @@ class CustomerPayFragment : Fragment() {
 
                 if (_binding != null && response.isSuccessful && response.body()?.success == true) {
                     val reservation = response.body()!!.data!!
+                    
+                    // 예약 성공 시 ID 및 금액 저장
+                    currentReservationId = reservation.reservationId
+                    currentOrderId = reservation.orderId
+                    currentFinalAmount = reservation.finalAmount
+
                     val intent = Intent(currentContext, TossPayActivity::class.java).apply {
-                        putExtra(TossPayActivity.EXTRA_AMOUNT, reservation.finalAmount)
+                        putExtra(TossPayActivity.EXTRA_AMOUNT, reservation.finalAmount.toLong())
                         putExtra(TossPayActivity.EXTRA_ORDER_ID, reservation.orderId)
                         putExtra(TossPayActivity.EXTRA_ORDER_NAME, serviceName)
                     }
@@ -203,6 +255,28 @@ class CustomerPayFragment : Fragment() {
         }
     }
 
+    private fun cancelPendingReservation(reservationId: Long) {
+        val currentContext = context ?: return
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val api = RetrofitClient.getReservationApi(currentContext)
+                // CancelReservationRequest might need a reason
+                val request = com.example.bisit.data.model.reservation.CancelReservationRequest(
+                    cancelReason = "결제 중단"
+                )
+                val response = api.cancelReservation(reservationId, request)
+                if (response.isSuccessful) {
+                    Log.d("CustomerPayFragment", "Pending reservation canceled successfully: $reservationId")
+                    resetCurrentReservation() // Reset IDs so they can try again if they change something
+                } else {
+                    Log.e("CustomerPayFragment", "Failed to cancel pending reservation: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                Log.e("CustomerPayFragment", "Error canceling pending reservation", e)
+            }
+        }
+    }
+
     // --- 기존 UI 유지 코드 (생략 없이 모두 포함) ---
     private fun validateForm() {
         if (_binding == null) return
@@ -212,17 +286,32 @@ class CustomerPayFragment : Fragment() {
         val isVisit = visitType == "방문 서비스"
         val addressValid = if (isVisit) binding.tvSelectedAddress.text != "주소를 선택해주세요" && binding.etDetailAddress.text.isNotEmpty() else true
 
+        // 입력 정보가 변경되면 기존 예약 ID 무효화 (새로 생성 필요)
+        // 주의: TextWatcher에서 호출되므로 타이핑 할 때마다 null 처리됨. 
+        // -> 의도된 동작 (정보 바뀌면 새 예약 필요)
+        
         val isValid = name.isNotEmpty() && phone.isNotEmpty() && addressValid && isChecked
         binding.btnPay.apply {
             isEnabled = isValid
             backgroundTintList = ContextCompat.getColorStateList(requireContext(), if (isValid) R.color.blue_4076FF else R.color.gray)
         }
     }
+    
+    // 금액 저장 변수 추가
+    private var currentFinalAmount: Int? = null
+
+    private fun resetCurrentReservation() {
+        currentReservationId = null
+        currentOrderId = null
+        currentFinalAmount = null
+    }
 
     private fun setupReservationInfo() {
         val info = binding.layoutReservationInfo
         info.tvMachineName.text = shopName.ifEmpty { "매장명 없음" }
         info.tvStaffName.text = staffName.ifEmpty { "디자이너 없음" }
+        info.tvReviewCount.text = "최근 시술 ${reviewCount}회"
+        info.tvStaffDescription.text = staffDescription ?: ""
         info.tvSchedule.text = formatScheduleText(selectedDate, selectedTime)
         info.tvServiceInfo.text = serviceName.ifEmpty { "서비스 정보 없음" }
         if (!staffImage.isNullOrEmpty()) {
@@ -241,7 +330,10 @@ class CustomerPayFragment : Fragment() {
         val watcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) { validateForm() }
+            override fun afterTextChanged(s: Editable?) { 
+                resetCurrentReservation() // 정보 변경 시 예약 ID 초기화 
+                validateForm() 
+            }
         }
         binding.etName.addTextChangedListener(watcher)
         binding.etPhone.addTextChangedListener(watcher)

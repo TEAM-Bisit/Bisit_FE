@@ -5,7 +5,7 @@ data class PaymentConfirmData(
     val reservationId: Long,
     val orderId: String,
     val paymentKey: String,
-    val paidAmount: Int,
+    val paidAmount: Long,
     val status: String,
     val approvedAt: String
 )

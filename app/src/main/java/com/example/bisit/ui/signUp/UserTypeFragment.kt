@@ -12,6 +12,9 @@ import androidx.navigation.fragment.findNavController
 import com.example.bisit.MainActivity
 import com.example.bisit.R
 import com.example.bisit.data.api.RetrofitClient
+import com.example.bisit.data.api.TokenManager
+import com.example.bisit.data.model.auth.ReissueRequest
+import com.example.bisit.data.model.auth.ReissueResponse
 import com.example.bisit.data.model.member.MemberRoleResponse
 import com.example.bisit.databinding.FragmentUserTypeBinding
 import com.example.bisit.data.model.member.MemberRoleRequest
@@ -98,15 +101,50 @@ class UserTypeFragment : Fragment() {
         memberApi.updateMemberRole(request).enqueue(object : Callback<MemberRoleResponse> {
             override fun onResponse(call: Call<MemberRoleResponse>, response: Response<MemberRoleResponse>) {
                 if (response.isSuccessful && response.body()?.success == true) {
-                    handleNavigationAfterRoleUpdate(role)
+                    val responseData = response.body()?.data
+
+                    // 1. 역할 업데이트 성공 후 토큰 재발급 절차 진행
+                    if (responseData != null) {
+                        performTokenReissue(responseData.refreshToken, role)
+                    }
                 } else {
-                    val errorMsg = response.body()?.message ?: "역할 설정에 실패했습니다."
-                    showErrorDialog(errorMsg)
+                    showErrorDialog(response.body()?.message ?: "역할 설정에 실패했습니다.")
                 }
             }
 
             override fun onFailure(call: Call<MemberRoleResponse>, t: Throwable) {
                 showErrorDialog("네트워크 연결 상태를 확인해주세요.")
+            }
+        })
+    }
+
+    private fun performTokenReissue(refreshToken: String, role: UserType) {
+        val authApi = RetrofitClient.getAuthApi(requireContext())
+        val authProvider = TokenManager.getAuthProvider(requireContext()) ?: "LOCAL"
+        val cookieHeader = "refreshToken=$refreshToken"
+
+        val request = ReissueRequest(refreshToken, authProvider)
+
+        authApi.reissue(cookieHeader, authProvider).enqueue(object : Callback<ReissueResponse> {
+            override fun onResponse(call: Call<ReissueResponse>, response: Response<ReissueResponse>) {
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val newData = response.body()?.data
+                    if (newData != null) {
+                        // 새 토큰 저장
+                        TokenManager.saveAccessToken(requireContext(), newData.accessToken)
+                        TokenManager.saveRefreshToken(requireContext(), newData.refreshToken)
+                        TokenManager.saveUserRole(requireContext(), role.name)
+
+                        handleNavigationAfterRoleUpdate(role)
+                    }
+                } else {
+                    // 실패 시 로그 확인용 (404 등이 여기서 발생할 것임)
+                    showErrorDialog("토큰 재발급 실패: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<ReissueResponse>, t: Throwable) {
+                showErrorDialog("재발급 중 오류가 발생했습니다.")
             }
         })
     }

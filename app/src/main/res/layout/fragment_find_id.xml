@@ -14,125 +14,143 @@
         android:layout_marginStart="18dp"
         android:layout_marginTop="44dp"
         android:text="아이디 찾기"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         android:textColor="#222222"
+        android:textSize="24sp"
         android:textStyle="bold"
-        android:textSize="24sp"/>
-
-    <TextView
-        android:id="@+id/tvLabelName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="18dp"
-        android:layout_marginTop="32dp"
-        android:text="이름"
-        android:textColor="#515965"
-        android:textSize="14sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView3" />
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <EditText
-        android:id="@+id/etName"
-        android:layout_width="0dp"
-        android:layout_height="52dp"
-        android:layout_marginStart="18dp"
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="18dp"
-        android:background="@drawable/bg_edit_box"
-        android:hint="이름을 입력해주세요"
-        android:inputType="textPersonName"
-        android:paddingHorizontal="12dp"
-        android:textSize="14sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvLabelName" />
+        android:layout_marginBottom="8dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toTopOf="@id/btnFindId"
+        app:layout_constraintTop_toBottomOf="@id/textView3">
 
-    <TextView
-        android:id="@+id/tvLabelPhone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="18dp"
-        android:layout_marginTop="24dp"
-        android:text="연락처"
-        android:textColor="#515965"
-        android:textSize="14sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/etName" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="24dp">
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btnVerify"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_marginEnd="18dp"
-        android:background="@drawable/bg_button_verify_selector"
-        android:enabled="false"
-        android:paddingHorizontal="16dp"
-        android:stateListAnimator="@null"
-        android:text="번호 인증"
-        android:textColor="@color/text_color_verify_selector"
-        android:textSize="14sp"
-        app:layout_constraintBottom_toBottomOf="@+id/etPhone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/etPhone" />
+            <TextView
+                android:id="@+id/tvLabelName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="18dp"
+                android:layout_marginTop="32dp"
+                android:text="이름"
+                android:textColor="#515965"
+                android:textSize="14sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-    <EditText
-        android:id="@+id/etPhone"
-        android:layout_width="0dp"
-        android:layout_height="52dp"
-        android:layout_marginStart="18dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="6dp"
-        android:background="@drawable/bg_edit_box"
-        android:hint="연락처를 입력해주세요"
-        android:inputType="phone"
-        android:maxLength="13"
-        android:paddingHorizontal="12dp"
-        android:textSize="14sp"
-        app:layout_constraintEnd_toStartOf="@id/btnVerify"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvLabelPhone" />
+            <EditText
+                android:id="@+id/etName"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_marginStart="18dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="18dp"
+                android:background="@drawable/bg_edit_box"
+                android:hint="이름을 입력해주세요"
+                android:inputType="textPersonName"
+                android:paddingHorizontal="12dp"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvLabelName" />
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btnConfirmVerification"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_marginEnd="18dp"
-        android:background="@drawable/bg_button_verify_selector"
-        android:enabled="false"
-        android:paddingHorizontal="16dp"
-        android:stateListAnimator="@null"
-        android:text="완료"
-        android:textColor="@color/text_color_verify_selector"
-        android:textSize="14sp"
-        app:layout_constraintBottom_toBottomOf="@+id/etVerificationCode"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/etVerificationCode" />
+            <TextView
+                android:id="@+id/tvLabelPhone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="18dp"
+                android:layout_marginTop="24dp"
+                android:text="연락처"
+                android:textColor="#515965"
+                android:textSize="14sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/etName" />
 
-    <EditText
-        android:id="@+id/etVerificationCode"
-        android:layout_width="0dp"
-        android:layout_height="52dp"
-        android:layout_marginStart="18dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="6dp"
-        android:background="@drawable/bg_edit_box"
-        android:hint="인증번호를 입력해주세요"
-        android:inputType="number"
-        android:maxLength="6"
-        android:paddingHorizontal="12dp"
-        android:textSize="14sp"
-        app:layout_constraintEnd_toStartOf="@id/btnConfirmVerification"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/etPhone" />
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnVerify"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_marginEnd="18dp"
+                android:background="@drawable/bg_button_verify_selector"
+                android:enabled="false"
+                android:paddingHorizontal="16dp"
+                android:stateListAnimator="@null"
+                android:text="번호 인증"
+                android:textColor="@color/text_color_verify_selector"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="@+id/etPhone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/etPhone" />
 
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/groupVerification"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:constraint_referenced_ids=" etVerificationCode, btnConfirmVerification"
-        tools:visibility="visible" />
+            <EditText
+                android:id="@+id/etPhone"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_marginStart="18dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/bg_edit_box"
+                android:hint="연락처를 입력해주세요"
+                android:inputType="phone"
+                android:maxLength="13"
+                android:paddingHorizontal="12dp"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toStartOf="@id/btnVerify"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvLabelPhone" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnConfirmVerification"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_marginEnd="18dp"
+                android:background="@drawable/bg_button_verify_selector"
+                android:enabled="false"
+                android:paddingHorizontal="16dp"
+                android:stateListAnimator="@null"
+                android:text="완료"
+                android:textColor="@color/text_color_verify_selector"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="@+id/etVerificationCode"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/etVerificationCode" />
+
+            <EditText
+                android:id="@+id/etVerificationCode"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_marginStart="18dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/bg_edit_box"
+                android:hint="인증번호를 입력해주세요"
+                android:inputType="number"
+                android:maxLength="6"
+                android:paddingHorizontal="12dp"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toStartOf="@id/btnConfirmVerification"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/etPhone" />
+
+            <androidx.constraintlayout.widget.Group
+                android:id="@+id/groupVerification"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                app:constraint_referenced_ids="etVerificationCode, btnConfirmVerification"
+                tools:visibility="visible" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnFindId"

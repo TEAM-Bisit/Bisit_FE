@@ -15,4 +15,9 @@ interface CategoryApiService {
         @Query("cursor") cursor: Long? = null,
         @Query("size") size: Int = 20
     ): CategoryShopResponse
+
+    @GET("/api/shops/{shopId}/business-hours")
+    suspend fun getBusinessHours(
+        @Path("shopId") shopId: Long
+    ): retrofit2.Response<com.example.bisit.data.model.customerShop.BusinessHourResponse>
 }

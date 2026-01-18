@@ -44,11 +44,15 @@ class LoginViewModel : ViewModel() {
 
                         // 2. 토큰에서 Role 추출하여 사용자 타입(owner/customer) 설정
                         val role = getRoleFromToken(result.data.accessToken)
+                        val provider = getInfoFromToken(result.data.accessToken, "AuthProvider")
+
                         _userType.value = when (role) {
                             "OWNER" -> "owner"
                             "CUSTOMER" -> "customer"
                             else -> "none"
                         }
+
+                        provider?.let { TokenManager.saveAuthProvider(context, it) }
 
                         // 3. 즉시 마이페이지 정보를 조회하여 memberId 가져오기 (성공 시 여기서 _loginResult를 true로 바꿈)
                         fetchMemberIdAndFinish(context)
@@ -117,6 +121,23 @@ class LoginViewModel : ViewModel() {
             }
         } catch (e: Exception) {
             Log.e("LoginViewModel", "Token decoding error", e)
+            null
+        }
+    }
+
+    private fun getInfoFromToken(token: String, key: String): String? {
+        return try {
+            val parts = token.split(".")
+            if (parts.size < 2) return null
+
+            val payload = parts[1]
+            val decodedBytes = Base64.decode(payload, Base64.URL_SAFE)
+            val decodedString = String(decodedBytes, Charsets.UTF_8)
+            val jsonObject = JSONObject(decodedString)
+
+            if (!jsonObject.has(key) || jsonObject.isNull(key)) null
+            else jsonObject.getString(key)
+        } catch (e: Exception) {
             null
         }
     }
