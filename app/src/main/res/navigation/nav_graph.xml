@@ -121,16 +121,16 @@
         <action
             android:id="@+id/action_shopFragment_to_staffManagementFragment"
             app:destination="@id/staffManagementFragment" />
+
+        <action
+            android:id="@+id/action_shopBasicFragment_to_editOpenHourFragment"
+            app:destination="@id/editOpenHourFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/shopBasicFragment"
         android:name="com.example.bisit.ui.shop.ShopBasicFragment"
         tools:layout="@layout/fragment_shop_basic">
-
-        <action
-            android:id="@+id/action_shopBasicFragment_to_editOpenHourFragment"
-            app:destination="@id/editOpenHourFragment" />
     </fragment>
 
     <fragment
