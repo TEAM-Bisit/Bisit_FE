@@ -203,4 +203,7 @@ object RetrofitClient {
 
     fun getReviewManageApi(context: Context) =
         getServerRetrofit(context).create(ReviewManageApi::class.java)
+
+    fun getShopBusinessHourApi(context: Context) =
+        getServerRetrofit(context).create(ShopBusinessHourApiService::class.java)
 }
