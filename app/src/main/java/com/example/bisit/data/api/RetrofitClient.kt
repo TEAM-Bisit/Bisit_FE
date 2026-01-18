@@ -106,6 +106,11 @@ object RetrofitClient {
                         addInterceptor { chain ->
                             val request = chain.request()
                             Log.d(TAG, "🌐 API Request: ${request.method} ${request.url}")
+                            val authHeader = request.header("Authorization")
+                            if (authHeader != null) {
+                                val truncated = if (authHeader.length > 20) authHeader.substring(0, 15) + "..." else authHeader
+                                Log.d(TAG, "🔑 Auth: $truncated")
+                            }
                             val response = chain.proceed(request)
                             Log.d(TAG, "📡 API Response: ${response.code}")
                             

@@ -194,14 +194,12 @@ class CustomerPayFragment : Fragment() {
 
         // 이미 생성된 예약이 있다면 재사용 (409 Conflict 방지)
         if (currentReservationId != null && currentOrderId != null) {
+            val memberId = TokenManager.getMemberId(currentContext)
             val intent = Intent(currentContext, TossPayActivity::class.java).apply {
-                // 저장해둔 값이 있다면 사용 (단, 이전에 받아온 finalAmount가 필요할 수 있음. 
-                // 여기서는 totalPrice를 fallback으로 쓰거나, API 응답에서 저장해둔 값을 써야 함.
-                // 편의상 createReservation 응답에서 amount도 저장하거나, 일단 totalPrice 사용 (쿠폰 적용 등 고려 필요)
-                // *주의*: 정확한 금액을 위해 currentAmount 도 저장하는 것이 좋음.
                 putExtra(TossPayActivity.EXTRA_AMOUNT, (currentFinalAmount?.toLong() ?: totalPrice.toLong())) 
                 putExtra(TossPayActivity.EXTRA_ORDER_ID, currentOrderId)
                 putExtra(TossPayActivity.EXTRA_ORDER_NAME, serviceName)
+                putExtra(TossPayActivity.EXTRA_CUSTOMER_KEY, "MEMBER_ID_$memberId")
             }
             paymentLauncher.launch(intent)
             return
@@ -236,10 +234,12 @@ class CustomerPayFragment : Fragment() {
                     currentOrderId = reservation.orderId
                     currentFinalAmount = reservation.finalAmount
 
+                    val memberId = TokenManager.getMemberId(currentContext)
                     val intent = Intent(currentContext, TossPayActivity::class.java).apply {
                         putExtra(TossPayActivity.EXTRA_AMOUNT, reservation.finalAmount.toLong())
                         putExtra(TossPayActivity.EXTRA_ORDER_ID, reservation.orderId)
                         putExtra(TossPayActivity.EXTRA_ORDER_NAME, serviceName)
+                        putExtra(TossPayActivity.EXTRA_CUSTOMER_KEY, "MEMBER_ID_$memberId")
                     }
                     paymentLauncher.launch(intent)
                 } else if (_binding != null) {

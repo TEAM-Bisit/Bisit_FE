@@ -30,6 +30,7 @@ class TossPayActivity : AppCompatActivity() {
     private var amount: Long = 0L
     private var orderId: String = ""
     private var orderName: String = ""
+    private var customerKey: String = ""
 
     companion object {
         private const val TAG = "TossPayActivity"
@@ -39,6 +40,7 @@ class TossPayActivity : AppCompatActivity() {
         const val RESULT_PAYMENT_SUCCESS = "payment_success"
         const val RESULT_PAYMENT_KEY = "payment_key"
         const val RESULT_ORDER_ID = "order_id"
+        const val EXTRA_CUSTOMER_KEY = "extra_customer_key"
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -52,9 +54,10 @@ class TossPayActivity : AppCompatActivity() {
         webView = findViewById(R.id.webView)
         progressBar = findViewById(R.id.progressBar)
 
-        amount = intent.getIntExtra(EXTRA_AMOUNT, 0).toLong()
+        amount = intent.getLongExtra(EXTRA_AMOUNT, 0L)
         orderId = intent.getStringExtra(EXTRA_ORDER_ID) ?: ""
         orderName = intent.getStringExtra(EXTRA_ORDER_NAME) ?: "주문"
+        customerKey = intent.getStringExtra(EXTRA_CUSTOMER_KEY) ?: "CUSTOMER_KEY_${System.currentTimeMillis()}"
 
         if (amount == 0L || orderId.isEmpty()) {
             Log.e(TAG, "Invalid payment data: amount=$amount, orderId=$orderId")
@@ -136,11 +139,11 @@ class TossPayActivity : AppCompatActivity() {
                 }
 
                 return when {
-                    url.startsWith("http://success") || url.startsWith("https://success") || url.startsWith("tosspayments://success") -> {
+                    url.contains("tok-success") || url.contains("http://success") || url.contains("tosspayments://success") -> {
                         handlePaymentSuccess(url)
                         true
                     }
-                    url.startsWith("http://fail") || url.startsWith("https://fail") || url.startsWith("tosspayments://fail") -> {
+                    url.contains("tok-fail") || url.contains("http://fail") || url.contains("tosspayments://fail") -> {
                         handlePaymentFailure(url)
                         true
                     }
@@ -347,7 +350,7 @@ class TossPayActivity : AppCompatActivity() {
 
                 <script>
                     const clientKey = '$clientKey';
-                    const customerKey = 'CUSTOMER_KEY_TEST_${System.currentTimeMillis()}'; 
+                    const customerKey = '$customerKey'; 
                     const paymentWidget = PaymentWidget(clientKey, customerKey);
 
                     const paymentMethodsWidget = paymentWidget.renderPaymentMethods(
@@ -361,14 +364,14 @@ class TossPayActivity : AppCompatActivity() {
                         paymentWidget.requestPayment({
                             orderId: '$orderId',
                             orderName: '$orderName',
-                            successUrl: window.location.origin + '/success',
-                            failUrl: window.location.origin + '/fail',
+                            successUrl: 'http://tok-success',
+                            failUrl: 'http://tok-fail',
                             customerEmail: 'test@test.com',
                             customerName: '테스트',
                             customerMobilePhone: '01012345678'
                         }).catch(function(error) {
                             console.error('Payment error:', error);
-                            window.location.href = 'tosspayments://fail?code=' + error.code + '&message=' + encodeURIComponent(error.message);
+                            window.location.href = 'http://tok-fail?code=' + error.code + '&message=' + encodeURIComponent(error.message);
                         });
                     }
                 </script>

@@ -1,6 +1,7 @@
 package com.example.bisit.data.api
 
 import com.example.bisit.data.model.review.ReviewRequest
+import com.example.bisit.data.model.review.ReviewUpdateRequest
 import com.example.bisit.data.model.review.ReviewResponse
 import com.example.bisit.data.model.review.ReviewUpdateResponse
 import com.example.bisit.data.model.review.ReviewListResponse
@@ -15,7 +16,7 @@ interface ReviewApiService {
     @retrofit2.http.PUT("/api/reviews/{reviewId}")
     fun updateReview(
         @retrofit2.http.Path("reviewId") reviewId: Long,
-        @Body request: ReviewRequest
+        @Body request: ReviewUpdateRequest
     ): Call<ReviewUpdateResponse>
 
     @retrofit2.http.DELETE("/api/reviews/{reviewId}")
