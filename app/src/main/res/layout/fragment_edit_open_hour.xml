@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".ui.shop.EditOpenHourFragment">
+
+    <!-- ===================== Header ===================== -->
+
+    <LinearLayout
+        android:id="@+id/layoutHeader"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="18dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:id="@+id/ivBack"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:contentDescription="뒤로가기"
+            android:src="@drawable/ic_back" />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="영업 시간 수정"
+            android:textColor="#222222"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- ===================== Scroll Content ===================== -->
+
+    <ScrollView
+        android:id="@+id/scrollContent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:paddingTop="40dp"
+        android:paddingHorizontal="18dp"
+        android:clipToPadding="false"
+        app:layout_constraintTop_toBottomOf="@id/layoutHeader"
+        app:layout_constraintBottom_toTopOf="@id/btnSave"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- 정기휴무 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="정기휴무일 여부"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal">
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btn_has_holiday"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/bg_hours_choice_selector"
+                    android:stateListAnimator="@null"
+                    android:text="휴무일이 있어요"
+                    android:textColor="@color/text_hours_choice_selector" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btn_no_holiday"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_hours_choice_selector"
+                    android:stateListAnimator="@null"
+                    android:text="휴무일이 없어요"
+                    android:textColor="@color/text_hours_choice_selector" />
+            </LinearLayout>
+
+            <!-- 휴무 요일 선택 -->
+
+            <LinearLayout
+                android:id="@+id/layout_holiday_selection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:id="@+id/tv_holiday_cycle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:background="@drawable/bg_edit_box"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="6dp">
+
+                    <TextView
+                        android:id="@+id/tv_holiday_cycle_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="매주"
+                        android:textColor="#515965"
+                        android:textSize="15sp" />
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:src="@drawable/ic_arrow_down_gray" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btn_day_mon"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/bg_day_selection_selector"
+                        android:textColor="@color/text_day_selection_selector"
+                        android:stateListAnimator="@null"
+                        android:text="월" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btn_day_tue"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/bg_day_selection_selector"
+                        android:textColor="@color/text_day_selection_selector"
+                        android:stateListAnimator="@null"
+                        android:text="화" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btn_day_wed"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/bg_day_selection_selector"
+                        android:textColor="@color/text_day_selection_selector"
+                        android:stateListAnimator="@null"
+                        android:text="수" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btn_day_thu"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/bg_day_selection_selector"
+                        android:textColor="@color/text_day_selection_selector"
+                        android:stateListAnimator="@null"
+                        android:text="목" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btn_day_fri"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/bg_day_selection_selector"
+                        android:textColor="@color/text_day_selection_selector"
+                        android:stateListAnimator="@null"
+                        android:text="금" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btn_day_sat"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/bg_day_selection_selector"
+                        android:textColor="@color/text_day_selection_selector"
+                        android:stateListAnimator="@null"
+                        android:text="토" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btn_day_sun"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_day_selection_selector"
+                        android:textColor="@color/text_day_selection_selector"
+                        android:stateListAnimator="@null"
+                        android:text="일" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 브레이크 -->
+
+            <TextView
+                android:layout_marginTop="32dp"
+                android:text="브레이크타임이 있나요?"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal">
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btn_has_break"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/bg_hours_choice_selector"
+                    android:stateListAnimator="@null"
+                    android:text="브레이크타임 있음"
+                    android:textColor="@color/text_hours_choice_selector"/>
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btn_no_break"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_hours_choice_selector"
+                    android:stateListAnimator="@null"
+                    android:text="브레이크타임 없음"
+                    android:textColor="@color/text_hours_choice_selector"/>
+            </LinearLayout>
+
+            <!-- 영업시간 -->
+
+            <TextView
+                android:layout_marginTop="32dp"
+                android:text="영업시간"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:text="영업 시간"
+                    android:textColor="#515965"/>
+
+                <TextView
+                    android:id="@+id/tv_operating_time"
+                    android:layout_width="142dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/bg_edit_box"
+                    android:gravity="center"
+                    android:text="00:00  ~  00:00"
+                    android:textColor="@color/black"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_break_time_setting"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:text="브레이크타임"
+                    android:textColor="#515965"/>
+
+                <TextView
+                    android:id="@+id/tv_break_time"
+                    android:layout_width="142dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/bg_edit_box"
+                    android:gravity="center"
+                    android:text="00:00  ~  00:00"
+                    android:textColor="@color/black"/>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- ===================== Bottom Button ===================== -->
+
+    <TextView
+        android:id="@+id/btnSave"
+        android:layout_width="0dp"
+        android:layout_height="52dp"
+        android:layout_margin="16dp"
+        android:gravity="center"
+        android:text="저장하기"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:background="@drawable/bg_btn_primary_selector"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
