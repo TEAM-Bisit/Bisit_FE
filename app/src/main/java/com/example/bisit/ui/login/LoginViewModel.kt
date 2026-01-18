@@ -153,4 +153,20 @@ class LoginViewModel : ViewModel() {
             _errorMessage.value = "로그인 요청 중 오류가 발생했습니다."
         }
     }
+
+    fun handleSocialLoginSuccess(context: Context, accessToken: String, refreshToken: String) {
+        // 1. 토큰 저장
+        TokenManager.saveTokens(context, accessToken, refreshToken)
+
+        // 2. 토큰에서 Role 추출하여 사용자 타입 설정 (추가된 부분)
+        val role = getRoleFromToken(accessToken)
+        _userType.value = when (role) {
+            "OWNER" -> "owner"
+            "CUSTOMER" -> "customer"
+            else -> "none"
+        }
+
+        // 3. memberId 확보 및 완료 처리
+        fetchMemberIdAndFinish(context)
+    }
 }
