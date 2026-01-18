@@ -1,8 +1,10 @@
 package com.example.bisit.ui.auth
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.webkit.CookieManager
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -15,18 +17,27 @@ class SocialLoginActivity : AppCompatActivity() {
         val webView = WebView(this)
         setContentView(webView)
 
+        val provider = intent.getStringExtra("PROVIDER") ?: "kakao"
+
         webView.settings.apply {
-            javaScriptEnabled = true // 자바스크립트 허용
-            domStorageEnabled = true // 로컬 저장소 허용 (카카오 로그인 필수)
-            javaScriptCanOpenWindowsAutomatically = true // 팝업 허용
-            setSupportMultipleWindows(true) // 멀티 윈도우 허용
+            javaScriptEnabled = true
+            domStorageEnabled = true
+            javaScriptCanOpenWindowsAutomatically = true
+            setSupportMultipleWindows(true)
         }
 
         webView.webViewClient = object : WebViewClient() {
+            // [추가] 웹뷰가 페이지 로딩을 시작할 때마다 호출됨
+            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                super.onPageStarted(view, url, favicon)
+                // 로그캣(Logcat)에서 "WebViewURL"로 필터링해서 확인하세요.
+                Log.d("WebViewURL", "로딩 시작: $url")
+            }
+
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                 val url = request?.url.toString()
+                Log.d("WebViewURL", "URL 이동 감지: $url")
 
-                // 1. 서버가 정의한 성공 URL 가로채기
                 if (url.contains("accessToken=")) {
                     val uri = Uri.parse(url)
                     val intent = Intent().apply {
@@ -38,14 +49,12 @@ class SocialLoginActivity : AppCompatActivity() {
                     return true
                 }
 
-                // 2. 카카오톡 앱 실행 등 커스텀 스킴 처리 (매우 중요)
-                if (url.startsWith("intent:") || url.startsWith("kakao") || url.startsWith("market:")) {
+                if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("javascript:")) {
                     try {
                         val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
                         startActivity(intent)
                         return true
                     } catch (e: Exception) {
-                        // 카카오톡이 설치 안 된 경우 등 예외 처리
                         return false
                     }
                 }
@@ -53,12 +62,13 @@ class SocialLoginActivity : AppCompatActivity() {
             }
         }
 
-        // 쿠키 매니저 설정 (세션 유지용)
         CookieManager.getInstance().apply {
             setAcceptCookie(true)
             setAcceptThirdPartyCookies(webView, true)
         }
 
-        webView.loadUrl("http://13.209.64.243:8080/oauth2/authorization/kakao")
+        val authUrl = "http://13.209.64.243:8080/oauth2/authorization/$provider"
+        Log.d("WebViewURL", "초기 호출 주소: $authUrl")
+        webView.loadUrl(authUrl)
     }
 }

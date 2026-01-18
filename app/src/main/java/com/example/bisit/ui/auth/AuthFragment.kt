@@ -70,11 +70,16 @@ class AuthFragment : Fragment(), UserTypeDialog.UserTypeDialogListener {
         }
 
         binding.naverBtn.setOnClickListener {
-            // TODO
+            val intent = Intent(requireContext(), SocialLoginActivity::class.java).apply {
+                putExtra("PROVIDER", "naver")
+            }
+            socialLoginLauncher.launch(intent)
         }
 
         binding.kakaoBtn.setOnClickListener {
-            val intent = Intent(requireContext(), SocialLoginActivity::class.java)
+            val intent = Intent(requireContext(), SocialLoginActivity::class.java).apply {
+                putExtra("PROVIDER", "kakao")
+            }
             socialLoginLauncher.launch(intent)
         }
 
