@@ -5,11 +5,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import com.example.bisit.R
 import com.example.bisit.databinding.FragmentShopBasicBinding
 import com.example.bisit.ui.shop.dialog.EditSalesDialog
 import com.example.bisit.ui.shop.dialog.EditShopInfoDialog
@@ -26,7 +29,6 @@ class ShopBasicFragment : Fragment() {
 
     /* ===================== ViewModel ===================== */
 
-    // Factory 반드시 사용
     private val shopRegisterViewModel: ShopRegisterViewModel by activityViewModels {
         ShopRegisterViewModelFactory(requireContext())
     }
@@ -38,8 +40,9 @@ class ShopBasicFragment : Fragment() {
 
     private var currentIntro: String = ""
     private var currentServiceType: String = "VISIT"
+    private var isOpenHourExpanded = false
 
-    /* ===================== 이미지 선택 런처 ===================== */
+    /* ===================== 이미지 선택 ===================== */
 
     private val pickImageLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -77,6 +80,7 @@ class ShopBasicFragment : Fragment() {
                 viewModel.fetchShopDetail()
                 viewModel.fetchShopIntro()
                 viewModel.fetchShopAccount()
+
                 photoViewModel.fetchPhotos()
             }
         }
@@ -119,6 +123,31 @@ class ShopBasicFragment : Fragment() {
                     "${account.bankName} ${account.accountNumber} ${account.accountHolder}"
             }
         }
+
+        // 영업 시간
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.shopOpenHour.collect { openHour ->
+                openHour ?: return@collect
+
+                binding.tvOpenInfo.text =
+                    if (openHour.isOpen) {
+                        "영업중 ${openHour.openTime} ~ ${openHour.closeTime}"
+                    } else {
+                        "영업 종료"
+                    }
+
+                binding.layoutOpenHourDetail.removeAllViews()
+
+                openHour.weeklyHours.forEach { text ->
+                    val tv = TextView(requireContext()).apply {
+                        this.text = text
+                        textSize = 13f
+                        setTextColor(0xFF222222.toInt())
+                    }
+                    binding.layoutOpenHourDetail.addView(tv)
+                }
+            }
+        }
     }
 
     /* ===================== 클릭 ===================== */
@@ -158,6 +187,25 @@ class ShopBasicFragment : Fragment() {
                     )
                 }
             ).show(parentFragmentManager, "edit_sales")
+        }
+
+        // 영업시간 펼치기
+        binding.btnExpandHour.setOnClickListener {
+            isOpenHourExpanded = !isOpenHourExpanded
+
+            binding.layoutOpenHourDetail.visibility =
+                if (isOpenHourExpanded) View.VISIBLE else View.GONE
+
+            binding.btnExpandHour.animate()
+                .rotation(if (isOpenHourExpanded) 180f else 0f)
+                .setDuration(200)
+                .start()
+        }
+
+        binding.btnEditOpenHour.setOnClickListener {
+            findNavController().navigate(
+                R.id.action_shopBasicFragment_to_editOpenHourFragment
+            )
         }
     }
 

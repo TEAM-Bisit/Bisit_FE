@@ -124,6 +124,16 @@
     </fragment>
 
     <fragment
+        android:id="@+id/shopBasicFragment"
+        android:name="com.example.bisit.ui.shop.ShopBasicFragment"
+        tools:layout="@layout/fragment_shop_basic">
+
+        <action
+            android:id="@+id/action_shopBasicFragment_to_editOpenHourFragment"
+            app:destination="@id/editOpenHourFragment" />
+    </fragment>
+
+    <fragment
         android:id="@+id/customerShopFragment"
         android:name="com.example.bisit.ui.customerShop.CustomerShopFragment"
         android:label="fragment_customer_shop"
@@ -340,5 +350,11 @@
         android:name="com.example.bisit.ui.staffManage.StaffManagementFragment"
         android:label="fragment_staff_management"
         tools:layout="@layout/fragment_staff_management" />
+
+    <fragment
+        android:id="@+id/editOpenHourFragment"
+        android:name="com.example.bisit.ui.shop.EditOpenHourFragment"
+        android:label="영업 시간 수정"
+        tools:layout="@layout/fragment_edit_open_hour" />
 
 </navigation>
