@@ -12,9 +12,18 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.example.bisit.R
+import com.example.bisit.data.api.RetrofitClient
+import com.example.bisit.data.model.auth.PasswordResetRequest
+import com.example.bisit.data.model.auth.PasswordSendCodeRequest
+import com.example.bisit.data.model.auth.PasswordVerifyCodeRequest
+import com.example.bisit.data.model.auth.PasswordVerifyResponse
+import com.example.bisit.data.model.todayReservation.CommonResponse
 import com.example.bisit.databinding.FragmentFindPasswordBinding
 import com.example.bisit.ui.dialog.CommonInfoDialog
 import com.example.bisit.ui.dialog.CustomDialog
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.util.regex.Pattern
 
 class FindPasswordFragment : Fragment() {
@@ -23,6 +32,7 @@ class FindPasswordFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: FindPasswordViewModel by viewModels()
+    private val authApi by lazy { RetrofitClient.getAuthApi(requireContext()) }
 
     private val phonePattern: Pattern = Pattern.compile("^010-\\d{4}-\\d{4}$")
 
@@ -45,39 +55,82 @@ class FindPasswordFragment : Fragment() {
     private fun setupClickListeners() {
         // 1. 번호 인증 요청
         binding.btnVerify.setOnClickListener {
-            // TODO: 서버에 인증번호 전송 API 호출
-            viewModel.isVerificationUiVisibleInput.value = true
+            val request = PasswordSendCodeRequest(
+                loginId = binding.etId.text.toString(),
+                phoneNumber = binding.etPhone.text.toString().replace("-", ""),
+                name = binding.etName.text.toString()
+            )
+
+            authApi.passwordSendCode(request).enqueue(object : Callback<CommonResponse<String>> {
+                override fun onResponse(call: Call<CommonResponse<String>>, response: Response<CommonResponse<String>>) {
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        CommonInfoDialog(
+                            message = "인증번호가 발송되었습니다.",
+                            onConfirm = { viewModel.isVerificationUiVisibleInput.value = true }
+                        ).show(parentFragmentManager, "SendCodeSuccess")
+                    } else {
+                        showErrorDialog("발송 실패", "입력 정보를 확인하거나 잠시 후 다시 시도해주세요.")
+                    }
+                }
+                override fun onFailure(call: Call<CommonResponse<String>>, t: Throwable) {
+                    showErrorDialog("네트워크 오류", "서버와의 통신이 원활하지 않습니다.")
+                }
+            })
         }
 
         // 2. 인증번호 확인 버튼
         binding.btnConfirmVerification.setOnClickListener {
-            // TODO: 서버에 인증번호 확인 API 호출
-            val dialog = CommonInfoDialog(
-                message = "인증이 완료되었습니다.\n새로운 비밀번호를 입력해주세요.",
-                onConfirm = {
-                    viewModel.isPhoneVerifiedInput.value = true
-                    // 인증 성공 시 재설정 그룹 표시
-                    binding.groupResetPassword.visibility = View.VISIBLE
-                }
+            val request = PasswordVerifyCodeRequest(
+                loginId = binding.etId.text.toString(),
+                code = binding.etVerificationCode.text.toString()
             )
-            dialog.show(parentFragmentManager, "VerificationCompleteDialog")
+
+            authApi.passwordVerifyCode(request).enqueue(object : Callback<CommonResponse<PasswordVerifyResponse>> {
+                override fun onResponse(call: Call<CommonResponse<PasswordVerifyResponse>>, response: Response<CommonResponse<PasswordVerifyResponse>>) {
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        viewModel.resetToken = response.body()?.data?.token
+
+                        CommonInfoDialog(
+                            message = "인증이 완료되었습니다.\n새로운 비밀번호를 입력해주세요.",
+                            onConfirm = { viewModel.isPhoneVerifiedInput.value = true }
+                        ).show(parentFragmentManager, "VerifySuccess")
+                    } else {
+                        showErrorDialog("인증 실패", "인증번호가 일치하지 않습니다.")
+                    }
+                }
+                override fun onFailure(call: Call<CommonResponse<PasswordVerifyResponse>>, t: Throwable) {
+                    showErrorDialog("네트워크 오류", "서버와의 통신이 원활하지 않습니다.")
+                }
+            })
         }
 
         // 3. 최종 비밀번호 재설정 완료 버튼
         binding.btnFindPassword.setOnClickListener {
-            // TODO: 비밀번호 재설정 API 호출 (이름, 아이디, 폰번호, 새비밀번호 전송)
-            val dialog = CustomDialog(
-                title = "비밀번호 재설정 완료",
-                subtitle = "새로운 비밀번호로 로그인해주세요.",
-                onConfirm = {
-                },
-                onDismiss = {
-                    if (isAdded) {
-                        parentFragmentManager.popBackStack()
+            val request = PasswordResetRequest(
+                loginId = binding.etId.text.toString(),
+                token = viewModel.resetToken ?: "",
+                newPassword = binding.etNewPassword.text.toString(),
+                confirmPassword = binding.etConfirmPassword.text.toString()
+            )
+
+            authApi.passwordReset(request).enqueue(object : Callback<CommonResponse<String>> {
+                override fun onResponse(call: Call<CommonResponse<String>>, response: Response<CommonResponse<String>>) {
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        CustomDialog(
+                            title = "비밀번호 재설정 완료",
+                            subtitle = "새로운 비밀번호로 로그인해주세요.",
+                            onConfirm = {},
+                            onDismiss = { if (isAdded) parentFragmentManager.popBackStack() }
+                        ).show(parentFragmentManager, "ResetSuccess")
+                    } else {
+                        val errorMsg = response.body()?.message ?: "다시 시도해주세요."
+                        showErrorDialog("재설정 실패", errorMsg)
                     }
                 }
-            )
-            dialog.show(parentFragmentManager, "ResetSuccessDialog")
+                override fun onFailure(call: Call<CommonResponse<String>>, t: Throwable) {
+                    showErrorDialog("네트워크 오류", "서버와의 통신이 원활하지 않습니다.")
+                }
+            })
         }
     }
 
@@ -178,6 +231,10 @@ class FindPasswordFragment : Fragment() {
 
         // 3. 최종 버튼 활성화
         binding.btnFindPassword.isEnabled = isNotEmpty && isPasswordMatched && isPhoneVerified
+    }
+
+    private fun showErrorDialog(title: String, subtitle: String) {
+        CustomDialog(title = title, subtitle = subtitle).show(parentFragmentManager, "ErrorDialog")
     }
 
     override fun onDestroyView() {

@@ -17,7 +17,10 @@ class AuthInterceptor(private val context: Context) : Interceptor {
             "/api/sms/verify",
             "/api/auth/check/login-id",
             "/api/auth/check/phone-number",
-            "/api/auth/find-id"
+            "/api/auth/find-id",
+            "/api/auth/password/send-code",
+            "/api/auth/password/verify-code",
+            "/api/auth/password/reset"
         )
 
         // 해당 경로가 포함되어 있으면 토큰 없이 진행

@@ -4,6 +4,10 @@ import com.example.bisit.data.model.auth.AuthResponse
 import com.example.bisit.data.model.auth.FindIdRequest
 import com.example.bisit.data.model.auth.LoginRequest
 import com.example.bisit.data.model.auth.LoginResponse
+import com.example.bisit.data.model.auth.PasswordResetRequest
+import com.example.bisit.data.model.auth.PasswordSendCodeRequest
+import com.example.bisit.data.model.auth.PasswordVerifyCodeRequest
+import com.example.bisit.data.model.auth.PasswordVerifyResponse
 import com.example.bisit.data.model.signUp.SignUpRequest
 import com.example.bisit.data.model.signUp.SignUpResponse
 import com.example.bisit.data.model.todayReservation.CommonResponse
@@ -37,4 +41,13 @@ interface AuthApiService {
 
     @POST("/api/auth/find-id")
     fun findId(@Body request: FindIdRequest): Call<CommonResponse<String>>
+
+    @POST("/api/auth/password/send-code")
+    fun passwordSendCode(@Body request: PasswordSendCodeRequest): Call<CommonResponse<String>>
+
+    @POST("/api/auth/password/verify-code")
+    fun passwordVerifyCode(@Body request: PasswordVerifyCodeRequest): Call<CommonResponse<PasswordVerifyResponse>>
+
+    @POST("/api/auth/password/reset")
+    fun passwordReset(@Body request: PasswordResetRequest): Call<CommonResponse<String>>
 }

@@ -61,10 +61,11 @@ class FindIdFragment : Fragment() {
 
         binding.btnFindId.setOnClickListener {
             val name = binding.etName.text.toString()
-            val phone = binding.etPhone.text.toString()
+            val rawPhone = binding.etPhone.text.toString()
 
-            // API 호출
-            viewModel.findId(requireContext(), name, phone)
+            val cleanPhone = rawPhone.replace("-", "")
+
+            viewModel.findId(requireContext(), name, cleanPhone)
         }
     }
 
@@ -143,7 +144,9 @@ class FindIdFragment : Fragment() {
                 val dialog = FindIdDialog(
                     name = name,
                     foundId = it,
-                    onDismissCallback = { showCustomMessageDialog() }
+                    onDismissCallback = {
+
+                    }
                 )
                 dialog.show(parentFragmentManager, "FindIdDialog")
             }
