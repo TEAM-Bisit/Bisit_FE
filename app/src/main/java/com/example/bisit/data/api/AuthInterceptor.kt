@@ -1,6 +1,7 @@
 package com.example.bisit.data.api
 
 import android.content.Context
+import android.util.Log
 import okhttp3.Interceptor
 import okhttp3.Response
 
@@ -23,22 +24,26 @@ class AuthInterceptor(private val context: Context) : Interceptor {
             "/api/auth/password/reset",
             "/api/auth/check/email",
             "/api/auth/check/phone-number",
-            "/api/auth/reissue"
+            "/api/auth/reissue",
+            "/api/shops/category"
         )
 
         // 해당 경로가 포함되어 있으면 토큰 없이 진행
-        if (noAuthPaths.any { urlPath.contains(it) }) {
-            return chain.proceed(originalRequest)
-        }
-
+        val isNoAuth = noAuthPaths.any { urlPath.contains(it) }
+        
         val token = TokenManager.getAccessToken(context)
 
         return if (token != null) {
             val newRequest = originalRequest.newBuilder()
                 .addHeader("Authorization", "Bearer $token")
                 .build()
+            Log.d("AuthInterceptor", "🔑 Adding Token for: $urlPath")
             chain.proceed(newRequest)
+        } else if (isNoAuth) {
+            Log.d("AuthInterceptor", "🚀 Bypassing Auth (No Token) for: $urlPath")
+            chain.proceed(originalRequest)
         } else {
+            Log.d("AuthInterceptor", "⚠️ No Token found for: $urlPath")
             chain.proceed(originalRequest)
         }
     }

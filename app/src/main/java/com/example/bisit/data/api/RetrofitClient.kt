@@ -114,13 +114,14 @@ object RetrofitClient {
                             val response = chain.proceed(request)
                             Log.d(TAG, "📡 API Response: ${response.code}")
                             
-                            // 403 에러는 /introduce 엔드포인트의 경우 선택적 기능이므로 에러 로그 출력 안 함
                             if (!response.isSuccessful) {
                                 val isIntroduceEndpoint = request.url.toString().contains("/introduce")
                                 if (response.code == 403 && isIntroduceEndpoint) {
                                     // 403 on /introduce is expected, don't log as error
                                 } else {
+                                    val errorBody = response.peekBody(1024).string()
                                     Log.e(TAG, "❌ API Error: ${response.code} - ${response.message}")
+                                    Log.e(TAG, "📦 Error Body: $errorBody")
                                 }
                             }
                             response
