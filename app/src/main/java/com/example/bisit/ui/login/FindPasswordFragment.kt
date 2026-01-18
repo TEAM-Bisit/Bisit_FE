@@ -8,20 +8,31 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.example.bisit.databinding.FragmentFindPasswordBinding // 바인딩 변경
+import com.example.bisit.R
+import com.example.bisit.data.api.RetrofitClient
+import com.example.bisit.data.model.auth.PasswordResetRequest
+import com.example.bisit.data.model.auth.PasswordSendCodeRequest
+import com.example.bisit.data.model.auth.PasswordVerifyCodeRequest
+import com.example.bisit.data.model.auth.PasswordVerifyResponse
+import com.example.bisit.data.model.todayReservation.CommonResponse
+import com.example.bisit.databinding.FragmentFindPasswordBinding
 import com.example.bisit.ui.dialog.CommonInfoDialog
-import com.example.bisit.ui.dialog.CustomDialog // CustomDialog 사용 (예상)
+import com.example.bisit.ui.dialog.CustomDialog
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.util.regex.Pattern
 
-class FindPasswordFragment : Fragment() { // 클래스명 변경
+class FindPasswordFragment : Fragment() {
 
-    private var _binding: FragmentFindPasswordBinding? = null // 바인딩 변경
+    private var _binding: FragmentFindPasswordBinding? = null
     private val binding get() = _binding!!
 
-    // ViewModel 변경
     private val viewModel: FindPasswordViewModel by viewModels()
+    private val authApi by lazy { RetrofitClient.getAuthApi(requireContext()) }
 
     private val phonePattern: Pattern = Pattern.compile("^010-\\d{4}-\\d{4}$")
 
@@ -29,7 +40,7 @@ class FindPasswordFragment : Fragment() { // 클래스명 변경
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentFindPasswordBinding.inflate(inflater, container, false) // 바인딩 변경
+        _binding = FragmentFindPasswordBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -42,48 +53,111 @@ class FindPasswordFragment : Fragment() { // 클래스명 변경
     }
 
     private fun setupClickListeners() {
+        // 1. 번호 인증 요청
         binding.btnVerify.setOnClickListener {
-            // TODO: 서버에 인증번호 전송 요청
-            viewModel.isVerificationUiVisibleInput.value = true
+            val request = PasswordSendCodeRequest(
+                loginId = binding.etId.text.toString(),
+                phoneNumber = binding.etPhone.text.toString().replace("-", ""),
+                name = binding.etName.text.toString()
+            )
+
+            authApi.passwordSendCode(request).enqueue(object : Callback<CommonResponse<String>> {
+                override fun onResponse(call: Call<CommonResponse<String>>, response: Response<CommonResponse<String>>) {
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        CommonInfoDialog(
+                            message = "인증번호가 발송되었습니다.",
+                            onConfirm = { viewModel.isVerificationUiVisibleInput.value = true }
+                        ).show(parentFragmentManager, "SendCodeSuccess")
+                    } else {
+                        showErrorDialog("발송 실패", "입력 정보를 확인하거나 잠시 후 다시 시도해주세요.")
+                    }
+                }
+                override fun onFailure(call: Call<CommonResponse<String>>, t: Throwable) {
+                    showErrorDialog("네트워크 오류", "서버와의 통신이 원활하지 않습니다.")
+                }
+            })
         }
 
+        // 2. 인증번호 확인 버튼
         binding.btnConfirmVerification.setOnClickListener {
-            // TODO: 서버에 인증번호 확인 요청
-
-            val dialog = CommonInfoDialog(
-                message = "인증이 완료되었습니다.",
-                onConfirm = {
-                    viewModel.isPhoneVerifiedInput.value = true
-                }
+            val request = PasswordVerifyCodeRequest(
+                loginId = binding.etId.text.toString(),
+                code = binding.etVerificationCode.text.toString()
             )
-            dialog.show(parentFragmentManager, "VerificationCompleteDialog")
+
+            authApi.passwordVerifyCode(request).enqueue(object : Callback<CommonResponse<PasswordVerifyResponse>> {
+                override fun onResponse(call: Call<CommonResponse<PasswordVerifyResponse>>, response: Response<CommonResponse<PasswordVerifyResponse>>) {
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        viewModel.resetToken = response.body()?.data?.token
+
+                        CommonInfoDialog(
+                            message = "인증이 완료되었습니다.\n새로운 비밀번호를 입력해주세요.",
+                            onConfirm = { viewModel.isPhoneVerifiedInput.value = true }
+                        ).show(parentFragmentManager, "VerifySuccess")
+                    } else {
+                        showErrorDialog("인증 실패", "인증번호가 일치하지 않습니다.")
+                    }
+                }
+                override fun onFailure(call: Call<CommonResponse<PasswordVerifyResponse>>, t: Throwable) {
+                    showErrorDialog("네트워크 오류", "서버와의 통신이 원활하지 않습니다.")
+                }
+            })
         }
 
+        // 3. 최종 비밀번호 재설정 완료 버튼
         binding.btnFindPassword.setOnClickListener {
-            // TODO: 이름, 아이디, 인증된 폰번호로 비밀번호 찾기(재설정) 로직 구현
-
-            // 1. CustomDialog를 띄웁니다.
-            val dialog = CustomDialog(
-                title = "해당 정보로 안내를 전송했습니다.",
-                subtitle = "안내를 확인해주세요.",
-                onConfirm = {
-                    // 2. '닫기' 버튼을 누르면 그냥 닫히기만 합니다. (아무것도 안 함)
-                }
+            val request = PasswordResetRequest(
+                loginId = binding.etId.text.toString(),
+                token = viewModel.resetToken ?: "",
+                newPassword = binding.etNewPassword.text.toString(),
+                confirmPassword = binding.etConfirmPassword.text.toString()
             )
-            dialog.show(parentFragmentManager, "CustomDialog") // 태그도 하나만 사용
+
+            authApi.passwordReset(request).enqueue(object : Callback<CommonResponse<String>> {
+                override fun onResponse(call: Call<CommonResponse<String>>, response: Response<CommonResponse<String>>) {
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        CustomDialog(
+                            title = "비밀번호 재설정 완료",
+                            subtitle = "새로운 비밀번호로 로그인해주세요.",
+                            onConfirm = {},
+                            onDismiss = { if (isAdded) parentFragmentManager.popBackStack() }
+                        ).show(parentFragmentManager, "ResetSuccess")
+                    } else {
+                        val errorMsg = response.body()?.message ?: "다시 시도해주세요."
+                        showErrorDialog("재설정 실패", errorMsg)
+                    }
+                }
+                override fun onFailure(call: Call<CommonResponse<String>>, t: Throwable) {
+                    showErrorDialog("네트워크 오류", "서버와의 통신이 원활하지 않습니다.")
+                }
+            })
         }
     }
 
     private fun setupTextWatchers() {
-        // 1. 휴대폰 번호 포맷팅
+        // 휴대폰 번호 포맷팅 및 필터
         val blockHyphenFilter = InputFilter { source, _, _, _, _, _ ->
             if (source.toString() == "-") "" else null
         }
-        val lengthFilter = InputFilter.LengthFilter(13)
-        binding.etPhone.filters = arrayOf(blockHyphenFilter, lengthFilter)
+        binding.etPhone.filters = arrayOf(blockHyphenFilter, InputFilter.LengthFilter(13))
         binding.etPhone.addTextChangedListener(PhoneNumberFormattingTextWatcher("KR"))
 
-        // 2. '번호 인증' 버튼 활성화
+        // 모든 입력창 감지하여 하단 버튼 활성화 체크
+        val commonWatcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                checkAllFieldsAndEnableFindPasswordButton()
+            }
+        }
+
+        // 각 EditText에 리스너 등록
+        binding.etName.addTextChangedListener(commonWatcher)
+        binding.etId.addTextChangedListener(commonWatcher)
+        binding.etNewPassword.addTextChangedListener(commonWatcher)
+        binding.etConfirmPassword.addTextChangedListener(commonWatcher)
+
+        // '번호 인증' 버튼 활성화 체크
         binding.etPhone.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -93,59 +167,74 @@ class FindPasswordFragment : Fragment() { // 클래스명 변경
             }
         })
 
-        // 3. '완료' 버튼 활성화
+        // '완료' 버튼 활성화 체크
         binding.etVerificationCode.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
                 if (viewModel.isPhoneVerified.value == true) return
                 binding.btnConfirmVerification.isEnabled = s?.length == 6
             }
-        })
-
-        // 4. '이름'과 '아이디' 입력 감지 -> '비밀번호 찾기' 버튼 활성화 체크
-        val buttonEnablerWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                checkAllFieldsAndEnableFindPasswordButton() // 함수명 변경
-            }
-        }
-        binding.etName.addTextChangedListener(buttonEnablerWatcher)
-        binding.etId.addTextChangedListener(buttonEnablerWatcher) // etId 리스너 추가
+        })
     }
 
-    // ViewModel 관찰
     private fun observeUiState() {
+        // 인증번호 입력창 노출 여부
         viewModel.isVerificationUiVisible.observe(viewLifecycleOwner) { isVisible ->
+            binding.groupVerification.visibility = if (isVisible) View.VISIBLE else View.GONE
             if (isVisible) {
-                binding.groupVerification.visibility = View.VISIBLE
                 binding.etPhone.isEnabled = false
                 binding.btnVerify.isEnabled = false
-            } else {
-                binding.groupVerification.visibility = View.GONE
-                binding.etPhone.isEnabled = true
             }
         }
 
+        // 휴대폰 인증 완료 여부
         viewModel.isPhoneVerified.observe(viewLifecycleOwner) { isVerified ->
             if (isVerified) {
                 binding.etVerificationCode.isEnabled = false
                 binding.btnConfirmVerification.isEnabled = false
-            } else {
-                binding.etVerificationCode.isEnabled = true
+                binding.groupResetPassword.visibility = View.VISIBLE // 재설정 UI 표시
             }
-            checkAllFieldsAndEnableFindPasswordButton() // 함수명 변경
+            checkAllFieldsAndEnableFindPasswordButton()
         }
     }
 
-    // '비밀번호 찾기' 버튼 활성화 로직
-    private fun checkAllFieldsAndEnableFindPasswordButton() { // 함수명 변경
-        val isNameValid = binding.etName.text.isNotBlank()
-        val isIdValid = binding.etId.text.isNotBlank() // etId 유효성 체크 추가
+    // 최종 '비밀번호 재설정' 버튼 활성화 로직
+    private fun checkAllFieldsAndEnableFindPasswordButton() {
+        val name = binding.etName.text.toString()
+        val id = binding.etId.text.toString()
+        val newPassword = binding.etNewPassword.text.toString()
+        val confirmPassword = binding.etConfirmPassword.text.toString()
         val isPhoneVerified = viewModel.isPhoneVerified.value ?: false
 
-        binding.btnFindPassword.isEnabled = isNameValid && isIdValid && isPhoneVerified // 조건 추가
+        // 1. 공백 체크
+        val isNotEmpty = name.isNotBlank() && id.isNotBlank() &&
+                newPassword.isNotBlank() && confirmPassword.isNotBlank()
+
+        // 2. 비밀번호 일치 여부 및 에러 메시지 표시 (SignUpCredentialsFragment 방식)
+        val isPasswordMatched = if (confirmPassword.isBlank()) {
+            binding.layoutConfirmPassword.error = null
+            binding.layoutConfirmPassword.helperText = " "
+            false
+        } else if (newPassword == confirmPassword) {
+            binding.layoutConfirmPassword.error = null
+            binding.layoutConfirmPassword.helperText = "비밀번호가 일치합니다."
+            binding.layoutConfirmPassword.setHelperTextColor(
+                ContextCompat.getColorStateList(requireContext(), R.color.green)!!
+            )
+            true
+        } else {
+            binding.layoutConfirmPassword.helperText = null
+            binding.layoutConfirmPassword.error = "비밀번호가 일치하지 않습니다."
+            false
+        }
+
+        // 3. 최종 버튼 활성화
+        binding.btnFindPassword.isEnabled = isNotEmpty && isPasswordMatched && isPhoneVerified
+    }
+
+    private fun showErrorDialog(title: String, subtitle: String) {
+        CustomDialog(title = title, subtitle = subtitle).show(parentFragmentManager, "ErrorDialog")
     }
 
     override fun onDestroyView() {

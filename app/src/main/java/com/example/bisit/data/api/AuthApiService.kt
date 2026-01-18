@@ -1,8 +1,13 @@
 package com.example.bisit.data.api
 
 import com.example.bisit.data.model.auth.AuthResponse
+import com.example.bisit.data.model.auth.FindIdRequest
 import com.example.bisit.data.model.auth.LoginRequest
 import com.example.bisit.data.model.auth.LoginResponse
+import com.example.bisit.data.model.auth.PasswordResetRequest
+import com.example.bisit.data.model.auth.PasswordSendCodeRequest
+import com.example.bisit.data.model.auth.PasswordVerifyCodeRequest
+import com.example.bisit.data.model.auth.PasswordVerifyResponse
 import com.example.bisit.data.model.auth.ReissueRequest
 import com.example.bisit.data.model.auth.ReissueResponse
 import com.example.bisit.data.model.signUp.SignUpRequest
@@ -36,6 +41,18 @@ interface AuthApiService {
 
     @GET("/api/auth/check/phone-number")
     fun checkPhoneNumber(@Query("phoneNumber") phoneNumber: String): Call<CommonResponse<Boolean>>
+
+    @POST("/api/auth/find-id")
+    fun findId(@Body request: FindIdRequest): Call<CommonResponse<String>>
+
+    @POST("/api/auth/password/send-code")
+    fun passwordSendCode(@Body request: PasswordSendCodeRequest): Call<CommonResponse<String>>
+
+    @POST("/api/auth/password/verify-code")
+    fun passwordVerifyCode(@Body request: PasswordVerifyCodeRequest): Call<CommonResponse<PasswordVerifyResponse>>
+
+    @POST("/api/auth/password/reset")
+    fun passwordReset(@Body request: PasswordResetRequest): Call<CommonResponse<String>>
 
     @GET("/api/auth/check/email")
     fun checkEmail(@Query("email") email: String): Call<CommonResponse<Boolean>>

@@ -16,6 +16,11 @@ class AuthInterceptor(private val context: Context) : Interceptor {
             "/api/sms/send", 
             "/api/sms/verify",
             "/api/auth/check/login-id",
+            "/api/auth/check/phone-number",
+            "/api/auth/find-id",
+            "/api/auth/password/send-code",
+            "/api/auth/password/verify-code",
+            "/api/auth/password/reset",
             "/api/auth/check/email",
             "/api/auth/check/phone-number",
             "/api/auth/reissue"

@@ -1,5 +1,6 @@
 package com.example.bisit.ui.dialog // (공용 패키지)
 
+import android.content.DialogInterface
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -13,7 +14,8 @@ import com.example.bisit.databinding.DialogCustomBinding // 바인딩 이름 변
 class CustomDialog( // 클래스 이름 변경
     private val title: String,
     private val subtitle: String? = null, // 서브타이틀은 선택적 (null 가능)
-    private val onConfirm: (() -> Unit)? = null // 닫기 버튼 클릭 시 동작 (선택적)
+    private val onConfirm: (() -> Unit)? = null,
+    private val onDismiss: (() -> Unit)? = null
 ) : DialogFragment() {
 
     private var _binding: DialogCustomBinding? = null // 바인딩 타입 변경
@@ -44,6 +46,11 @@ class CustomDialog( // 클래스 이름 변경
             onConfirm?.invoke() // 전달받은 동작(onConfirm)이 있으면 실행
             dismiss() // 다이얼로그 닫기
         }
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        onDismiss?.invoke()
     }
 
     override fun onStart() {
