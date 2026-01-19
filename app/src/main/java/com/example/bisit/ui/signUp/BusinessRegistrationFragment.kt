@@ -15,6 +15,9 @@ import com.example.bisit.data.model.shop.BusinessDetailValidateRequest
 import com.example.bisit.data.model.shop.BusinessDetailValidateResponse
 import com.example.bisit.data.model.shop.BusinessValidateRequest
 import com.example.bisit.data.model.shop.BusinessValidateResponse
+import com.example.bisit.data.model.staffManage.ApiResponse
+import com.example.bisit.data.model.staffManage.StaffEnrollRequest
+import com.example.bisit.data.model.staffManage.StaffResponse
 import com.example.bisit.databinding.FragmentBusinessRegistrationBinding
 import com.example.bisit.ui.dialog.CommonInfoDialog
 import com.example.bisit.ui.dialog.CustomTwoButtonDialog
@@ -183,15 +186,19 @@ class BusinessRegistrationFragment : Fragment() {
         val storeApi = RetrofitClient.getStoreApi(requireContext())
         val request = BusinessValidateRequest(businessRegNo = number)
 
-        // 1단계: DB 중복 확인
         storeApi.validateBusiness(request).enqueue(object : Callback<BusinessValidateResponse> {
             override fun onResponse(call: Call<BusinessValidateResponse>, response: Response<BusinessValidateResponse>) {
-                if (response.isSuccessful && response.body()?.data == true) {
-                    // 중복되지 않은 번호라면 2단계: 상세 정보 진위 확인 시작
-                    validateBusinessDetail(number)
+                val result = response.body()?.data
+                if (response.isSuccessful && result != null) {
+                    if (result.isValid) {
+                        // 1. 중복되지 않은 번호 -> 상세 정보 진위 확인 시작
+                        validateBusinessDetail(number)
+                    } else {
+                        // 2. 이미 등록된 매장 -> shopId를 넘겨서 다이얼로그 표시
+                        showStaffRedirectDialog(result.shopId, number)
+                    }
                 } else {
-                    // 이미 등록된 매장인 경우 (중복)
-                    showStaffRedirectDialog()
+                    showDialog("서버 응답 오류 (1단계)")
                 }
             }
 
@@ -237,17 +244,39 @@ class BusinessRegistrationFragment : Fragment() {
         })
     }
 
-    private fun showStaffRedirectDialog() {
+    private fun showStaffRedirectDialog(shopId: Long, businessNo: String) {
         CustomTwoButtonDialog(
             title = "등록되어 있는 매장입니다.",
             subtitle = "직원으로 신청하시겠어요?",
             positiveButtonText = "등록하기",
             negativeButtonText = "닫기",
             onPositiveClick = {
-                // TODO: 직원 등록 프래그먼트 또는 액티비티로 이동하는 네비게이션 로직 구현
-                // 예: findNavController().navigate(R.id.action_to_staffRegistration)
+                // 실제 직원 신청 API 호출
+                requestStaffEnrollment(shopId, businessNo)
             }
         ).show(parentFragmentManager, "StaffRedirectDialog")
+    }
+
+    private fun requestStaffEnrollment(shopId: Long, businessNo: String) {
+        val staffApi = RetrofitClient.getStaffManageApi(requireContext())
+        val request = StaffEnrollRequest(businessRegNo = businessNo)
+
+        staffApi.enrollStaff(shopId, request).enqueue(object : Callback<ApiResponse<StaffResponse>> {
+            override fun onResponse(
+                call: Call<ApiResponse<StaffResponse>>,
+                response: Response<ApiResponse<StaffResponse>>
+            ) {
+                if (response.isSuccessful && response.body()?.success == true) {
+                    showDialog("직원 신청이 완료되었습니다.\n사장의 승인을 기다려주세요.")
+                } else {
+                    showDialog("직원 신청에 실패했습니다. 다시 시도해주세요.")
+                }
+            }
+
+            override fun onFailure(call: Call<ApiResponse<StaffResponse>>, t: Throwable) {
+                showDialog("네트워크 연결 실패 (직원 신청)")
+            }
+        })
     }
 
     private fun showDialog(msg: String) {
