@@ -45,4 +45,10 @@ interface StaffManageApiService {
     fun uploadProfileImage(
         @Part file: okhttp3.MultipartBody.Part
     ): retrofit2.Call<com.example.bisit.data.model.member.MyProfileResponse>
+
+    @POST("/api/shops/{shopId}/staff/enrollment")
+    fun enrollStaff(
+        @Path("shopId") shopId: Long,
+        @Body request: StaffEnrollRequest
+    ): retrofit2.Call<ApiResponse<StaffResponse>>
 }
