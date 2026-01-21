@@ -297,7 +297,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="방문 서비스"
-                                android:buttonTint="#000000"
+                                app:buttonTint="@color/black"
                                 android:textColor="#222222"
                                 android:clickable="false"
                                 android:focusable="false"/>
@@ -337,7 +337,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="직접 방문"
-                                android:buttonTint="#000000"
+                                app:buttonTint="@color/black"
                                 android:textColor="#222222"
                                 android:clickable="false"
                                 android:focusable="false"/>

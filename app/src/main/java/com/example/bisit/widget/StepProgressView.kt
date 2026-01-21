@@ -17,6 +17,8 @@ class StepProgressView @JvmOverloads constructor(
     private var stepCount: Int = 4
     private var currentStep: Int = 0
     private var labels: List<String> = emptyList()
+    
+    private var onStepClickListener: ((Int) -> Unit)? = null
 
     private var activeColor = ContextCompat.getColor(context, R.color.sp_active_orange)
     private var inactiveColor = ContextCompat.getColor(context, R.color.sp_inactive)
@@ -151,6 +153,28 @@ class StepProgressView @JvmOverloads constructor(
             val textY = centerY + circleOuterRadiusPx + textMarginPx + (textSizePx / 2f)
             canvas.drawText(label, cx, textY, textPaint)
         }
+    }
+
+    override fun onTouchEvent(event: android.view.MotionEvent): Boolean {
+        if (event.action == android.view.MotionEvent.ACTION_DOWN) {
+            val drawStart = paddingLeft + max(circleOuterRadiusPx, if (labels.isNotEmpty()) textPaint.measureText(labels[0]) else 0f) / 2f
+            val drawEnd = width - paddingRight - max(circleOuterRadiusPx, if (labels.isNotEmpty()) textPaint.measureText(labels[labels.size - 1]) else 0f) / 2f
+            val availableW = drawEnd - drawStart
+            val spacing = if (stepCount > 1) availableW / (stepCount - 1) else 0f
+            
+            for (i in 0 until stepCount) {
+                val cx = drawStart + i * spacing
+                if (event.x in (cx - spacing/2)..(cx + spacing/2)) {
+                    onStepClickListener?.invoke(i)
+                    return true
+                }
+            }
+        }
+        return super.onTouchEvent(event)
+    }
+
+    fun setOnStepClickListener(listener: (Int) -> Unit) {
+        onStepClickListener = listener
     }
 
     fun setStepCount(count: Int) {

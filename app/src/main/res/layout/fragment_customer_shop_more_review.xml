@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF">
+    android:background="#FFFFFF"
+    android:paddingTop="24dp">
 
     <!-- Top Bar -->
     <LinearLayout
@@ -97,24 +98,9 @@
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
         android:clipToPadding="false"
-        android:paddingBottom="80dp" 
+        android:paddingBottom="16dp" 
         app:layout_constraintTop_toBottomOf="@id/scrollSort"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:listitem="@layout/item_shop_review"/>
-
-    <!-- Bottom Reserve Button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnReserve"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="16dp"
-        android:text="예약하기"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:cornerRadius="8dp"
-        android:backgroundTint="#4076FF"
-        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
