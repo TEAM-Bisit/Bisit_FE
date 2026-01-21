@@ -239,6 +239,14 @@ class HomeListFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        Log.d(TAG, "HomeListFragment onResume - Refreshing list")
+        if (userLat != null && userLng != null) {
+            resetPaginationAndLoad()
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         Log.d(TAG, "HomeListFragment 뷰 파괴됨")

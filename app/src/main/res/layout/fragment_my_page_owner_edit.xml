@@ -104,8 +104,7 @@
                 android:background="@drawable/bg_edittext"
                 android:layout_marginStart="18dp"
                 android:layout_marginEnd="18dp"
-                android:paddingStart="14dp"
-                android:text="김비짓" />
+                android:paddingStart="14dp" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -124,8 +123,7 @@
                 android:background="@drawable/bg_edittext"
                 android:layout_marginStart="18dp"
                 android:layout_marginEnd="18dp"
-                android:paddingStart="14dp"
-                android:text="안녕하세요" />
+                android:paddingStart="14dp" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -144,8 +142,7 @@
                 android:background="@drawable/bg_edittext"
                 android:layout_marginStart="18dp"
                 android:layout_marginEnd="18dp"
-                android:paddingStart="14dp"
-                android:text="bisitbisit123@naver.com" />
+                android:paddingStart="14dp" />
 
             <TextView
                 android:layout_width="match_parent"

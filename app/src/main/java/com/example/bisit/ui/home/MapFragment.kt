@@ -178,6 +178,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private fun performSearch() {
         val query = binding.etSearch.text.toString().trim()
+        Log.d(TAG, "performSearch triggered: query='$query'")
         if (query.isNotBlank()) {
             clearShopMarkers()
             nextCursor = null
@@ -190,7 +191,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             // Search Naver Places (External)
             fetchNaverPlaces(query, moveCamera = true)
             
-            Toast.makeText(context ?: return, "'$query' 검색 중...", Toast.LENGTH_SHORT).show()
+            Log.d(TAG, "Search started for '$query'")
         } else {
             Toast.makeText(context ?: return, "검색어를 입력하세요.", Toast.LENGTH_SHORT).show()
         }
@@ -205,20 +206,17 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun fetchNaverPlaces(query: String, moveCamera: Boolean = false) {
-        Log.d(TAG, "fetchNaverPlaces: query='$query'")
+        Log.d(TAG, "fetchNaverPlaces: query='$query', moveCamera=$moveCamera")
         // Debugging NCP Keys
-        Log.d(TAG, "NCP_CLIENT_ID exists: ${BuildConfig.NAVER_MAP_CLIENT_ID.isNotEmpty()}")
-        Log.d(TAG, "NCP_CLIENT_SECRET exists: ${BuildConfig.NAVER_MAP_CLIENT_SECRET.isNotEmpty()}")
-        Log.d(TAG, "NCP_IAM_KEY_ID exists: ${BuildConfig.NCP_KEY_ID.isNotEmpty()}")
+        Log.d(TAG, "NCP_DEV_CLIENT_ID exists: ${BuildConfig.NAVER_DEV_CLIENT_ID.isNotEmpty()}")
         
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val response = RetrofitClient.naverSearchApi.searchLocal(query = query, display = 10)
-                Log.d(TAG, "fetchNaverPlaces: Request URL: ${response.raw().request.url}")
-                Log.d(TAG, "fetchNaverPlaces: response success=${response.isSuccessful}, code=${response.code()}")
+                Log.d(TAG, "fetchNaverPlaces response success=${response.isSuccessful}, code=${response.code()}")
                 if (response.isSuccessful && _binding != null) {
                     val items = response.body()?.items.orEmpty()
-                    Log.d(TAG, "fetchNaverPlaces: items found=${items.size}")
+                    Log.d(TAG, "fetchNaverPlaces: found ${items.size} items")
                     val externalResults = items.map { SearchResultItem.ExternalPlace(it) }
                     
                     allSearchResults.addAll(externalResults as List<SearchResultItem>)
@@ -226,12 +224,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 } else {
                     val errorBody = response.errorBody()?.string()
                     Log.e(TAG, "fetchNaverPlaces FAIL: code=${response.code()}, body=$errorBody")
-                    Log.e(TAG, "Request Headers sent: ${response.raw().request.headers}")
-                    Toast.makeText(context ?: return@launch, "검색 실패 (${response.code()})", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "fetchNaverPlaces Error", e)
-                Toast.makeText(context ?: return@launch, "검색 중 오류 발생", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -239,15 +234,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private fun updateSearchResults(moveCameraToFirst: Boolean = false) {
         if (_binding == null) return
         val resultsToShow = allSearchResults.take(5)
-        Log.d(TAG, "updateSearchResults: totalSearchResults=${allSearchResults.size}, showing=${resultsToShow.size}")
+        Log.d(TAG, "updateSearchResults: resultsToShow=${resultsToShow.size}, moveCameraToFirst=$moveCameraToFirst")
         
         if (resultsToShow.isNotEmpty()) {
             binding.rvSearchSuggestions.visibility = View.VISIBLE
             binding.rvSearchSuggestions.bringToFront()
             searchResultAdapter.submitList(resultsToShow)
             
-            if (moveCameraToFirst && resultsToShow.isNotEmpty()) {
+            if (moveCameraToFirst) {
                 val first = resultsToShow[0]
+                Log.d(TAG, "Auto-navigating to first result: ${first.name}")
                 navigateToSearchResult(first)
             }
         } else {
@@ -256,14 +252,22 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun navigateToSearchResult(item: SearchResultItem) {
+        Log.d(TAG, "navigateToSearchResult: ${item.name}")
         when (item) {
             is SearchResultItem.InternalShop -> {
-                val latLng = LatLng(item.shop.latitude, item.shop.longitude)
-                showMarker(latLng, false) // Don't add a new marker if it's already there? Actually showMarker adds a search marker.
-                // Let's just move camera directly for shops
-                val cameraUpdate = CameraUpdate.scrollAndZoomTo(latLng, 15.0)
-                    .animate(com.naver.maps.map.CameraAnimation.Easing)
-                naverMap.moveCamera(cameraUpdate)
+                val shop = item.shop
+                Log.d(TAG, "InternalShop selected: ${shop.shopName}, ID=${shop.shopId}, Lat=${shop.latitude}, Lng=${shop.longitude}")
+                
+                // If the backend already provided valid coordinates, use them immediately
+                if (shop.latitude != 0.0 && shop.longitude != 0.0) {
+                    Log.d(TAG, "✅ Using server-provided coordinates: ${shop.latitude}, ${shop.longitude}")
+                    showMarker(LatLng(shop.latitude, shop.longitude))
+                } else {
+                    // Start geocoding if coordinates are missing
+                    Log.w(TAG, "⚠️ Server returned coordinates (0.0, 0.0). Falling back to client-side geocoding.")
+                    Toast.makeText(context, "가게 좌표가 없어 주소로 검색합니다.", Toast.LENGTH_SHORT).show()
+                    fetchAndGeocodeInternalShop(shop.shopId, shop.latitude, shop.longitude)
+                }
             }
             is SearchResultItem.ExternalPlace -> {
                 // Naver Local Search results (with coordinate=wgs84) return 10^7 scaled values
@@ -308,23 +312,27 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
     private fun fetchShopsByName(name: String, moveCamera: Boolean = false) {
-        val currentContext = context ?: return // Fragment 분리 체크
+        Log.d(TAG, "fetchShopsByName: name='$name', moveCamera=$moveCamera")
+        val currentContext = context ?: return
         viewLifecycleOwner.lifecycleScope.launch {
             isLoading = true
             try {
                 val api = RetrofitClient.getMapApi(currentContext)
                 val response = api.searchShopsByName(name = name, cursor = nextCursor)
+                Log.d(TAG, "fetchShopsByName response success=${response.isSuccessful}, code=${response.code()}")
 
                 if (response.isSuccessful && _binding != null) {
                     val data = response.body()?.data
                     val shops = data?.content.orEmpty()
+                    Log.d(TAG, "fetchShopsByName: found ${shops.size} shops")
                     
                     val internalResults = shops.map { SearchResultItem.InternalShop(it) }
                     allSearchResults.addAll(internalResults as List<SearchResultItem>)
                     updateSearchResults(moveCameraToFirst = moveCamera)
                     
-                    // Show markers for internal shops
                     shops.forEach { addShopMarker(it) }
+                } else {
+                    Log.e(TAG, "fetchShopsByName FAILED: ${response.code()}")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "fetchShopsByName Error", e)
@@ -381,29 +389,102 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         shopMarkers.clear()
     }
 
-    private fun searchAddress(query: String) {
+    private fun searchAddress(query: String, shopId: Long? = null, fallbackLat: Double? = null, fallbackLng: Double? = null) {
+        Log.d(TAG, "searchAddress query: $query")
         RetrofitClient.geocodingApi.geocode(query)
-            .enqueue(object : Callback<GeocodingResponse> {
+            .enqueue(object : retrofit2.Callback<GeocodingResponse> {
                 override fun onResponse(
                     call: Call<GeocodingResponse>,
                     response: Response<GeocodingResponse>
                 ) {
                     if (_binding == null) return
-                    val addr = response.body()?.addresses?.firstOrNull() ?: return
+                    Log.d(TAG, "searchAddress onResponse: success=${response.isSuccessful}, code=${response.code()}")
+                    
+                    if (response.code() == 401) {
+                        Log.e(TAG, "Naver Geocoding 401 Error: Permission Denied. Please check NCP Package Name registration.")
+                        // Fallback: If geocoding fails, try to move to shop's own coordinates
+                        if (fallbackLat != null && fallbackLng != null && fallbackLat != 0.0) {
+                            Log.d(TAG, "Geocoding 401 -> Falling back to shop coordinates")
+                            showMarker(LatLng(fallbackLat, fallbackLng))
+                        } else {
+                            // If no coordinates at all, only then show a silent error or neutral message
+                            Log.w(TAG, "Geocoding failed (401) and no fallback coordinates available.")
+                            // Removed intrusive Toast about "Permission Pending" as it confuses users
+                        }
+                        return
+                    }
+
+                    val body = response.body()
+                    val addr = body?.addresses?.firstOrNull()
+                    if (addr == null) {
+                        Log.w(TAG, "No geocoding results for query: $query. Body: $body")
+                        if (fallbackLat != null && fallbackLng != null && fallbackLat != 0.0) {
+                            showMarker(LatLng(fallbackLat, fallbackLng))
+                        }
+                        return
+                    }
                     val lat = addr.y?.toDoubleOrNull()
                     val lng = addr.x?.toDoubleOrNull()
+                    Log.d(TAG, "Geocoded LatLng: $lat, $lng")
 
                     if (lat != null && lng != null) {
                         showMarker(LatLng(lat, lng))
+                    } else if (fallbackLat != null && fallbackLng != null && fallbackLat != 0.0) {
+                        showMarker(LatLng(fallbackLat, fallbackLng))
                     }
                 }
 
                 override fun onFailure(call: Call<GeocodingResponse>, t: Throwable) {
-                    context?.let {
-                        Toast.makeText(it, "지오코딩 실패", Toast.LENGTH_SHORT).show()
+                    Log.e(TAG, "searchAddress onFailure", t)
+                    if (fallbackLat != null && fallbackLng != null && fallbackLat != 0.0) {
+                        showMarker(LatLng(fallbackLat, fallbackLng))
+                    } else {
+                        context?.let {
+                            Toast.makeText(it, "지오코딩 실패", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             })
+    }
+
+    private fun fetchAndGeocodeInternalShop(shopId: Long, fallbackLat: Double? = null, fallbackLng: Double? = null) {
+        Log.d(TAG, "fetchAndGeocodeInternalShop: shopId=$shopId")
+        val currentContext = context ?: return
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val api = RetrofitClient.getCustomerShopApi(currentContext)
+                val response = api.getShopDetail(shopId)
+                Log.d(TAG, "fetchAndGeocodeInternalShop response success=${response.isSuccessful}, code=${response.code()}")
+                if (response.isSuccessful && _binding != null) {
+                    val shopDetail = response.body()?.data
+                    val address = shopDetail?.address
+                    val lat = shopDetail?.latitude
+                    val lng = shopDetail?.longitude
+                    Log.d(TAG, "Shop detail: address=$address, lat=$lat, lng=$lng")
+                    
+                    if (lat != null && lng != null && lat != 0.0) {
+                        Log.d(TAG, "Using coordinates from shop detail API: $lat, $lng")
+                        showMarker(LatLng(lat, lng))
+                    } else if (!address.isNullOrBlank()) {
+                        Log.d(TAG, "Coordinates missing in detail, trying geocoding with address: $address")
+                        searchAddress(address, shopId, fallbackLat, fallbackLng)
+                    } else if (fallbackLat != null && fallbackLng != null && fallbackLat != 0.0) {
+                        Log.w(TAG, "Shop address and detail coordinates missing, using fallback coordinates")
+                        showMarker(LatLng(fallbackLat, fallbackLng))
+                    } else {
+                        Log.w(TAG, "No coordinates or address available for this shop.")
+                    }
+                } else if (fallbackLat != null && fallbackLng != null && fallbackLat != 0.0) {
+                    // API fails but we have fallback
+                    showMarker(LatLng(fallbackLat, fallbackLng))
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "fetchAndGeocodeInternalShop Error", e)
+                if (fallbackLat != null && fallbackLng != null && fallbackLat != 0.0) {
+                    showMarker(LatLng(fallbackLat, fallbackLng))
+                }
+            }
+        }
     }
 
     private fun showMarker(latLng: LatLng, moveCamera: Boolean = true) {
@@ -414,6 +495,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             map = naverMap
         }
         if (moveCamera) {
+            naverMap.locationTrackingMode = LocationTrackingMode.None
             val cameraUpdate = CameraUpdate.scrollAndZoomTo(latLng, 15.0)
                 .animate(com.naver.maps.map.CameraAnimation.Easing)
             naverMap.moveCamera(cameraUpdate)

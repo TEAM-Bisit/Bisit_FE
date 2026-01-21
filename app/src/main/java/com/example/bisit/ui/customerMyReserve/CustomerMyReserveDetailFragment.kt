@@ -120,8 +120,14 @@ class CustomerMyReserveDetailFragment : Fragment() {
                     btnReview.text = if (isCompleted || data.status.uppercase() == "CUSTOMER_CONFIRMED") "리뷰 작성하기" else "리뷰 작성 불가"
                 }
                 
+                
                 btnReview.setOnClickListener {
-                    showReviewDialog()
+                    // Double-check to prevent duplicate reviews
+                    if (!data.isReviewed && canReview) {
+                        showReviewDialog()
+                    } else {
+                        Toast.makeText(requireContext(), "이미 리뷰를 작성하셨습니다.", Toast.LENGTH_SHORT).show()
+                    }
                 }
                 
                 if (isCompleted && canConfirm) {
@@ -154,28 +160,34 @@ class CustomerMyReserveDetailFragment : Fragment() {
     }
 
     private fun confirmReservation(reservationId: Long) {
-        androidx.appcompat.app.AlertDialog.Builder(requireContext())
-            .setTitle("시술 확정")
-            .setMessage("시술 완료를 확정하시겠습니까?")
-            .setPositiveButton("확정하기") { _, _ ->
-                lifecycleScope.launch {
-                    try {
-                        val api = RetrofitClient.getReservationApi(requireContext())
-                        val response = api.confirmReservation(reservationId)
-                        if (response.isSuccessful && response.body()?.success == true) {
-                            Toast.makeText(requireContext(), "시술이 확정되었습니다.", Toast.LENGTH_SHORT).show()
-                            // Refresh data
-                            fetchReservationDetail(reservationId)
-                        } else {
-                            Toast.makeText(requireContext(), "시술 확정에 실패했습니다.", Toast.LENGTH_SHORT).show()
-                        }
-                    } catch (e: Exception) {
-                        Toast.makeText(requireContext(), "에러가 발생했습니다.", Toast.LENGTH_SHORT).show()
+        val dialog = Dialog(requireContext())
+        val dialogBinding = com.example.bisit.databinding.DialogConfirmReservationBinding.inflate(layoutInflater)
+        dialog.setContentView(dialogBinding.root)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        dialogBinding.btnClose.setOnClickListener { dialog.dismiss() }
+        dialogBinding.btnCancel.setOnClickListener { dialog.dismiss() }
+        
+        dialogBinding.btnConfirm.setOnClickListener {
+            lifecycleScope.launch {
+                try {
+                    val api = RetrofitClient.getReservationApi(requireContext())
+                    val response = api.confirmReservation(reservationId)
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        Toast.makeText(requireContext(), "시술이 확정되었습니다.", Toast.LENGTH_SHORT).show()
+                        // Refresh data
+                        fetchReservationDetail(reservationId)
+                        dialog.dismiss()
+                    } else {
+                        Toast.makeText(requireContext(), "시술 확정에 실패했습니다.", Toast.LENGTH_SHORT).show()
                     }
+                } catch (e: Exception) {
+                    Toast.makeText(requireContext(), "에러가 발생했습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
-            .setNegativeButton("닫기", null)
-            .show()
+        }
+        
+        dialog.show()
     }
     private fun formatDateTime(date: String, time: String): String {
 
@@ -219,7 +231,25 @@ class CustomerMyReserveDetailFragment : Fragment() {
         dialogBinding.etReview.addTextChangedListener {
             val textLength = it?.length ?: 0
             dialogBinding.tvTextCount.text = "$textLength/30자"
+            
+            // Enable button only if there is text
+            val isValid = textLength > 0
+            dialogBinding.btnSummit.isEnabled = isValid
+            
+            // Update background drawable and text color
+            if (isValid) {
+                dialogBinding.btnSummit.setBackgroundResource(R.drawable.bg_dialog_button_enabled)
+                dialogBinding.btnSummit.setTextColor(resources.getColor(R.color.white, null))
+            } else {
+                dialogBinding.btnSummit.setBackgroundResource(R.drawable.bg_dialog_button_disabled)
+                dialogBinding.btnSummit.setTextColor(resources.getColor(R.color.muted_gray, null))
+            }
         }
+        
+        // Initial state
+        dialogBinding.btnSummit.isEnabled = false
+        dialogBinding.btnSummit.setBackgroundResource(R.drawable.bg_dialog_button_disabled)
+        dialogBinding.btnSummit.setTextColor(resources.getColor(R.color.muted_gray, null))
 
         // --- 별점 로직 시작 ---
         val stars = listOf(
@@ -263,6 +293,8 @@ class CustomerMyReserveDetailFragment : Fragment() {
                     if (response.isSuccessful && response.body()?.success == true) {
                         Toast.makeText(requireContext(), "리뷰가 등록되었습니다.", Toast.LENGTH_SHORT).show()
                         dialog.dismiss()
+                        // Refresh reservation detail to update UI (disable review button)
+                        reservationId.toLongOrNull()?.let { fetchReservationDetail(it) }
                     } else {
                         Toast.makeText(requireContext(), "리뷰 등록 실패: ${response.code()}", Toast.LENGTH_SHORT).show()
                     }

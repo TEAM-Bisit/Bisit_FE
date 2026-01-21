@@ -13,7 +13,9 @@ data class ShopDetailResponse(
     val latestNotice: ShopNotice?,
     val photos: List<String>,
     val channel: String,
-    val phone: String
+    val phone: String,
+    val latitude: Double,
+    val longitude: Double
 )
 
 data class WeeklyBusinessHour(
