@@ -12,6 +12,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.Glide
 import com.example.bisit.R
 import com.example.bisit.databinding.FragmentShopBasicBinding
 import com.example.bisit.ui.shop.dialog.EditSalesDialog
@@ -64,6 +65,7 @@ class ShopBasicFragment : Fragment() {
 
         observeShopId()
         observeViewModel()
+        observePhotos()
         setupClickListeners()
     }
 
@@ -150,6 +152,25 @@ class ShopBasicFragment : Fragment() {
         }
     }
 
+    /* ===================== 대표 이미지 Observe ===================== */
+
+    private fun observePhotos() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            photoViewModel.photos.collect { photos ->
+                val mainPhoto = photos.firstOrNull()
+
+                if (mainPhoto != null) {
+                    Glide.with(binding.imgHeader)
+                        .load(mainPhoto.url)
+                        .centerCrop()
+                        .into(binding.imgHeader)
+                } else {
+                    binding.imgHeader.setImageResource(R.drawable.sample_header)
+                }
+            }
+        }
+    }
+
     /* ===================== 클릭 ===================== */
 
     private fun setupClickListeners() {
@@ -171,7 +192,7 @@ class ShopBasicFragment : Fragment() {
             ).show(parentFragmentManager, "edit_shop_info")
         }
 
-        // 매장 소개 수정
+        // 매장 소개 / 대표 이미지 변경
         binding.btnEditIntro.setOnClickListener { openIntroDialog() }
         binding.btnChangeHeader.setOnClickListener { openIntroDialog() }
 
