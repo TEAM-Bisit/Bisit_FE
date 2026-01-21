@@ -27,17 +27,6 @@ class CustomerMyReserveAdapter(
         notifyDataSetChanged()
     }
 
-    fun markAsConfirmed(reservationId: String) {
-        items = items.map {
-            if (it.reservationId == reservationId) {
-                it.copy(isConfirmed = true)
-            } else {
-                it
-            }
-        }
-        notifyDataSetChanged()
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(viewType, parent, false)
         return ViewHolder(view)

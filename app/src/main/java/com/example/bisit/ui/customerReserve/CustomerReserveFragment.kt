@@ -142,6 +142,27 @@ class CustomerReserveFragment : Fragment() {
         stepView.setStepCount(stepLabels.size)
         stepView.setLabels(stepLabels)
         stepView.setCurrentStep(currentStep)
+        
+        stepView.setOnStepClickListener { step ->
+            val bind = binding ?: return@setOnStepClickListener
+            val dateTimeSection = bind.layoutTimeSlots.parent as View
+            val serviceSection = bind.layoutServiceMenuSection.parent as View
+            val visitSection = bind.radioGroupVisitType.parent as View
+            
+            val targetY = when(step) {
+                1 -> dateTimeSection.top - dpToPx(16)
+                2 -> serviceSection.top - dpToPx(16)
+                3 -> visitSection.top - dpToPx(16)
+                else -> 0
+            }
+            
+            isAutoScrolling = true
+            bind.scrollView.smoothScrollTo(0, targetY)
+            bind.scrollView.postDelayed({ isAutoScrolling = false }, 600)
+            
+            currentStep = step
+            stepView.setCurrentStep(currentStep)
+        }
 
         binding?.btnNextStep?.setOnClickListener {
             if (isAllStepsComplete()) {
@@ -188,10 +209,11 @@ class CustomerReserveFragment : Fragment() {
             val serviceSection = bind.layoutServiceMenuSection.parent as View
             val visitSection = bind.radioGroupVisitType.parent as View
 
+            // Improved boundary detection using the actual section tops
             val step = when {
-                scrollY >= visitSection.top - 150 -> 3
-                scrollY >= serviceSection.top - 150 -> 2
-                scrollY >= dateTimeSection.top - 150 -> 1
+                scrollY >= visitSection.top - 200 -> 3
+                scrollY >= serviceSection.top - 200 -> 2
+                scrollY >= dateTimeSection.top - 200 -> 1
                 else -> 0
             }
 
@@ -278,32 +300,16 @@ class CustomerReserveFragment : Fragment() {
 
                     // 전역 변수에 저장
                     storedBusinessHours = businessHours
-
-                    // 신규: 상세 영업시간 API 추가 호출 (브레이크 타임 정확도 향상)
-                    loadDetailedBusinessHours(shopId)
-                }
-            } catch (e: Exception) {
-                Log.e("CustomerReserveFragment", "Error loading shop details", e)
-            }
-        }
-    }
-
-    private fun loadDetailedBusinessHours(shopId: Long) {
-        lifecycleScope.launch {
-            try {
-                val api = RetrofitClient.getShopApi(requireContext())
-                val response = api.getBusinessHours(shopId)
-                if (response.isSuccessful && response.body() != null) {
-                    storedBusinessHours = response.body()?.data
-                    Log.d("CustomerReserveFragment", "Loaded detailed business hours: ${storedBusinessHours?.size}")
-                    // 영업시간이 새로 로드되면 달력 UI와 슬롯을 갱신할 수 있음
+                    Log.d("CustomerReserveFragment", "Loaded business hours from shop detail: ${storedBusinessHours?.size}")
+                    
+                    // 신규: 주간 영업시간이 로드되면 달력 UI를 갱신할 수 있음
                     selectedDate?.let { date ->
                         val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date.time)
                         renderAvailableTimes(availableTimes, dateStr)
                     }
                 }
             } catch (e: Exception) {
-                Log.e("CustomerReserveFragment", "Error loading detailed business hours", e)
+                Log.e("CustomerReserveFragment", "Error loading shop details", e)
             }
         }
     }
@@ -564,12 +570,14 @@ class CustomerReserveFragment : Fragment() {
                 // 3. In availability set (from API)
                 val isInSet = normalizedAvailableSet.contains(slotTime)
 
-                // [FIX] Trust the server's availableTimes (isInSet) instead of forcing boundary slots.
-                // Forcing boundary slots (like 14:00 if break ends at 14:00) can lead to RESERVATION400
-                // if the server considers those slots unavailable.
-                val isAvailable = isInSet && !isPast && !isInBreak
+                // [FIX] Check for continuous availability if a treatment is already selected
+                val isContinuouslyAvailable = if (isInSet && selectedTreatment != null) {
+                    isContinuousAvailability(slotTime, selectedTreatment!!.durationMin, normalizedAvailableSet)
+                } else isInSet
 
-                Log.d("CustomerReserveFragment", "[SLOT CHECK] $slotTime | FINAL OK:$isAvailable | inSet:$isInSet | inBreak:$isInBreak | isPast:$isPast")
+                val isAvailable = isContinuouslyAvailable && !isPast && !isInBreak
+
+                Log.d("CustomerReserveFragment", "[SLOT CHECK] $slotTime | FINAL OK:$isAvailable | inSet:$isInSet | contAvail:$isContinuouslyAvailable | inBreak:$isInBreak | isPast:$isPast")
 
                 val button = createTimeButton(
                     time = slotTime,
@@ -786,6 +794,20 @@ class CustomerReserveFragment : Fragment() {
         // Initial state
         radioHome?.isChecked = false
         radioVisit?.isChecked = false
+
+        // Ensure RadioButton color is black
+        val blackStateList = android.content.res.ColorStateList(
+            arrayOf(
+                intArrayOf(android.R.attr.state_checked),
+                intArrayOf(-android.R.attr.state_checked)
+            ),
+            intArrayOf(
+                Color.BLACK,
+                Color.BLACK
+            )
+        )
+        radioHome?.let { CompoundButtonCompat.setButtonTintList(it, blackStateList) }
+        radioVisit?.let { CompoundButtonCompat.setButtonTintList(it, blackStateList) }
     }
 
     private fun renderTreatments(treatments: List<TreatmentData>) {
@@ -951,10 +973,14 @@ class CustomerReserveFragment : Fragment() {
             if (it.length >= 5) it.substring(0, 5) else it 
         }
         
-        Log.d("CustomerReserveFragment", "filterTimeSlotsByDuration: duration=$durationMin, closeTime=$closeTime")
+        val normalizedAvailableSet = availableTimes.map { 
+            if (it.length >= 5) it.substring(0, 5) else it
+        }.toSet()
+
+        Log.d("CustomerReserveFragment", "filterTimeSlotsByDuration: duration=$durationMin, closeTime=$closeTime, break=$breakFrom~$breakTo, availSetSize=${normalizedAvailableSet.size}")
         
         // Update all time slot buttons
-        updateTimeSlotButtons(bind.layoutTimeSlots, durationMin, closeTime, breakFrom, breakTo)
+        updateTimeSlotButtons(bind.layoutTimeSlots, durationMin, closeTime, breakFrom, breakTo, normalizedAvailableSet)
     }
     
     private fun updateTimeSlotButtons(
@@ -962,35 +988,37 @@ class CustomerReserveFragment : Fragment() {
         durationMin: Int,
         closeTime: String,
         breakFrom: String?,
-        breakTo: String?
+        breakTo: String?,
+        availableSet: Set<String>
     ) {
         for (i in 0 until container.childCount) {
             val child = container.getChildAt(i)
             if (child is ViewGroup) {
-                updateTimeSlotButtons(child, durationMin, closeTime, breakFrom, breakTo)
+                updateTimeSlotButtons(child, durationMin, closeTime, breakFrom, breakTo, availableSet)
             } else if (child is Button) {
                 val timeText = child.text.toString()
                 val originalEnabled = child.getTag(R.id.tag_original_enabled) as? Boolean ?: true
                 
                 if (!originalEnabled) {
-                    // Keep disabled if originally disabled (past time, not in API response, etc.)
                     continue
                 }
                 
-                // Check if (time + duration) exceeds closing time
                 val wouldExceedClosing = wouldExceedClosingTime(timeText, durationMin, closeTime)
-                
-                // Check if (time + duration) overlaps with break time
                 val wouldOverlapBreak = if (!breakFrom.isNullOrEmpty() && !breakTo.isNullOrEmpty()) {
                     wouldOverlapBreakTime(timeText, durationMin, breakFrom, breakTo)
                 } else false
                 
-                val shouldDisable = wouldExceedClosing || wouldOverlapBreak
+                val isContinuouslyAvailable = isContinuousAvailability(timeText, durationMin, availableSet)
+                
+                val shouldDisable = wouldExceedClosing || wouldOverlapBreak || !isContinuouslyAvailable
                 
                 if (shouldDisable) {
                     child.isEnabled = false
                     child.alpha = 0.3f
-                    Log.d("CustomerReserveFragment", "Disabled slot $timeText (exceedClose=$wouldExceedClosing, overlapBreak=$wouldOverlapBreak)")
+                    Log.d("CustomerReserveFragment", "Disabled slot $timeText: exceedClose=$wouldExceedClosing, overlapBreak=$wouldOverlapBreak, contAvail=$isContinuouslyAvailable")
+                } else {
+                    child.isEnabled = true
+                    child.alpha = 1.0f
                 }
             }
         }
@@ -1032,11 +1060,33 @@ class CustomerReserveFragment : Fragment() {
             val endTime = cal.time
             
             // Service overlaps break if: start < breakEnd AND end > breakStart
-            start.before(breakEnd) && endTime.after(breakStart)
+            val overlaps = start.before(breakEnd) && endTime.after(breakStart)
+            if (overlaps) {
+                Log.d("CustomerReserveFragment", "[OVERLAP] $startTime + ${durationMin}m overlaps break $breakFrom~$breakTo (end: ${sdf.format(endTime)})")
+            }
+            overlaps
         } catch (e: Exception) {
             Log.e("CustomerReserveFragment", "Error checking break overlap", e)
             false
         }
+    }
+
+    private fun isContinuousAvailability(
+        startTime: String,
+        durationMin: Int,
+        availableSet: Set<String>
+    ): Boolean {
+        // Round up to nearest 30 min block
+        val blocks = (durationMin + 29) / 30
+        var current = startTime
+        for (i in 0 until blocks) {
+            if (!availableSet.contains(current)) {
+                Log.d("CustomerReserveFragment", "[CONT FAIL] $startTime + ${durationMin}m: block $current not in set")
+                return false
+            }
+            current = addMinutes(current, 30)
+        }
+        return true
     }
     
     private fun isBlockedByDuration(

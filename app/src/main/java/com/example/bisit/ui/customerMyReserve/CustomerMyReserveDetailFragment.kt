@@ -111,22 +111,38 @@ class CustomerMyReserveDetailFragment : Fragment() {
                 }
 
                 // Review button logic
-                val canReview = (isCompleted || data.status.uppercase() == "CUSTOMER_CONFIRMED") && !data.isReviewed
+                val currentStatus = data.status.uppercase()
+                val isConfirmed = currentStatus == "CUSTOMER_CONFIRMED"
+                val isReviewed = data.isReviewed
+                
+                // Only allow review if confirmed AND not already reviewed
+                val canReview = isConfirmed && !isReviewed
+                
                 btnReview.isEnabled = canReview
-                btnReview.alpha = if (btnReview.isEnabled) 1.0f else 0.5f
-                if (data.isReviewed) {
-                    btnReview.text = "작성 완료"
-                } else {
-                    btnReview.text = if (isCompleted || data.status.uppercase() == "CUSTOMER_CONFIRMED") "리뷰 작성하기" else "리뷰 작성 불가"
+                btnReview.alpha = if (canReview) 1.0f else 0.5f
+                
+                when {
+                    isReviewed -> {
+                        btnReview.text = "작성 완료"
+                    }
+                    isConfirmed -> {
+                        btnReview.text = "리뷰 작성하기"
+                    }
+                    isCompleted -> {
+                        btnReview.text = "시술 확정 후 작성 가능"
+                    }
+                    else -> {
+                        btnReview.text = "리뷰 작성 불가"
+                    }
                 }
                 
-                
                 btnReview.setOnClickListener {
-                    // Double-check to prevent duplicate reviews
-                    if (!data.isReviewed && canReview) {
+                    if (canReview) {
                         showReviewDialog()
-                    } else {
+                    } else if (isReviewed) {
                         Toast.makeText(requireContext(), "이미 리뷰를 작성하셨습니다.", Toast.LENGTH_SHORT).show()
+                    } else if (isCompleted && !isConfirmed) {
+                        Toast.makeText(requireContext(), "시술 확정 후에 리뷰를 작성할 수 있습니다.", Toast.LENGTH_SHORT).show()
                     }
                 }
                 
@@ -188,6 +204,16 @@ class CustomerMyReserveDetailFragment : Fragment() {
         }
         
         dialog.show()
+
+        // 윈도우 크기를 넓게 설정 (화면 너비의 90%)
+        val window = dialog.window
+        if (window != null) {
+            val params = window.attributes
+            val displayMetrics = resources.displayMetrics
+            params.width = (displayMetrics.widthPixels * 0.9).toInt()
+            params.height = android.view.WindowManager.LayoutParams.WRAP_CONTENT
+            window.attributes = params
+        }
     }
     private fun formatDateTime(date: String, time: String): String {
 

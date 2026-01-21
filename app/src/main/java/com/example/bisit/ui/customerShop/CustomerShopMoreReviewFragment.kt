@@ -72,46 +72,6 @@ class CustomerShopMoreReviewFragment : Fragment() {
         binding.sortHighRating.setOnClickListener { setSortMode(SortMode.HIGH_RATING) }
         binding.sortLowRating.setOnClickListener { setSortMode(SortMode.LOW_RATING) }
         binding.sortRecent.setOnClickListener { setSortMode(SortMode.RECENT) }
-
-        binding.btnReserve.setOnClickListener {
-            // Need shopName for navigation, can fetch or pass via bundle. 
-            // For now, assume simple navigation or fetch shop data too.
-            // Since we reused ViewModel, let's just trigger loadShop if needed or pull from existing flow.
-            // Simplified: Navigate to Designer selection (Reserve flow start)
-            val bundle = Bundle().apply { 
-                putLong("shopId", shopId)
-                // shopName might be missing if we didn't pass it or fetch shop details here.
-                // Assuming subsequent fragments handle it or fetch it.
-            }
-            findNavController().navigate(R.id.action_customerShopMoreReviewFragment_to_customerReserveFragment, bundle) 
-            // Note: User asked to navigate to "Reserve" screen. 
-            // Usually this goes to ShopDesignerFragment first. 
-            // But if the button says "Reserve", maybe they want to jump to reservation?
-            // "action_customerShopMoreReviewFragment_to_customerReserveFragment" might not exist yet, 
-            // check nav_graph. 
-            // Wait, standard flow is Shop -> Designer -> Reserve. 
-            // If I go directly to Reserve, I miss Designer selection.
-            // The user said "Reserve" button at bottom. 
-            // Left image: "예약하기" goes to ShopDesignerFragment usually.
-            // Right image: "예약하기" button at bottom.
-            // Check nav_graph.xml: I added action_customerShopMoreReviewFragment_to_customerReserveFragment.
-            // But CustomerReserveFragment needs arguments usually? 
-            // Let me check CustomerReserveFragment arguments.
-            // It needs shopId, (maybe designerId?).
-            // If the user hasn't selected a designer, this might be issue. 
-            // Standard flow: Shop -> Designer -> Reserve.
-            // I will navigate to ShopDesignerFragment to be safe, same as Shop Detail page.
-            findNavController().navigate(R.id.shopDesignerFragment, bundle)
-        }
-        
-        // Fix navigation action ID
-        binding.btnReserve.setOnClickListener {
-             val bundle = Bundle().apply {
-                putLong("shopId", shopId)
-            }
-            // Re-routing to Designer fragment as typical flow
-            findNavController().navigate(R.id.shopDesignerFragment, bundle)
-        }
     }
 
     private fun setSortMode(mode: SortMode) {

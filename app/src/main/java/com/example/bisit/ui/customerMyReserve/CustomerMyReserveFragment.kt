@@ -92,6 +92,12 @@ class CustomerMyReserveFragment : Fragment(R.layout.fragment_customer_my_reserve
         tvSortStandard?.let { updateSortText(it) }
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Refresh the current list when coming back from detail screen
+        fetchReservations(currentTabPosition)
+    }
+
     private fun toggleSortDirection(tvSortStandard: android.widget.TextView) {
         currentSortDirection = if (currentSortDirection == "desc") "asc" else "desc"
         updateSortText(tvSortStandard)
@@ -183,9 +189,8 @@ class CustomerMyReserveFragment : Fragment(R.layout.fragment_customer_my_reserve
                         val response = api.confirmReservation(reservationId.toLong())
                         if (response.isSuccessful && response.body()?.success == true) {
                             Toast.makeText(requireContext(), "시술이 확정되었습니다 (OK).", Toast.LENGTH_SHORT).show()
-                            // Refresh current tab (Completed) -> Changed to local update
-                            // fetchReservations(1)
-                            adapter.markAsConfirmed(reservationId)
+                            // Refresh current tab (Completed)
+                            fetchReservations(1)
                         } else {
                             Log.e("CustomerMyReserve", "Failed to confirm reservation: ${response.code()}")
                             Toast.makeText(requireContext(), "시술 확정에 실패했습니다.", Toast.LENGTH_SHORT).show()
@@ -224,7 +229,8 @@ class CustomerMyReserveFragment : Fragment(R.layout.fragment_customer_my_reserve
                             status = mapStatusToDisplayText(res.status, position),
                             treatmentName = res.treatmentName,
                             price = res.price,
-                            reservedDate = res.reservedDate
+                            reservedDate = res.reservedDate,
+                            isConfirmed = res.status.uppercase() == "CUSTOMER_CONFIRMED"
                         )
                     }
                     adapter.setItems(items)
@@ -263,9 +269,9 @@ class CustomerMyReserveFragment : Fragment(R.layout.fragment_customer_my_reserve
         val dialogBinding = DialogCustomerMyReserveAskBinding.inflate(LayoutInflater.from(requireContext()))
         
         Log.d("CustomerMyReserve", "Showing inquiry dialog. Shop: ${data.shopName}, Staff: ${data.staffName}, Phone: ${data.phoneNumber}")
-        dialogBinding.tvDialogTitle.text = data.shopName
-        dialogBinding.tvSellerPhone.text = if (data.staffName.isNullOrEmpty()) "정보 없음" else data.staffName
-        dialogBinding.tvCustomerPhone.text = if (data.phoneNumber.isNullOrEmpty()) "정보 없음" else data.phoneNumber
+        dialogBinding.tvDialogTitle.text = "문의하기"
+        dialogBinding.tvStaffName.text = if (data.shopName.isNullOrEmpty()) "정보 없음" else data.shopName
+        dialogBinding.tvShopPhone.text = if (data.phoneNumber.isNullOrEmpty()) "정보 없음" else data.phoneNumber
         
         val dialog = AlertDialog.Builder(requireContext())
             .setView(dialogBinding.root)
@@ -280,6 +286,7 @@ class CustomerMyReserveFragment : Fragment(R.layout.fragment_customer_my_reserve
     }
 
     private fun mapStatusToDisplayText(status: String, tabPosition: Int): String {
+        if (status.uppercase() == "CUSTOMER_CONFIRMED") return "확정됨"
         return when (tabPosition) {
             0 -> "예약"
             1 -> "완료"
