@@ -212,8 +212,10 @@ class CustomerShopDetailAdapter(
 
     override fun getItemCount(): Int = items.size
 
-    fun updateData(newServices: List<ServiceItem>, newReviews: List<ReviewItem>) {
-        // Since we assume adapter is bound to 1 shop item (position 0), we just wrap them in a list of list
+    fun updateData(newServices: List<ServiceItem>, newReviews: List<ReviewItem>, shopData: CustomerShopUiItem? = null) {
+        if (shopData != null && items is MutableList) {
+            (items as MutableList)[0] = shopData
+        }
         servicesLists = listOf(newServices)
         reviewsLists = listOf(newReviews)
         notifyItemChanged(0)

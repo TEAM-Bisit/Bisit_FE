@@ -36,8 +36,27 @@ class HomeListAdapter(
         holder.binding.tvReviewCount.text = "(${item.reviewCount})"
         holder.binding.tvBusinessHours.text = item.businessHours ?: ""
 
+        // Open Status Logic
+        val status = com.example.bisit.utils.TimeUtil.checkOpenStatus(item.businessHours)
+        if (status == "영업 중") {
+            holder.binding.tvOpenStatus.text = "영업 중"
+            holder.binding.tvOpenStatus.setTextColor(android.graphics.Color.parseColor("#333333")) // Dark Gray/Black
+            holder.binding.imgOpenStatus.visibility = android.view.View.VISIBLE
+        } else if (status == "오늘 휴무") {
+            holder.binding.tvOpenStatus.text = "오늘 휴무"
+            holder.binding.tvOpenStatus.setTextColor(android.graphics.Color.parseColor("#E53935")) // Red
+            holder.binding.imgOpenStatus.visibility = android.view.View.GONE
+        } else if (status == "영업 종료") {
+            holder.binding.tvOpenStatus.text = "영업 종료"
+            holder.binding.tvOpenStatus.setTextColor(android.graphics.Color.parseColor("#999999")) // Gray
+            holder.binding.imgOpenStatus.visibility = android.view.View.GONE
+        } else {
+            holder.binding.tvOpenStatus.text = status.ifEmpty { "정보 없음" }
+            holder.binding.tvOpenStatus.setTextColor(android.graphics.Color.parseColor("#999999"))
+            holder.binding.imgOpenStatus.visibility = android.view.View.GONE
+        }
+
         // 별점 표시 로직 (1개 이미지 + 숫자)
-        android.util.Log.d("HomeListAdapter", "Binding shop: ${item.shopName}, rating: $formattedRating, photos: ${item.photos}")
 
         val imageAdapter =
             HomeListImageAdapter(item.photos, item.hasVisitService ?: false)

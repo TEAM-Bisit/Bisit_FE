@@ -125,8 +125,8 @@
         android:layout_height="48dp"
         android:gravity="center"
         android:text="등록하기"
-        android:textColor="#ABAFB4"
+        android:textColor="@color/white"
         android:textSize="15sp"
-        android:background="@drawable/bg_close_button" />
+        android:background="@drawable/bg_dialog_button_disabled" />
 
 </LinearLayout>

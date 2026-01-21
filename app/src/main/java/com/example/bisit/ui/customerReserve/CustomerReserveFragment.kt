@@ -844,6 +844,9 @@ class CustomerReserveFragment : Fragment() {
         card.strokeWidth = dpToPx(2)
         card.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#F0F7FF"))
 
+        // Filter time slots based on service duration
+        filterTimeSlotsByDuration(treatment.durationMin)
+
         updateStepProgress()
         updateNextButton()
         
@@ -911,6 +914,131 @@ class CustomerReserveFragment : Fragment() {
             resources.displayMetrics
         ).toInt()
     }
+    
+    private fun filterTimeSlotsByDuration(durationMin: Int) {
+        val bind = binding ?: return
+        val selectedDateCal = selectedDate ?: return
+        
+        // Get closing time and break time for the selected date
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val dateStr = dateFormat.format(selectedDateCal.time)
+        
+        val dayOfWeek = selectedDateCal.get(Calendar.DAY_OF_WEEK)
+        val dayString = when (dayOfWeek) {
+            Calendar.SUNDAY -> "SUN"
+            Calendar.MONDAY -> "MON"
+            Calendar.TUESDAY -> "TUE"
+            Calendar.WEDNESDAY -> "WED"
+            Calendar.THURSDAY -> "THU"
+            Calendar.FRIDAY -> "FRI"
+            Calendar.SATURDAY -> "SAT"
+            else -> ""
+        }
+        val targetDay = mapDayToCalendar(dayString)
+        
+        val businessHour = storedBusinessHours?.find { 
+            mapDayToCalendar(it.day) == targetDay
+        }
+        
+        val closeTime = businessHour?.openTo?.let { 
+            if (it.length >= 5) it.substring(0, 5) else it 
+        } ?: "20:00"
+        
+        val breakFrom = businessHour?.breakFrom?.let { 
+            if (it.length >= 5) it.substring(0, 5) else it 
+        }
+        val breakTo = businessHour?.breakTo?.let { 
+            if (it.length >= 5) it.substring(0, 5) else it 
+        }
+        
+        Log.d("CustomerReserveFragment", "filterTimeSlotsByDuration: duration=$durationMin, closeTime=$closeTime")
+        
+        // Update all time slot buttons
+        updateTimeSlotButtons(bind.layoutTimeSlots, durationMin, closeTime, breakFrom, breakTo)
+    }
+    
+    private fun updateTimeSlotButtons(
+        container: ViewGroup,
+        durationMin: Int,
+        closeTime: String,
+        breakFrom: String?,
+        breakTo: String?
+    ) {
+        for (i in 0 until container.childCount) {
+            val child = container.getChildAt(i)
+            if (child is ViewGroup) {
+                updateTimeSlotButtons(child, durationMin, closeTime, breakFrom, breakTo)
+            } else if (child is Button) {
+                val timeText = child.text.toString()
+                val originalEnabled = child.getTag(R.id.tag_original_enabled) as? Boolean ?: true
+                
+                if (!originalEnabled) {
+                    // Keep disabled if originally disabled (past time, not in API response, etc.)
+                    continue
+                }
+                
+                // Check if (time + duration) exceeds closing time
+                val wouldExceedClosing = wouldExceedClosingTime(timeText, durationMin, closeTime)
+                
+                // Check if (time + duration) overlaps with break time
+                val wouldOverlapBreak = if (!breakFrom.isNullOrEmpty() && !breakTo.isNullOrEmpty()) {
+                    wouldOverlapBreakTime(timeText, durationMin, breakFrom, breakTo)
+                } else false
+                
+                val shouldDisable = wouldExceedClosing || wouldOverlapBreak
+                
+                if (shouldDisable) {
+                    child.isEnabled = false
+                    child.alpha = 0.3f
+                    Log.d("CustomerReserveFragment", "Disabled slot $timeText (exceedClose=$wouldExceedClosing, overlapBreak=$wouldOverlapBreak)")
+                }
+            }
+        }
+    }
+    
+    private fun wouldExceedClosingTime(startTime: String, durationMin: Int, closeTime: String): Boolean {
+        return try {
+            val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+            val start = sdf.parse(startTime) ?: return false
+            val close = sdf.parse(closeTime) ?: return false
+            
+            val cal = Calendar.getInstance()
+            cal.time = start
+            cal.add(Calendar.MINUTE, durationMin)
+            val endTime = cal.time
+            
+            endTime.after(close)
+        } catch (e: Exception) {
+            Log.e("CustomerReserveFragment", "Error checking closing time", e)
+            false
+        }
+    }
+    
+    private fun wouldOverlapBreakTime(
+        startTime: String,
+        durationMin: Int,
+        breakFrom: String,
+        breakTo: String
+    ): Boolean {
+        return try {
+            val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+            val start = sdf.parse(startTime) ?: return false
+            val breakStart = sdf.parse(breakFrom) ?: return false
+            val breakEnd = sdf.parse(breakTo) ?: return false
+            
+            val cal = Calendar.getInstance()
+            cal.time = start
+            cal.add(Calendar.MINUTE, durationMin)
+            val endTime = cal.time
+            
+            // Service overlaps break if: start < breakEnd AND end > breakStart
+            start.before(breakEnd) && endTime.after(breakStart)
+        } catch (e: Exception) {
+            Log.e("CustomerReserveFragment", "Error checking break overlap", e)
+            false
+        }
+    }
+    
     private fun isBlockedByDuration(
         candidate: String,
         start: String,
@@ -928,8 +1056,9 @@ class CustomerReserveFragment : Fragment() {
 
         val endDate = cal.time
 
-        return candidateDate.after(startDate) && candidateDate.before(endDate)
+        return (candidateDate == startDate) || (candidateDate.after(startDate) && candidateDate.before(endDate))
     }
+
 
 
     private fun updateTimeButtonsByDuration() {

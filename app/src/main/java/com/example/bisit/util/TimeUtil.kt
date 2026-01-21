@@ -14,7 +14,7 @@ object TimeUtil {
         return try {
             // "2025-12-29T12:41:51.864Z" 또는 "2025-12-29T12:41:51" 등 다양한 형식 대응
             val normalized = if (isoString.contains("T") && !isoString.contains("Z") && !isoString.contains("+")) {
-                isoString + "Z" // Offset이 없으면 UTC로 가정하거나 로컬로 처리해야 함. 일단 Z 추가하여 parse 가능하게 함
+                isoString + "+09:00" // Offset이 없으면 KST(+09:00)로 가정
             } else {
                 isoString
             }
@@ -40,6 +40,31 @@ object TimeUtil {
             } else {
                 isoString
             }
+        }
+    }
+
+    fun checkOpenStatus(businessHours: String?): String {
+        if (businessHours.isNullOrBlank()) return "정보 없음"
+        if (businessHours.contains("휴무")) return "오늘 휴무"
+        if (businessHours.contains("24시간")) return "영업 중"
+
+        return try {
+            // Expected "HH:mm ~ HH:mm"
+            val parts = businessHours.split("~").map { it.trim() }
+            if (parts.size != 2) return "" 
+
+            val now = java.time.LocalTime.now(java.time.ZoneId.of("Asia/Seoul"))
+            val start = java.time.LocalTime.parse(parts[0])
+            val end = java.time.LocalTime.parse(parts[1])
+
+            if (start.isBefore(end)) {
+                if (now.isAfter(start) && now.isBefore(end)) "영업 중" else "영업 종료"
+            } else {
+                // Cross midnight
+                if (now.isAfter(start) || now.isBefore(end)) "영업 중" else "영업 종료"
+            }
+        } catch (e: Exception) {
+            ""
         }
     }
 }

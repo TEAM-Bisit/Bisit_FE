@@ -43,6 +43,7 @@
         app:tabTextColor="@color/gray"
         app:tabIndicatorFullWidth="false"
         app:tabTextAppearance="@style/TabTextAppearance"
+        app:tabRippleColor="@null"
         app:layout_constraintTop_toBottomOf="@id/topBar"/>
 
 

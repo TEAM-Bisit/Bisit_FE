@@ -261,6 +261,15 @@ class CustomerShopFragment : Fragment() {
         dialog.show()
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (shopId != -1L) {
+            Log.d("CustomerShopFragment", "Refreshing shop data on resume")
+            viewModel.loadShop(requireContext(), shopId)
+            viewModel.loadShopReviews(requireContext(), shopId)
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

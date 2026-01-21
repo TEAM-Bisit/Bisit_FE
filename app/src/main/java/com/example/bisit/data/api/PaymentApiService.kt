@@ -21,4 +21,7 @@ interface PaymentApiService {
         @Path("paymentKey") paymentKey: String,
         @Body cancelRequest: Map<String, Any>
     ): Call<CommonResponse<Any>>
+    
+    @POST("/api/payments/fail")
+    fun failPayment(@Body request: com.example.bisit.data.model.payment.PaymentFailRequest): Call<com.example.bisit.data.model.payment.PaymentFailResponse>
 }

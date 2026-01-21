@@ -13,5 +13,7 @@ data class CustomerShopDetailItem(
     val latestNotice: NoticeItem?,
     val photos: List<String>?,
     val channel: String?,
-    val phone: String?
+    val phone: String?,
+    val latitude: Double?,
+    val longitude: Double?
 )

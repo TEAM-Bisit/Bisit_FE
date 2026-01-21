@@ -16,6 +16,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.bisit.R
 import com.example.bisit.databinding.FragmentCustomerCategoryBinding
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import java.util.Locale
 
 class CustomerCategoryFragment : Fragment() {
@@ -71,37 +72,58 @@ class CustomerCategoryFragment : Fragment() {
     private fun getCurrentLocation() {
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         try {
-            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                if (!isAdded) return@addOnSuccessListener
-                
-                if (location != null) {
-                    val geocoder = Geocoder(requireContext(), Locale.KOREA)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        geocoder.getFromLocation(location.latitude, location.longitude, 1) { addresses ->
-                            if (addresses.isNotEmpty() && isAdded) {
-                                updateLocationText(addresses[0].getAddressLine(0))
+            // lastLocation 대신 getCurrentLocation을 사용하여 더 신선한 위치 정보를 가져옴
+            fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+                .addOnSuccessListener { location ->
+                    if (!isAdded) return@addOnSuccessListener
+                    
+                    if (location != null) {
+                        val geocoder = Geocoder(requireContext(), Locale.KOREA)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            geocoder.getFromLocation(location.latitude, location.longitude, 1) { addresses ->
+                                if (addresses.isNotEmpty() && isAdded) {
+                                    updateLocationText(addresses[0])
+                                }
+                            }
+                        } else {
+                            @Suppress("DEPRECATION")
+                            val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                            if (!addresses.isNullOrEmpty()) {
+                                updateLocationText(addresses[0])
                             }
                         }
                     } else {
-                        @Suppress("DEPRECATION")
-                        val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
-                        if (!addresses.isNullOrEmpty()) {
-                            updateLocationText(addresses[0].getAddressLine(0))
-                        }
+                        binding.tvLocation.text = "위치 정보를 가져올 수 없습니다"
                     }
-                } else {
-                    binding.tvLocation.text = "위치 정보를 가져올 수 없습니다"
                 }
-            }
         } catch (e: SecurityException) {
             e.printStackTrace()
         }
     }
 
-    private fun updateLocationText(address: String) {
+    private fun updateLocationText(address: android.location.Address) {
         activity?.runOnUiThread {
-            // "대한민국" 같은 국가명은 제거하고 싶다면 아래와 같이 처리 가능
-            val simpleAddress = address.replace("대한민국 ", "")
+            // 주소에서 시/도, 구/군 정도만 추출하여 깔끔하게 표시
+            // 예: "서울특별시 강남구"
+            val state = address.adminArea ?: "" // 서울특별시
+            val city = address.locality ?: ""    // 
+            val subLocality = address.subLocality ?: "" // 강남구
+            val thoroughfare = address.thoroughfare ?: "" // 역삼동
+            
+            val sb = StringBuilder()
+            if (state.isNotEmpty()) sb.append(state).append(" ")
+            if (city.isNotEmpty() && city != state) sb.append(city).append(" ")
+            if (subLocality.isNotEmpty()) sb.append(subLocality).append(" ")
+            
+            var simpleAddress = sb.toString().trim()
+            
+            // 만약StringBuilder 결과가 비어있다면 전체 주소에서 앞부분만 사용
+            if (simpleAddress.isEmpty()) {
+                val fullAddress = address.getAddressLine(0).replace("대한민국 ", "")
+                val parts = fullAddress.split(" ")
+                simpleAddress = if (parts.size >= 2) "${parts[0]} ${parts[1]}" else fullAddress
+            }
+
             binding.tvLocation.text = simpleAddress
         }
     }
