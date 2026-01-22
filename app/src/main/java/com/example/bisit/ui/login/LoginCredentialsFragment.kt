@@ -1,13 +1,16 @@
 package com.example.bisit.ui.login
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -18,12 +21,32 @@ import com.example.bisit.ui.dialog.CommonInfoDialog
 import com.example.bisit.ui.dialog.CustomDialog
 import com.example.bisit.ui.dialog.CustomTwoButtonDialog
 import com.example.bisit.ui.signUp.SignUpActivity
+import com.example.bisit.ui.auth.SocialLoginActivity
 
 class LoginCredentialsFragment : Fragment() {
 
     private var _binding: FragmentLoginCredentialsBinding? = null
     private val binding get() = _binding!!
     private val viewModel: LoginViewModel by viewModels()
+
+    private val socialLoginLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data = result.data
+            val accessToken = data?.getStringExtra("ACCESS_TOKEN")
+            val refreshToken = data?.getStringExtra("REFRESH_TOKEN")
+
+            if (accessToken != null) {
+                Log.d("LoginSuccess", "소셜 토큰 수신 완료 -> ViewModel로 전달")
+                viewModel.handleSocialLoginSuccess(
+                    requireContext(),
+                    accessToken,
+                    refreshToken ?: ""
+                )
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,6 +80,16 @@ class LoginCredentialsFragment : Fragment() {
         binding.tvFindPassword.setOnClickListener {
             findNavController().navigate(R.id.action_loginCredentialsFragment_to_findPasswordFragment)
         }
+
+        binding.naverBtn.setOnClickListener { launchSocialLogin("naver") }
+        binding.kakaoBtn.setOnClickListener { launchSocialLogin("kakao") }
+    }
+
+    private fun launchSocialLogin(provider: String) {
+        val intent = Intent(requireContext(), SocialLoginActivity::class.java).apply {
+            putExtra("PROVIDER", provider)
+        }
+        socialLoginLauncher.launch(intent)
     }
 
     private fun observeViewModel() {
