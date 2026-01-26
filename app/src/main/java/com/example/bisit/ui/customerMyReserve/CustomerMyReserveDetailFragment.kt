@@ -99,22 +99,21 @@ class CustomerMyReserveDetailFragment : Fragment() {
                 footBinding.root.visibility = View.VISIBLE
                 footBinding.tvCancelReason.text = data.cancellationReason ?: ""
             } else {
-                val isCompleted = data.status.uppercase() == "COMPLETED"
+                val currentStatus = data.status.uppercase()
+                val isCompleted = currentStatus == "COMPLETED"
+                val isConfirmed = currentStatus == "CUSTOMER_CONFIRMED"
+                val isReviewed = data.isReviewed
                 val canConfirm = data.canConfirm
 
                 if (isCompleted) {
                     tvStatus.text = "시술 완료"
                     tvStatus.setTextColor(resources.getColor(R.color.blue_4076FF, null))
-                } else if (data.status.uppercase() == "CUSTOMER_CONFIRMED") {
+                } else if (isConfirmed) {
                     tvStatus.text = "고객 확정 완료"
                     tvStatus.setTextColor(resources.getColor(R.color.muted_gray, null))
                 }
 
                 // Review button logic
-                val currentStatus = data.status.uppercase()
-                val isConfirmed = currentStatus == "CUSTOMER_CONFIRMED"
-                val isReviewed = data.isReviewed
-                
                 // Only allow review if confirmed AND not already reviewed
                 val canReview = isConfirmed && !isReviewed
                 
@@ -147,6 +146,7 @@ class CustomerMyReserveDetailFragment : Fragment() {
                 }
                 
                 if (isCompleted && canConfirm) {
+                    binding.buttonContainer.visibility = View.VISIBLE
                     binding.btnNextStep.visibility = View.VISIBLE
                     binding.btnNextStep.text = "확정하기"
                     binding.btnNextStep.setOnClickListener {
@@ -154,12 +154,14 @@ class CustomerMyReserveDetailFragment : Fragment() {
                     }
                 } else if (!isCompleted && !isCanceled && data.status.uppercase() != "CUSTOMER_CONFIRMED") {
                     // Scheduled reservation - show cancel button
+                    binding.buttonContainer.visibility = View.VISIBLE
                     binding.btnNextStep.visibility = View.VISIBLE
                     binding.btnNextStep.text = "취소하기"
                     binding.btnNextStep.setOnClickListener {
                         showCancelDialog(data)
                     }
                 } else {
+                    binding.buttonContainer.visibility = View.GONE
                     binding.btnNextStep.visibility = View.GONE
                 }
                 footBinding.root.visibility = View.GONE
@@ -173,6 +175,10 @@ class CustomerMyReserveDetailFragment : Fragment() {
             tvValuePrice.text = "${NumberFormat.getNumberInstance(Locale.US).format(data.price)}원"
             tvValueName.text = data.customerName
         }
+
+        // Show containers after binding is done
+        binding.headerContainer.visibility = View.VISIBLE
+        binding.bodyContainer.visibility = View.VISIBLE
     }
 
     private fun confirmReservation(reservationId: Long) {
@@ -262,20 +268,20 @@ class CustomerMyReserveDetailFragment : Fragment() {
             val isValid = textLength > 0
             dialogBinding.btnSummit.isEnabled = isValid
             
-            // Update background drawable and text color
+            // Update background drawable
             if (isValid) {
                 dialogBinding.btnSummit.setBackgroundResource(R.drawable.bg_dialog_button_enabled)
-                dialogBinding.btnSummit.setTextColor(resources.getColor(R.color.white, null))
             } else {
                 dialogBinding.btnSummit.setBackgroundResource(R.drawable.bg_dialog_button_disabled)
-                dialogBinding.btnSummit.setTextColor(resources.getColor(R.color.muted_gray, null))
             }
+            // Always keep text white as requested
+            dialogBinding.btnSummit.setTextColor(resources.getColor(R.color.white, null))
         }
         
         // Initial state
         dialogBinding.btnSummit.isEnabled = false
         dialogBinding.btnSummit.setBackgroundResource(R.drawable.bg_dialog_button_disabled)
-        dialogBinding.btnSummit.setTextColor(resources.getColor(R.color.muted_gray, null))
+        dialogBinding.btnSummit.setTextColor(resources.getColor(R.color.white, null))
 
         // --- 별점 로직 시작 ---
         val stars = listOf(
@@ -309,7 +315,7 @@ class CustomerMyReserveDetailFragment : Fragment() {
 
     private fun submitReview(dialog: Dialog, dialogBinding: DialogCustomerMyReserveReviewBinding, score: Int) {
         val content = dialogBinding.etReview.text.toString()
-        val reservationId = arguments?.getString("reservationId") ?: "shtydlqslek" // Fallback to old dummy if null
+        val reservationId = arguments?.getString("reservationId")?.toLongOrNull() ?: return
 
         val request = ReviewRequest(reservationId, score, content)
 
@@ -320,7 +326,7 @@ class CustomerMyReserveDetailFragment : Fragment() {
                         Toast.makeText(requireContext(), "리뷰가 등록되었습니다.", Toast.LENGTH_SHORT).show()
                         dialog.dismiss()
                         // Refresh reservation detail to update UI (disable review button)
-                        reservationId.toLongOrNull()?.let { fetchReservationDetail(it) }
+                        fetchReservationDetail(reservationId)
                     } else {
                         Toast.makeText(requireContext(), "리뷰 등록 실패: ${response.code()}", Toast.LENGTH_SHORT).show()
                     }

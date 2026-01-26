@@ -11,7 +11,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginStart="16dp"
-        android:text="서비스 완료"
         android:textColor="#4076FF"
         android:textSize="14sp"
         android:textStyle="bold" />
@@ -22,7 +21,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:layout_marginStart="16dp"
-        android:text="예약 번호 shtydlqslek"
         android:textColor="#757575"
         android:textSize="13sp" />
 
@@ -55,7 +53,6 @@
                 android:id="@+id/tv_shop_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="다른헤어"
                 android:textColor="#000000"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -65,7 +62,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="대구 중구 관덕정길 6-11 1층"
                 android:textColor="#757575"
                 android:textSize="13sp" />
         </LinearLayout>
