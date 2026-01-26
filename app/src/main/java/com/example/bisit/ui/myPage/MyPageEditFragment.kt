@@ -56,6 +56,12 @@ class MyPageEditFragment : Fragment() {
             val phone = text.toString()
             Log.d("SMS_DEBUG", "전화번호 입력됨: $phone")
             binding.btnVerify.isEnabled = phone.length >= 10 && phone.startsWith("0")
+            
+            // Reset verification state and disable save button if phone changes
+            isPhoneVerified = false
+            binding.btnBook.isEnabled = false
+            binding.btnBook.backgroundTintList =
+                resources.getColorStateList(com.example.bisit.R.color.outline_gray, null)
         }
 
         binding.btnVerify.setOnClickListener {
@@ -156,10 +162,11 @@ class MyPageEditFragment : Fragment() {
                         if (!data?.phone.isNullOrEmpty()) {
                             binding.etPhone.setText(data?.phone)
                         }
-                        // Enable button initially if data is loaded, or let TextWatcher handle it
-                        binding.btnBook.isEnabled = true
+                        
+                        // Keep Save button disabled until verified/re-verified
+                        binding.btnBook.isEnabled = false
                         binding.btnBook.backgroundTintList =
-                            resources.getColorStateList(com.example.bisit.R.color.blue_4076FF, null)
+                            resources.getColorStateList(com.example.bisit.R.color.outline_gray, null)
                     }
                 }
 

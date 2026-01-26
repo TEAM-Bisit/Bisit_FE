@@ -41,7 +41,7 @@ class CustomerMyReserveAdapter(
     override fun getItemViewType(position: Int): Int {
         return when (items[position].status) {
             "예약" -> R.layout.item_customer_my_reserve_wait
-            "완료" -> R.layout.item_customer_my_reserve_completed
+            "완료", "확정됨" -> R.layout.item_customer_my_reserve_completed
             "취소" -> R.layout.item_customer_my_reserve_canceled
             else -> R.layout.item_customer_my_reserve_wait
         }
