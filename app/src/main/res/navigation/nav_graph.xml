@@ -268,7 +268,16 @@
         <action
             android:id="@+id/action_myPageOwnerFragment_to_myPageTerm4Fragment"
             app:destination="@id/myPageTerm4Fragment" />
+        <action
+            android:id="@+id/action_myPageOwnerFragment_to_ownerCouponManageFragment"
+            app:destination="@id/ownerCouponManageFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/ownerCouponManageFragment"
+        android:name="com.example.bisit.ui.myPageOwner.OwnerCouponManageFragment"
+        android:label="쿠폰 관리"
+        tools:layout="@layout/fragment_owner_coupon_manage" />
 
     <fragment
         android:id="@+id/myPageOwnerEditFragment"

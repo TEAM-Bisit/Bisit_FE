@@ -25,4 +25,13 @@
     <style name="Theme.Bisit.Main" parent="Theme.Bisit">
         <item name="android:windowDisablePreview">true</item>
     </style>
+
+    <!-- Clean DatePicker Theme (Minimalist) -->
+    <style name="DatePickerTheme" parent="Theme.MaterialComponents.Light.Dialog">
+        <item name="colorAccent">#222222</item>
+        <item name="android:windowBackground">@drawable/bg_dialog_white</item>
+        <item name="android:headerBackground">#FFFFFF</item>
+        <item name="android:colorPrimary">#222222</item>
+        <item name="android:headerTextColor">#222222</item>
+    </style>
 </resources>
