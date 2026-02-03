@@ -39,6 +39,10 @@ class MyPageOwnerFragment : Fragment() {
             findNavController().navigate(R.id.action_myPageOwnerFragment_to_myPageOwnerEditFragment)
         }
 
+        binding.btnCouponIssue.setOnClickListener {
+            findNavController().navigate(R.id.action_myPageOwnerFragment_to_ownerCouponManageFragment)
+        }
+
         binding.leaveLayout.setOnClickListener {
             findNavController().navigate(R.id.action_myPageOwnerFragment_to_myPageLeaveFragment)
         }
