@@ -18,6 +18,7 @@ class OwnerCouponManageFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var adapter: OwnerCouponAdapter
+    private val couponList = mutableListOf<OwnerCoupon>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentOwnerCouponManageBinding.inflate(inflater, container, false)
@@ -52,15 +53,18 @@ class OwnerCouponManageFragment : Fragment() {
 
     private fun loadMockData() {
         val mockCoupons = listOf(
-            OwnerCoupon("1", "20%", "[첫 구매 적용 쿠폰]", "첫 구매 20% 할인 쿠폰입니다. 이 너비까지의 텍스트가 출력되고 이후로는 다음 줄로 내려갑니다. 이후로는 쿠폰 상세 설명입니다.", 1, "2025년 9월 22일"),
-            OwnerCoupon("2", "3,000원", "[재예약 대상 고객] 할인 쿠폰", "첫 구매 20% 할인 쿠폰입니다. 이 너비까지의 텍스트가 출력되고 이후로는 다음 줄로 내려갑니다. 이후로는 쿠폰 상세 설명입니다.", 4, "2025년 9월 25일")
+            OwnerCoupon("1", "20%", "[첫 구매 적용 쿠폰]", "첫 구매 20% 할인 쿠폰입니다. 이 너비까지의 텍스트가 출력되고 이후로는 다음 줄로 내려갑니다. 이후로는 쿠폰 상세 설명입니다.", 1, "2025.09.22"),
+            OwnerCoupon("2", "3,000원", "[재예약 대상 고객] 할인 쿠폰", "첫 구매 20% 할인 쿠폰입니다. 이 너비까지의 텍스트가 출력되고 이후로는 다음 줄로 내려갑니다. 이후로는 쿠폰 상세 설명입니다.", 4, "2025.09.25")
         )
-        adapter.submitList(mockCoupons)
+        couponList.clear()
+        couponList.addAll(mockCoupons)
+        adapter.submitList(couponList.toList())
     }
 
     private fun showAddCouponDialog() {
         val dialog = DialogAddCoupon(requireContext()) { newCoupon ->
-            // In a real app, we'd call the API here.
+            couponList.add(newCoupon)
+            adapter.submitList(couponList.toList())
         }
         dialog.show()
     }
@@ -71,7 +75,8 @@ class OwnerCouponManageFragment : Fragment() {
         bottomSheet.setContentView(bindingSheet.root)
 
         bindingSheet.btnDelete.setOnClickListener {
-            // Handle delete
+            couponList.removeAll { it.id == coupon.id }
+            adapter.submitList(couponList.toList())
             bottomSheet.dismiss()
         }
 
@@ -87,7 +92,11 @@ class OwnerCouponManageFragment : Fragment() {
     private fun showEditCouponDialog(coupon: OwnerCoupon) {
         // Similar to add dialog but with pre-filled data
         val dialog = DialogAddCoupon(requireContext(), coupon) { updatedCoupon ->
-            // API call
+            val index = couponList.indexOfFirst { it.id == updatedCoupon.id }
+            if (index != -1) {
+                couponList[index] = updatedCoupon
+                adapter.submitList(couponList.toList())
+            }
         }
         dialog.show()
     }

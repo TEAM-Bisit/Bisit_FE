@@ -97,12 +97,14 @@ class DialogAddCoupon(
 
             val displayValue = if (amount.isNotEmpty()) "${amount}원" else "${percent}%"
 
+            val remainingDays = calculateRemainingDays(expiry)
+
             val coupon = OwnerCoupon(
                 id = existingCoupon?.id ?: System.currentTimeMillis().toString(),
                 value = displayValue,
                 name = name,
                 description = description,
-                remainingDays = 7, // Mock value
+                remainingDays = remainingDays,
                 expiryDate = expiry
             )
             onConfirm(coupon)
@@ -146,6 +148,8 @@ class DialogAddCoupon(
             day
         )
         
+        datePickerDialog.datePicker.minDate = System.currentTimeMillis()
+        
         // Ensure buttons are styled and logic is explicit if needed
         datePickerDialog.setOnShowListener {
             datePickerDialog.getButton(DatePickerDialog.BUTTON_POSITIVE).setTextColor(android.graphics.Color.BLACK)
@@ -163,5 +167,29 @@ class DialogAddCoupon(
         val isDateFilled = binding.etExpiryDate.text.isNotEmpty()
 
         binding.btnRegister.isEnabled = isNameFilled && isValueFilled && isDescFilled && isDateFilled
+    }
+
+    private fun calculateRemainingDays(expiryDateStr: String): Int {
+        return try {
+            val parts = expiryDateStr.split(".")
+            if (parts.size != 3) return 0
+            
+            val expiryCalendar = Calendar.getInstance().apply {
+                set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt(), 0, 0, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            
+            val today = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            
+            val diff = expiryCalendar.timeInMillis - today.timeInMillis
+            (diff / (24 * 60 * 60 * 1000)).toInt()
+        } catch (e: Exception) {
+            0
+        }
     }
 }
