@@ -1,5 +1,7 @@
 package com.example.bisit.ui.shop
 
+import android.graphics.Rect
+import android.graphics.RectF
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -28,8 +30,6 @@ class ShopBasicFragment : Fragment() {
     private var _binding: FragmentShopBasicBinding? = null
     private val binding get() = _binding!!
 
-    /* ===================== ViewModel ===================== */
-
     private val shopRegisterViewModel: ShopRegisterViewModel by activityViewModels {
         ShopRegisterViewModelFactory(requireContext())
     }
@@ -37,11 +37,12 @@ class ShopBasicFragment : Fragment() {
     private val viewModel: ShopBasicViewModel by viewModels()
     private val photoViewModel: ShopPhotoViewModel by viewModels()
 
-    /* ===================== 화면 상태 ===================== */
-
     private var currentIntro: String = ""
     private var currentServiceType: String = "VISIT"
     private var isOpenHourExpanded = false
+
+    /* ===================== 온보딩 상태 ===================== */
+    private var guideStep = 0
 
     /* ===================== 이미지 선택 ===================== */
 
@@ -67,6 +68,82 @@ class ShopBasicFragment : Fragment() {
         observeViewModel()
         observePhotos()
         setupClickListeners()
+
+        // 온보딩 시작
+        startBasicGuide()
+    }
+
+    /* ===================== 온보딩 ===================== */
+
+    private fun startBasicGuide() {
+        binding.highlightOverlay.visibility = View.VISIBLE
+        showGuideStep()
+    }
+
+    private fun showGuideStep() {
+
+        val targets = listOf(
+            binding.btnEditShopInfo,
+            binding.btnEditIntro,
+            binding.btnEditSales
+        )
+
+        if (guideStep >= targets.size) {
+            endBasicGuide()
+            return
+        }
+
+        val target = targets[guideStep]
+
+        target.post {
+
+            val rect = Rect()
+            target.getGlobalVisibleRect(rect)
+
+            val overlayLoc = IntArray(2)
+            binding.highlightOverlay.getLocationOnScreen(overlayLoc)
+
+            val rectF = RectF(
+                rect.left - overlayLoc[0].toFloat(),
+                rect.top - overlayLoc[1].toFloat(),
+                rect.right - overlayLoc[0].toFloat(),
+                rect.bottom - overlayLoc[1].toFloat()
+            )
+
+            binding.highlightOverlay.highlight(
+                rectF,
+                HighlightOverlayView.HighlightShape.CIRCLE
+            )
+
+            if (guideStep == 0) {
+                binding.guideText.visibility = View.VISIBLE
+                binding.guideText.text =
+                    "매장 정보는\n이곳에서 수정할 수 있어요"
+
+                binding.guideText.post {
+                    binding.guideText.x =
+                        rectF.left - binding.guideText.width - 24f
+                    binding.guideText.y =
+                        rectF.centerY() - binding.guideText.height / 2f
+
+                    if (binding.guideText.x < 0) {
+                        binding.guideText.x = rectF.right + 24f
+                    }
+                }
+            } else {
+                binding.guideText.visibility = View.GONE
+            }
+        }
+
+        binding.highlightOverlay.setOnClickListener {
+            guideStep++
+            showGuideStep()
+        }
+    }
+
+    private fun endBasicGuide() {
+        binding.highlightOverlay.visibility = View.GONE
+        binding.guideText.visibility = View.GONE
     }
 
     /* ===================== shopId Observe ===================== */
@@ -82,7 +159,6 @@ class ShopBasicFragment : Fragment() {
                 viewModel.fetchShopDetail()
                 viewModel.fetchShopIntro()
                 viewModel.fetchShopAccount()
-
                 photoViewModel.fetchPhotos()
             }
         }
@@ -92,7 +168,6 @@ class ShopBasicFragment : Fragment() {
 
     private fun observeViewModel() {
 
-        // 매장 상세
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.shopDetail.collect { detail ->
                 detail ?: return@collect
@@ -103,7 +178,6 @@ class ShopBasicFragment : Fragment() {
             }
         }
 
-        // 매장 소개
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.shopIntro.collect { intro ->
                 intro ?: return@collect
@@ -113,11 +187,11 @@ class ShopBasicFragment : Fragment() {
 
                 binding.tvShopIntro.text = intro.intro
                 binding.tvShopService.text =
-                    if (intro.serviceChannel == "VISIT") "방문 서비스" else "매장 서비스"
+                    if (intro.serviceChannel == "VISIT") "방문 서비스"
+                    else "매장 서비스"
             }
         }
 
-        // 정산 계좌
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.shopAccount.collect { account ->
                 account ?: return@collect
@@ -126,7 +200,6 @@ class ShopBasicFragment : Fragment() {
             }
         }
 
-        // 영업 시간
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.shopOpenHour.collect { openHour ->
                 openHour ?: return@collect
@@ -175,7 +248,6 @@ class ShopBasicFragment : Fragment() {
 
     private fun setupClickListeners() {
 
-        // 매장 기본 정보 수정
         binding.btnEditShopInfo.setOnClickListener {
             EditShopInfoDialog(
                 initialName = binding.tvShopName.text.toString(),
@@ -192,11 +264,9 @@ class ShopBasicFragment : Fragment() {
             ).show(parentFragmentManager, "edit_shop_info")
         }
 
-        // 매장 소개 / 대표 이미지 변경
         binding.btnEditIntro.setOnClickListener { openIntroDialog() }
         binding.btnChangeHeader.setOnClickListener { openIntroDialog() }
 
-        // 정산 계좌 수정
         binding.btnEditSales.setOnClickListener {
             EditSalesDialog(
                 initialAccount = binding.tvSalesAccount.text.toString(),
@@ -210,10 +280,8 @@ class ShopBasicFragment : Fragment() {
             ).show(parentFragmentManager, "edit_sales")
         }
 
-        // 영업시간 펼치기
         binding.btnExpandHour.setOnClickListener {
             isOpenHourExpanded = !isOpenHourExpanded
-
             binding.layoutOpenHourDetail.visibility =
                 if (isOpenHourExpanded) View.VISIBLE else View.GONE
 
@@ -230,22 +298,13 @@ class ShopBasicFragment : Fragment() {
         }
     }
 
-    /* ===================== Intro Dialog ===================== */
-
     private fun openIntroDialog() {
         EditShopIntroDialog(
             initialIntro = currentIntro,
             initialServiceType = currentServiceType,
             photoFlow = photoViewModel.photos,
-
-            onAddPhotoClick = {
-                pickImageLauncher.launch("image/*")
-            },
-
-            onDeletePhotoClick = { photoId ->
-                photoViewModel.deletePhoto(photoId)
-            },
-
+            onAddPhotoClick = { pickImageLauncher.launch("image/*") },
+            onDeletePhotoClick = { photoId -> photoViewModel.deletePhoto(photoId) },
             onSaved = { intro, serviceType, photos ->
                 viewModel.updateShopIntro(
                     intro = intro,
@@ -255,8 +314,6 @@ class ShopBasicFragment : Fragment() {
             }
         ).show(parentFragmentManager, "edit_intro")
     }
-
-    /* ===================== Uri → Multipart ===================== */
 
     private fun uploadUriAsMultipart(uri: Uri) {
         val resolver = requireContext().contentResolver

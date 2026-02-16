@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.widget.ViewPager2
+import com.example.bisit.MainActivity
 import com.example.bisit.R
 import com.example.bisit.data.api.RetrofitClient
 import com.example.bisit.data.repository.staffManage.StaffManageRepository
@@ -23,12 +24,10 @@ class ShopFragment : Fragment() {
     private var _binding: FragmentShopBinding? = null
     private val binding get() = _binding!!
 
-    /** shopId 단일 소스 (Activity scope) */
     private val shopRegisterViewModel: ShopRegisterViewModel by activityViewModels {
         ShopRegisterViewModelFactory(requireContext().applicationContext)
     }
 
-    /** 직원 신청 상태 ViewModel (뱃지 표시용) */
     private lateinit var staffRequestViewModel: ShopStaffRequestViewModel
 
     override fun onCreateView(
@@ -45,11 +44,57 @@ class ShopFragment : Fragment() {
 
         setupStaffRequestViewModel()
         setupViewPagerAndTabs()
-        setupStaffApplyNavigation()     // ⭐️ 무조건 이동
-        observeShopIdForBadgeOnly()     // ⭐️ 뱃지 표시만
+        setupStaffApplyNavigation()
+        observeShopIdForBadgeOnly()
         observeStaffRequestState()
 
         updateTabUI(0)
+
+        // 🔥 온보딩 체크
+        binding.root.post {
+            checkOnboardingStep()
+        }
+    }
+
+    /* ===================== 온보딩 처리 ===================== */
+
+    private fun checkOnboardingStep() {
+
+        val activity = requireActivity() as MainActivity
+
+        when (activity.currentGuideStep) {
+
+            MainActivity.GuideStep.TAB -> {
+                activity.showGlobalOverlay(
+                    targetView = binding.tabContainer,
+                    guideText = "탭을 눌러 화면을 이동할 수 있어요.",
+                    shape = HighlightOverlayView.HighlightShape.ROUNDED_RECT,
+                    radiusDp = 8f
+                )
+            }
+
+            MainActivity.GuideStep.EDIT_BUTTON -> {
+                activity.showGlobalOverlay(
+                    targetView = binding.viewPager,
+                    guideText = "수정 버튼을 눌러 매장 정보를 바꿀 수 있어요.",
+                    shape = HighlightOverlayView.HighlightShape.ROUNDED_RECT,
+                    radiusDp = 12f
+                )
+            }
+
+            MainActivity.GuideStep.SERVICE_TAB -> {
+                activity.showGlobalOverlay(
+                    targetView = binding.tabServices,
+                    guideText = "서비스 등록 탭에서 서비스를 추가해보세요.",
+                    shape = HighlightOverlayView.HighlightShape.ROUNDED_RECT,
+                    radiusDp = 12f
+                )
+            }
+
+            else -> {
+                activity.hideGlobalOverlay()
+            }
+        }
     }
 
     /* ===================== setup ===================== */
@@ -81,9 +126,6 @@ class ShopFragment : Fragment() {
         )
     }
 
-    /**
-     * 직원 신청 페이지는 조건 없이 항상 이동 가능
-     */
     private fun setupStaffApplyNavigation() {
         binding.ivStaffApply.setOnClickListener {
             findNavController().navigate(
@@ -94,17 +136,12 @@ class ShopFragment : Fragment() {
 
     /* ===================== observe ===================== */
 
-    /**
-     * shopId는 '새 직원 신청 있음/없음' 뱃지 표시 용도
-     * 네비게이션 / 접근 제어와는 무관
-     */
     private fun observeShopIdForBadgeOnly() {
         viewLifecycleOwner.lifecycleScope.launch {
             shopRegisterViewModel.shopId.collect { shopId ->
                 if (shopId != null) {
                     staffRequestViewModel.checkPendingStaffExists(shopId)
                 }
-                // shopId 없어도 아무것도 막지 않음
             }
         }
     }
