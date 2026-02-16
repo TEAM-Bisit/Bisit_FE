@@ -7,6 +7,8 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <!-- ================= NavHost ================= -->
+
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/nav_host_fragment"
         android:name="androidx.navigation.fragment.NavHostFragment"
@@ -19,6 +21,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:navGraph="@navigation/nav_graph" />
 
+    <!-- ================= Bottom Divider ================= -->
+
     <View
         android:id="@+id/shadow_view"
         android:layout_width="0dp"
@@ -28,13 +32,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <!-- ================= Bottom Navigation ================= -->
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_nav_view"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         style="@style/Widget.App.BottomNavigationView"
-        app:itemIconSize="34dp"
         android:background="@android:color/white"
+        app:itemIconSize="34dp"
         app:itemActiveIndicatorStyle="@android:color/transparent"
         app:itemRippleColor="@android:color/transparent"
         app:itemTextAppearanceActive="@style/BottomNavLabelStyle"
@@ -46,5 +52,30 @@
         app:menu="@menu/bottom_nav_menu"
         app:itemIconTint="@color/bottom_nav_item_color"
         app:itemTextColor="@color/bottom_nav_item_color"/>
+
+    <com.example.bisit.ui.shop.HighlightOverlayView
+        android:id="@+id/globalOverlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- ================= 안내 텍스트 ================= -->
+
+    <TextView
+        android:id="@+id/globalGuideText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/white"
+        android:textSize="14sp"
+        android:padding="12dp"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
