@@ -11,6 +11,8 @@ import com.example.bisit.data.api.TokenManager
 import com.example.bisit.data.model.auth.LoginRequest
 import com.example.bisit.data.model.auth.LoginResponse
 import com.example.bisit.data.model.member.MyPageResponse
+import com.example.bisit.service.BisitFirebaseMessagingService
+import com.google.firebase.messaging.FirebaseMessaging
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
@@ -87,7 +89,10 @@ class LoginViewModel : ViewModel() {
                     // 3. memberId 저장
                     TokenManager.saveMemberId(context, memberId)
 
-                    // 4. 최종 로그인 성공 처리 (모든 정보가 다 저장된 후)
+                    // 4. FCM 토큰 등록
+                    registerFcmToken(context)
+
+                    // 5. 최종 로그인 성공 처리 (모든 정보가 다 저장된 후)
                     _loginResult.value = true
                 } else {
                     _errorMessage.value = "사용자 정보를 가져오는 데 실패했습니다."
@@ -100,6 +105,15 @@ class LoginViewModel : ViewModel() {
                 _loginResult.value = false
             }
         })
+    }
+
+    private fun registerFcmToken(context: Context) {
+        FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+            Log.d("LoginViewModel", "FCM 토큰 획득: $token")
+            BisitFirebaseMessagingService.sendTokenToServer(context, token)
+        }.addOnFailureListener { e ->
+            Log.e("LoginViewModel", "FCM 토큰 획득 실패", e)
+        }
     }
 
     // JWT 토큰에서 Role 정보를 읽어오는 헬퍼 함수
