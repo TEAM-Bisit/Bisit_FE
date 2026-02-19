@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "282259436178",
+    "project_id": "bisit-c5c5c",
+    "storage_bucket": "bisit-c5c5c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:282259436178:android:f819e13997542040e0ec4b",
+        "android_client_info": {
+          "package_name": "com.example.bisit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8_GR4yU9kxKzzAxbycyteqy975bYK8ME"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
