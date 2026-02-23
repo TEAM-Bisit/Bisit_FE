@@ -9,20 +9,28 @@ import android.text.TextWatcher
 import android.view.WindowManager
 import com.example.bisit.databinding.DialogAddCouponBinding
 import com.example.bisit.R
+import android.content.DialogInterface
 import java.util.Calendar
+
+import com.example.bisit.data.model.coupon.CreateCouponRequest
+import com.example.bisit.data.model.coupon.OwnerCouponItem
+import com.example.bisit.data.model.coupon.UpdateCouponRequest
+import java.text.SimpleDateFormat
+import java.util.*
 
 class DialogAddCoupon(
     context: Context,
-    private val existingCoupon: OwnerCoupon? = null,
-    private val onConfirm: (OwnerCoupon) -> Unit
+    private val existingCoupon: OwnerCouponItem? = null,
+    private val onConfirm: (Any) -> Unit
 ) : Dialog(context) {
 
-    private lateinit var binding: DialogAddCouponBinding
+    private var _binding: com.example.bisit.databinding.DialogAddCouponBinding? = null
+    private val binding get() = _binding!!
     private var isUpdatingFields = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DialogAddCouponBinding.inflate(layoutInflater)
+        _binding = com.example.bisit.databinding.DialogAddCouponBinding.inflate(android.view.LayoutInflater.from(context))
         setContentView(binding.root)
 
         // Make dialog responsive to keyboard and add side margins
@@ -39,7 +47,7 @@ class DialogAddCoupon(
 
     private fun setupUI() {
         if (existingCoupon != null) {
-            binding.btnRegister.text = "수정하기"
+            binding.btnRegister.setText("수정하기")
         }
     }
 
@@ -90,42 +98,90 @@ class DialogAddCoupon(
 
         binding.btnRegister.setOnClickListener {
             val name = binding.etCouponName.text.toString()
-            val amount = binding.etDiscountAmount.text.toString()
-            val percent = binding.etDiscountPercent.text.toString()
+            val amountStr = binding.etDiscountAmount.text.toString()
+            val percentStr = binding.etDiscountPercent.text.toString()
             val description = binding.etCouponDescription.text.toString()
             val expiry = binding.etExpiryDate.text.toString()
 
-            val displayValue = if (amount.isNotEmpty()) "${amount}원" else "${percent}%"
+            val amount = amountStr.toIntOrNull() ?: 0
+            val percent = percentStr.toIntOrNull() ?: 0
+            val type = if (amount > 0) "AMOUNT" else "PERCENT"
 
-            val remainingDays = calculateRemainingDays(expiry)
+            // Convert expiry (YYYY.MM.DD) to ISO8601 (YYYY-MM-DDTHH:mm:ss.SSSZ)
+            val validTo = convertToIso8601(expiry)
+            val validFrom = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
+                timeZone = TimeZone.getTimeZone("UTC")
+            }.format(Date())
 
-            val coupon = OwnerCoupon(
-                id = existingCoupon?.id ?: System.currentTimeMillis().toString(),
-                value = displayValue,
-                name = name,
-                description = description,
-                remainingDays = remainingDays,
-                expiryDate = expiry
-            )
-            onConfirm(coupon)
+            if (existingCoupon == null) {
+                val request = CreateCouponRequest(
+                    scope = "SHOP",
+                    type = type,
+                    name = name,
+                    description = description,
+                    amount = amount,
+                    percent = percent,
+                    minOrderAmount = 0, // Default or could add field
+                    validFrom = validFrom,
+                    validTo = validTo,
+                    usageLimit = 0 // Default or could add field
+                )
+                onConfirm(request)
+            } else {
+                val request = UpdateCouponRequest(
+                    type = type,
+                    name = name,
+                    description = description,
+                    amount = amount,
+                    percent = percent,
+                    minOrderAmount = 0,
+                    validFrom = validFrom,
+                    validTo = validTo,
+                    usageLimit = 0
+                )
+                onConfirm(request)
+            }
             dismiss()
         }
     }
 
-    private fun prefillData(coupon: OwnerCoupon) {
+    private fun prefillData(coupon: OwnerCouponItem) {
         binding.etCouponName.setText(coupon.name)
         binding.etCouponDescription.setText(coupon.description)
-        binding.etExpiryDate.setText(coupon.expiryDate)
+        
+        // Format ISO8601 to YYYY.MM.DD for display
+        val displayDate = try {
+            val inputSdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+            val outputSdf = SimpleDateFormat("yyyy.MM.dd", Locale.getDefault())
+            val date = inputSdf.parse(coupon.validTo)
+            outputSdf.format(date!!)
+        } catch (e: Exception) {
+            coupon.validTo.split("T")[0].replace("-", ".")
+        }
+        binding.etExpiryDate.setText(displayDate)
         
         isUpdatingFields = true
-        if (coupon.value.contains("%")) {
-            binding.etDiscountPercent.setText(coupon.value.replace("%", ""))
+        if (coupon.type == "PERCENT") {
+            binding.etDiscountPercent.setText(coupon.percent.toString())
             binding.etDiscountAmount.setText("")
         } else {
-            binding.etDiscountAmount.setText(coupon.value.replace("원", "").replace(",", ""))
+            binding.etDiscountAmount.setText(coupon.amount.toString())
             binding.etDiscountPercent.setText("")
         }
         isUpdatingFields = false
+    }
+
+    private fun convertToIso8601(dateStr: String): String {
+        return try {
+            val inputSdf = SimpleDateFormat("yyyy.MM.dd", Locale.getDefault())
+            val date = inputSdf.parse(dateStr)
+            val outputSdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
+                timeZone = TimeZone.getTimeZone("UTC")
+            }
+            outputSdf.format(date!!)
+        } catch (e: Exception) {
+            dateStr.replace(".", "-") + "T23:59:59.000Z"
+        }
     }
 
     private fun showDatePicker() {
@@ -150,13 +206,12 @@ class DialogAddCoupon(
         
         datePickerDialog.datePicker.minDate = System.currentTimeMillis()
         
-        // Ensure buttons are styled and logic is explicit if needed
-        datePickerDialog.setOnShowListener {
-            datePickerDialog.getButton(DatePickerDialog.BUTTON_POSITIVE).setTextColor(android.graphics.Color.BLACK)
-            datePickerDialog.getButton(DatePickerDialog.BUTTON_NEGATIVE).setTextColor(android.graphics.Color.GRAY)
-        }
-        
+        // Show the dialog
         datePickerDialog.show()
+
+        // Localize buttons after show - using setText for maximum compatibility
+        datePickerDialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setText("확인")
+        datePickerDialog.getButton(DialogInterface.BUTTON_NEGATIVE)?.setText("취소")
     }
 
     private fun validateFields() {
@@ -166,30 +221,7 @@ class DialogAddCoupon(
         val isDescFilled = binding.etCouponDescription.text.isNotEmpty()
         val isDateFilled = binding.etExpiryDate.text.isNotEmpty()
 
-        binding.btnRegister.isEnabled = isNameFilled && isValueFilled && isDescFilled && isDateFilled
+        binding.btnRegister.setEnabled(isNameFilled && isValueFilled && isDescFilled && isDateFilled)
     }
 
-    private fun calculateRemainingDays(expiryDateStr: String): Int {
-        return try {
-            val parts = expiryDateStr.split(".")
-            if (parts.size != 3) return 0
-            
-            val expiryCalendar = Calendar.getInstance().apply {
-                set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt(), 0, 0, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
-            
-            val today = Calendar.getInstance().apply {
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
-            
-            val diff = expiryCalendar.timeInMillis - today.timeInMillis
-            (diff / (24 * 60 * 60 * 1000)).toInt()
-        } catch (e: Exception) {
-            0
-        }
-    }
 }

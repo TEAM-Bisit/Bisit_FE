@@ -5,9 +5,7 @@ import com.example.bisit.data.model.payment.PaymentConfirmRequest
 import com.example.bisit.data.model.payment.VirtualAccountRequest
 import com.example.bisit.data.model.todayReservation.CommonResponse
 import retrofit2.Call
-import retrofit2.http.Body
-import retrofit2.http.POST
-import retrofit2.http.Path
+import retrofit2.http.*
 
 interface PaymentApiService {
     @POST("/api/payments/confirm")
