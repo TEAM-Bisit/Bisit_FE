@@ -7,27 +7,59 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bisit.databinding.ItemOwnerCouponBinding
 
-data class OwnerCoupon(
-    val id: String,
-    val value: String,
-    val name: String,
-    val description: String,
-    val remainingDays: Int,
-    val expiryDate: String
-)
+import com.example.bisit.data.model.coupon.OwnerCouponItem
+import java.text.SimpleDateFormat
+import java.util.*
 
 class OwnerCouponAdapter(
-    private val onMoreClicked: (OwnerCoupon) -> Unit
-) : ListAdapter<OwnerCoupon, OwnerCouponAdapter.ViewHolder>(DiffCallback) {
+    private val onMoreClicked: (OwnerCouponItem) -> Unit
+) : ListAdapter<OwnerCouponItem, OwnerCouponAdapter.ViewHolder>(DiffCallback) {
 
     class ViewHolder(private val binding: ItemOwnerCouponBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: OwnerCoupon, onMoreClicked: (OwnerCoupon) -> Unit) {
-            binding.tvCouponValue.text = item.value
+        fun bind(item: OwnerCouponItem, onMoreClicked: (OwnerCouponItem) -> Unit) {
+            val valueText = if (item.type == "AMOUNT") "${item.amount}원" else "${item.percent}%"
+            binding.tvCouponValue.text = valueText
             binding.tvCouponName.text = item.name
             binding.tvCouponDescription.text = item.description
-            binding.tvRemainingDays.text = "${item.remainingDays}일 남음"
-            binding.tvExpiryDate.text = "${item.expiryDate}까지 사용 가능"
+            
+            val remainingDays = calculateRemainingDays(item.validTo)
+            binding.tvRemainingDays.text = "${remainingDays}일 남음"
+            
+            // Format expiry date (assuming validTo is ISO8601 or similar)
+            val formattedExpiry = formatExpiryDate(item.validTo)
+            binding.tvExpiryDate.text = "${formattedExpiry}까지 사용 가능"
+            
             binding.btnMore.setOnClickListener { onMoreClicked(item) }
+        }
+
+        private fun calculateRemainingDays(validTo: String): Long {
+            return try {
+                val inputSdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                val cleanDateStr = if (validTo.contains(".")) validTo.substringBefore(".") else validTo.substringBefore("Z")
+                val expiryDate = inputSdf.parse(cleanDateStr) ?: return 0
+                val today = Calendar.getInstance().apply {
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.time
+                val diff = expiryDate.time - today.time
+                diff / (24 * 60 * 60 * 1000)
+            } catch (e: Exception) {
+                0
+            }
+        }
+
+        private fun formatExpiryDate(validTo: String): String {
+            return try {
+                val inputSdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                val cleanDateStr = if (validTo.contains(".")) validTo.substringBefore(".") else validTo.substringBefore("Z")
+                val outputSdf = SimpleDateFormat("yyyy.MM.dd", Locale.getDefault())
+                val date = inputSdf.parse(cleanDateStr) ?: return validTo
+                outputSdf.format(date)
+            } catch (e: Exception) {
+                validTo.split("T")[0].replace("-", ".")
+            }
         }
     }
 
@@ -40,8 +72,8 @@ class OwnerCouponAdapter(
         holder.bind(getItem(position), onMoreClicked)
     }
 
-    companion object DiffCallback : DiffUtil.ItemCallback<OwnerCoupon>() {
-        override fun areItemsTheSame(oldItem: OwnerCoupon, newItem: OwnerCoupon) = oldItem.id == newItem.id
-        override fun areContentsTheSame(oldItem: OwnerCoupon, newItem: OwnerCoupon) = oldItem == newItem
+    companion object DiffCallback : DiffUtil.ItemCallback<OwnerCouponItem>() {
+        override fun areItemsTheSame(oldItem: OwnerCouponItem, newItem: OwnerCouponItem) = oldItem.couponId == newItem.couponId
+        override fun areContentsTheSame(oldItem: OwnerCouponItem, newItem: OwnerCouponItem) = oldItem == newItem
     }
 }

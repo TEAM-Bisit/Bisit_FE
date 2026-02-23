@@ -28,10 +28,17 @@
 
     <!-- Clean DatePicker Theme (Minimalist) -->
     <style name="DatePickerTheme" parent="Theme.MaterialComponents.Light.Dialog">
-        <item name="colorAccent">#222222</item>
-        <item name="android:windowBackground">@drawable/bg_dialog_white</item>
-        <item name="android:headerBackground">#FFFFFF</item>
-        <item name="android:colorPrimary">#222222</item>
-        <item name="android:headerTextColor">#222222</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="colorAccent">#4076FF</item>
+        <item name="android:windowBackground">@drawable/bg_white_rounded</item>
+        <item name="colorPrimary">#FFFFFF</item>
+        <item name="colorOnPrimary">#222222</item>
+        <item name="android:textColorPrimary">#222222</item>
+        <item name="android:buttonBarPositiveButtonStyle">@style/DatePickerButtonStyle</item>
+        <item name="android:buttonBarNegativeButtonStyle">@style/DatePickerButtonStyle</item>
+    </style>
+
+    <style name="DatePickerButtonStyle" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textColor">#4076FF</item>
     </style>
 </resources>
