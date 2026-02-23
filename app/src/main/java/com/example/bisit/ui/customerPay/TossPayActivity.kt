@@ -37,6 +37,7 @@ class TossPayActivity : AppCompatActivity() {
     private var orderId: String = ""
     private var orderName: String = ""
     private var customerKey: String = ""
+    private var idempotencyKey: String = ""
 
     companion object {
         private const val TAG = "TossPayActivity"
@@ -47,6 +48,7 @@ class TossPayActivity : AppCompatActivity() {
         const val RESULT_PAYMENT_KEY = "payment_key"
         const val RESULT_ORDER_ID = "order_id"
         const val EXTRA_CUSTOMER_KEY = "extra_customer_key"
+        const val EXTRA_IDEMPOTENCY_KEY = "extra_idempotency_key"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,6 +67,7 @@ class TossPayActivity : AppCompatActivity() {
         orderId = intent.getStringExtra(EXTRA_ORDER_ID) ?: ""
         orderName = intent.getStringExtra(EXTRA_ORDER_NAME) ?: "주문"
         customerKey = intent.getStringExtra(EXTRA_CUSTOMER_KEY) ?: "CUSTOMER_KEY_${System.currentTimeMillis()}"
+        idempotencyKey = intent.getStringExtra(EXTRA_IDEMPOTENCY_KEY) ?: ""
 
         if (amount == 0L || orderId.isEmpty()) {
             Toast.makeText(this, "결제 정보가 올바르지 않습니다", Toast.LENGTH_SHORT).show()
@@ -138,7 +141,8 @@ class TossPayActivity : AppCompatActivity() {
             amount = amount
         )
 
-        RetrofitClient.getPaymentApi(this).confirmPayment(request)
+        Log.d(TAG, "🚀 Requesting payment confirmation with Idempotency-Key: $idempotencyKey")
+        RetrofitClient.getPaymentApi(this).confirmPayment(idempotencyKey, request)
             .enqueue(object : Callback<CommonResponse<PaymentConfirmData>> {
                 override fun onResponse(
                     call: Call<CommonResponse<PaymentConfirmData>>,

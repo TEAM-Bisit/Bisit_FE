@@ -11,10 +11,16 @@ import retrofit2.http.Path
 
 interface PaymentApiService {
     @POST("/api/payments/confirm")
-    fun confirmPayment(@Body request: PaymentConfirmRequest): Call<CommonResponse<PaymentConfirmData>>
+    fun confirmPayment(
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body request: PaymentConfirmRequest
+    ): Call<CommonResponse<PaymentConfirmData>>
     
     @POST("/api/payments/virtual-account")
-    fun createVirtualAccount(@Body request: VirtualAccountRequest): Call<CommonResponse<Any>>
+    fun createVirtualAccount(
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body request: VirtualAccountRequest
+    ): Call<CommonResponse<Any>>
     
     @POST("/api/payments/{paymentKey}/cancel")
     fun cancelPayment(

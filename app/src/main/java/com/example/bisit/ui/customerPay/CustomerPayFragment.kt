@@ -24,6 +24,7 @@ import com.example.bisit.data.model.reservation.ReservationRequest
 import com.example.bisit.databinding.FragmentCustomerPayBinding
 import com.example.bisit.data.model.coupon.ApplicableCoupon
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 class CustomerPayFragment : Fragment() {
 
@@ -55,6 +56,7 @@ class CustomerPayFragment : Fragment() {
     // 중복 예약 방지 (409 Error Fix)
     private var currentReservationId: Long? = null
     private var currentOrderId: String? = null
+    private var idempotencyKey: String? = null
 
     private val addressLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -90,6 +92,7 @@ class CustomerPayFragment : Fragment() {
                     // If destroyed, we have a problem. But standard flow usually keeps fragment instance in backstack.
                     putString("orderId", currentOrderId ?: "") 
                     putLong("reservationId", currentReservationId ?: -1L)
+                    putString("idempotencyKey", idempotencyKey ?: "")
                 }
                 
                 findNavController().navigate(
@@ -130,6 +133,11 @@ class CustomerPayFragment : Fragment() {
             staffImage = it.getString("staffImage")
             reviewCount = it.getInt("treatmentCount", 0)
             staffDescription = it.getString("staffDescription")
+        }
+
+        if (idempotencyKey == null) {
+            idempotencyKey = UUID.randomUUID().toString()
+            Log.d("CustomerPayFragment", "Generated initial idempotencyKey: $idempotencyKey")
         }
 
         restoreSavedState(savedInstanceState)
@@ -200,6 +208,7 @@ class CustomerPayFragment : Fragment() {
                 putExtra(TossPayActivity.EXTRA_ORDER_ID, currentOrderId)
                 putExtra(TossPayActivity.EXTRA_ORDER_NAME, serviceName)
                 putExtra(TossPayActivity.EXTRA_CUSTOMER_KEY, "MEMBER_ID_$memberId")
+                putExtra(TossPayActivity.EXTRA_IDEMPOTENCY_KEY, idempotencyKey)
             }
             paymentLauncher.launch(intent)
             return
@@ -240,6 +249,7 @@ class CustomerPayFragment : Fragment() {
                         putExtra(TossPayActivity.EXTRA_ORDER_ID, reservation.orderId)
                         putExtra(TossPayActivity.EXTRA_ORDER_NAME, serviceName)
                         putExtra(TossPayActivity.EXTRA_CUSTOMER_KEY, "MEMBER_ID_$memberId")
+                        putExtra(TossPayActivity.EXTRA_IDEMPOTENCY_KEY, idempotencyKey)
                     }
                     paymentLauncher.launch(intent)
                 } else if (_binding != null) {
@@ -304,6 +314,8 @@ class CustomerPayFragment : Fragment() {
         currentReservationId = null
         currentOrderId = null
         currentFinalAmount = null
+        idempotencyKey = UUID.randomUUID().toString()
+        Log.d("CustomerPayFragment", "Regenerated idempotencyKey: $idempotencyKey")
     }
 
     private fun setupReservationInfo() {
@@ -398,6 +410,7 @@ class CustomerPayFragment : Fragment() {
             savedAddress = savedInstanceState.getString("address", "주소를 선택해주세요")
             savedDetailAddress = savedInstanceState.getString("detailAddress", "")
             savedCheckboxState = savedInstanceState.getBoolean("checkbox", false)
+            idempotencyKey = savedInstanceState.getString("idempotencyKey")
         }
         binding.etName.setText(savedName); binding.etPhone.setText(savedPhone)
         if (savedAddress != "주소를 선택해주세요") binding.tvSelectedAddress.text = savedAddress
@@ -413,6 +426,7 @@ class CustomerPayFragment : Fragment() {
             outState.putString("address", it.tvSelectedAddress.text.toString())
             outState.putString("detailAddress", it.etDetailAddress.text.toString())
             outState.putBoolean("checkbox", it.cbAgree.isChecked)
+            outState.putString("idempotencyKey", idempotencyKey)
         }
     }
 
