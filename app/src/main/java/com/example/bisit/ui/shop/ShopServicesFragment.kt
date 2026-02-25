@@ -1,13 +1,17 @@
 package com.example.bisit.ui.shop
 
+import android.graphics.Rect
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.bisit.MainActivity
 import com.example.bisit.databinding.FragmentShopServicesBinding
 import com.example.bisit.ui.shop.adapter.ServiceAdapter
 import com.example.bisit.ui.shop.dialog.AddServiceDialog
@@ -26,8 +30,6 @@ class ShopServicesFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var adapter: ServiceAdapter
-
-    /* ===================== ViewModels ===================== */
 
     private val shopRegisterViewModel: ShopRegisterViewModel by activityViewModels {
         ShopRegisterViewModelFactory(requireContext().applicationContext)
@@ -61,6 +63,11 @@ class ShopServicesFragment : Fragment() {
         binding.fabAdd.setOnClickListener {
             openAddServiceDialog()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        refreshOnboarding()
     }
 
     /* ===================== RecyclerView ===================== */
@@ -187,10 +194,74 @@ class ShopServicesFragment : Fragment() {
                     treatmentId = updated.treatmentId,
                     shopId = it,
                     request = updated.toRequest(),
-                    photo = photoPart // null이면 기존 이미지 유지
+                    photo = photoPart
                 )
             }
         }.show(parentFragmentManager, "edit_service")
+    }
+
+
+    fun refreshOnboarding() {
+
+        val activity = requireActivity() as MainActivity
+
+        if (!activity.isOnboardingActive()) {
+            clearGuide()
+            return
+        }
+
+        binding.fabAdd.post {
+
+            if (activity.currentGuideStep ==
+                MainActivity.GuideStep.SERVICE_SCREEN
+            ) {
+
+                activity.showGlobalOverlay(
+                    targetView = binding.fabAdd,
+                    shape = HighlightOverlayView.HighlightShape.CIRCLE,
+                    radiusDp = 40f
+                )
+
+                showGuideTextAboveFab(binding.fabAdd)
+            }
+        }
+    }
+
+    private fun showGuideTextAboveFab(targetView: View) {
+
+        clearGuide()
+        binding.guideLayer.visibility = View.VISIBLE
+
+        val guideText = TextView(requireContext()).apply {
+            text = "이곳을 누르세요!"
+            setTextColor(0xFFFFFFFF.toInt())
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+        }
+
+        binding.guideLayer.addView(guideText)
+
+        guideText.post {
+
+            val rect = Rect()
+            targetView.getGlobalVisibleRect(rect)
+
+            val layerLocation = IntArray(2)
+            binding.guideLayer.getLocationOnScreen(layerLocation)
+
+            val localRight = rect.right - layerLocation[0]
+            val localTop = rect.top - layerLocation[1]
+
+            val margin8dp = 8 * resources.displayMetrics.density
+            val margin18dp = 18 * resources.displayMetrics.density
+
+            guideText.x = localRight - guideText.width - margin18dp
+            guideText.y = localTop - guideText.height - margin8dp
+        }
+    }
+
+    private fun clearGuide() {
+        binding.guideLayer.removeAllViews()
+        binding.guideLayer.visibility = View.GONE
     }
 
     /* ===================== Cleanup ===================== */

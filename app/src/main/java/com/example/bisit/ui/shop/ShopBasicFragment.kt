@@ -4,9 +4,9 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.util.TypedValue
+import android.view.*
+import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
@@ -15,7 +15,9 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
+import com.example.bisit.MainActivity
 import com.example.bisit.R
+import com.example.bisit.data.model.shop.ShopAccountResponse
 import com.example.bisit.databinding.FragmentShopBasicBinding
 import com.example.bisit.ui.shop.dialog.EditSalesDialog
 import com.example.bisit.ui.shop.dialog.EditShopInfoDialog
@@ -38,13 +40,9 @@ class ShopBasicFragment : Fragment() {
     private val photoViewModel: ShopPhotoViewModel by viewModels()
 
     private var currentIntro: String = ""
-    private var currentServiceType: String = "VISIT"
+    private var currentServiceType: String = "BISIT"
+    private var currentAccount: ShopAccountResponse? = null
     private var isOpenHourExpanded = false
-
-    /* ===================== 온보딩 상태 ===================== */
-    private var guideStep = 0
-
-    /* ===================== 이미지 선택 ===================== */
 
     private val pickImageLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -61,6 +59,101 @@ class ShopBasicFragment : Fragment() {
         return binding.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        refreshOnboarding()
+    }
+
+    fun refreshOnboarding() {
+
+        val activity = requireActivity() as MainActivity
+
+        if (!activity.isOnboardingActive()) {
+            clearGuide()
+            return
+        }
+
+        binding.root.post {
+
+            if (activity.currentGuideStep ==
+                MainActivity.GuideStep.EDIT_BUTTON
+            ) {
+
+                val rect1 = Rect()
+                val rect2 = Rect()
+                val rect3 = Rect()
+
+                binding.btnEditShopInfo.getGlobalVisibleRect(rect1)
+                binding.btnEditIntro.getGlobalVisibleRect(rect2)
+                binding.btnEditSales.getGlobalVisibleRect(rect3)
+
+                val rects = listOf(
+                    RectF(rect1),
+                    RectF(rect2),
+                    RectF(rect3)
+                )
+
+                activity.showGlobalOverlayMultiple(
+                    rects = rects,
+                    shape = HighlightOverlayView.HighlightShape.CIRCLE,
+                    radiusDp = 40f
+                )
+
+                showGuideTextLeftOfFirstButton(binding.btnEditShopInfo)
+            }
+        }
+    }
+
+    private fun getGuideLayer(): ViewGroup {
+        return (requireActivity() as MainActivity).getGlobalGuideLayer()
+    }
+
+    private fun clearGuide() {
+        val layer = getGuideLayer()
+        layer.removeAllViews()
+        layer.visibility = View.GONE
+    }
+
+    private fun showGuideTextLeftOfFirstButton(targetView: View) {
+
+        val guideLayer = getGuideLayer()
+        guideLayer.removeAllViews()
+        guideLayer.visibility = View.VISIBLE
+        guideLayer.bringToFront()
+
+        val guideText = TextView(requireContext()).apply {
+            text = "입력하신 매장 정보는\n이곳에서 수정할 수 있어요"
+            setTextColor(0xFFFFFFFF.toInt())
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+
+            textAlignment = View.TEXT_ALIGNMENT_VIEW_END
+            gravity = Gravity.END
+        }
+
+        val params = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            FrameLayout.LayoutParams.WRAP_CONTENT
+        )
+
+        params.gravity = Gravity.END or Gravity.TOP
+
+        params.marginEnd = (100 * resources.displayMetrics.density).toInt()
+
+        val rect = Rect()
+        targetView.getGlobalVisibleRect(rect)
+
+        val layerLocation = IntArray(2)
+        guideLayer.getLocationOnScreen(layerLocation)
+
+        val localTop = rect.top - layerLocation[1]
+        params.topMargin = localTop
+
+        guideText.layoutParams = params
+
+        guideLayer.addView(guideText)
+    }
+
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -68,85 +161,7 @@ class ShopBasicFragment : Fragment() {
         observeViewModel()
         observePhotos()
         setupClickListeners()
-
-        // 온보딩 시작
-        startBasicGuide()
     }
-
-    /* ===================== 온보딩 ===================== */
-
-    private fun startBasicGuide() {
-        binding.highlightOverlay.visibility = View.VISIBLE
-        showGuideStep()
-    }
-
-    private fun showGuideStep() {
-
-        val targets = listOf(
-            binding.btnEditShopInfo,
-            binding.btnEditIntro,
-            binding.btnEditSales
-        )
-
-        if (guideStep >= targets.size) {
-            endBasicGuide()
-            return
-        }
-
-        val target = targets[guideStep]
-
-        target.post {
-
-            val rect = Rect()
-            target.getGlobalVisibleRect(rect)
-
-            val overlayLoc = IntArray(2)
-            binding.highlightOverlay.getLocationOnScreen(overlayLoc)
-
-            val rectF = RectF(
-                rect.left - overlayLoc[0].toFloat(),
-                rect.top - overlayLoc[1].toFloat(),
-                rect.right - overlayLoc[0].toFloat(),
-                rect.bottom - overlayLoc[1].toFloat()
-            )
-
-            binding.highlightOverlay.highlight(
-                rectF,
-                HighlightOverlayView.HighlightShape.CIRCLE
-            )
-
-            if (guideStep == 0) {
-                binding.guideText.visibility = View.VISIBLE
-                binding.guideText.text =
-                    "매장 정보는\n이곳에서 수정할 수 있어요"
-
-                binding.guideText.post {
-                    binding.guideText.x =
-                        rectF.left - binding.guideText.width - 24f
-                    binding.guideText.y =
-                        rectF.centerY() - binding.guideText.height / 2f
-
-                    if (binding.guideText.x < 0) {
-                        binding.guideText.x = rectF.right + 24f
-                    }
-                }
-            } else {
-                binding.guideText.visibility = View.GONE
-            }
-        }
-
-        binding.highlightOverlay.setOnClickListener {
-            guideStep++
-            showGuideStep()
-        }
-    }
-
-    private fun endBasicGuide() {
-        binding.highlightOverlay.visibility = View.GONE
-        binding.guideText.visibility = View.GONE
-    }
-
-    /* ===================== shopId Observe ===================== */
 
     private fun observeShopId() {
         viewLifecycleOwner.lifecycleScope.launch {
@@ -164,8 +179,6 @@ class ShopBasicFragment : Fragment() {
         }
     }
 
-    /* ===================== ViewModel Observe ===================== */
-
     private fun observeViewModel() {
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -181,20 +194,18 @@ class ShopBasicFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.shopIntro.collect { intro ->
                 intro ?: return@collect
-
                 currentIntro = intro.intro
                 currentServiceType = intro.serviceChannel
-
                 binding.tvShopIntro.text = intro.intro
                 binding.tvShopService.text =
-                    if (intro.serviceChannel == "VISIT") "방문 서비스"
-                    else "매장 서비스"
+                    if (intro.serviceChannel == "BISIT") "방문 서비스" else "매장 서비스"
             }
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.shopAccount.collect { account ->
                 account ?: return@collect
+                currentAccount = account
                 binding.tvSalesAccount.text =
                     "${account.bankName} ${account.accountNumber} ${account.accountHolder}"
             }
@@ -225,13 +236,10 @@ class ShopBasicFragment : Fragment() {
         }
     }
 
-    /* ===================== 대표 이미지 Observe ===================== */
-
     private fun observePhotos() {
         viewLifecycleOwner.lifecycleScope.launch {
             photoViewModel.photos.collect { photos ->
                 val mainPhoto = photos.firstOrNull()
-
                 if (mainPhoto != null) {
                     Glide.with(binding.imgHeader)
                         .load(mainPhoto.url)
@@ -244,8 +252,6 @@ class ShopBasicFragment : Fragment() {
         }
     }
 
-    /* ===================== 클릭 ===================== */
-
     private fun setupClickListeners() {
 
         binding.btnEditShopInfo.setOnClickListener {
@@ -255,10 +261,7 @@ class ShopBasicFragment : Fragment() {
                 initialAddress = binding.tvShopAddress.text.toString(),
                 onSaved = { name, phone, addressLine, detailAddress ->
                     viewModel.updateShopBasicInfo(
-                        name = name,
-                        phone = phone,
-                        addressLine = addressLine,
-                        detailAddress = detailAddress
+                        name, phone, addressLine, detailAddress
                     )
                 }
             ).show(parentFragmentManager, "edit_shop_info")
@@ -268,13 +271,16 @@ class ShopBasicFragment : Fragment() {
         binding.btnChangeHeader.setOnClickListener { openIntroDialog() }
 
         binding.btnEditSales.setOnClickListener {
+
+            val account = currentAccount ?: return@setOnClickListener
+
             EditSalesDialog(
-                initialAccount = binding.tvSalesAccount.text.toString(),
+                initialAccount = account.accountNumber,
                 onResult = { newAccount ->
                     viewModel.updateShopAccount(
-                        bankCode = "004",
+                        bankCode = account.bankCode,
                         accountNumber = newAccount,
-                        accountHolder = "정원렬"
+                        accountHolder = account.accountHolder
                     )
                 }
             ).show(parentFragmentManager, "edit_sales")
@@ -304,12 +310,12 @@ class ShopBasicFragment : Fragment() {
             initialServiceType = currentServiceType,
             photoFlow = photoViewModel.photos,
             onAddPhotoClick = { pickImageLauncher.launch("image/*") },
-            onDeletePhotoClick = { photoId -> photoViewModel.deletePhoto(photoId) },
+            onDeletePhotoClick = { photoViewModel.deletePhoto(it) },
             onSaved = { intro, serviceType, photos ->
                 viewModel.updateShopIntro(
-                    intro = intro,
-                    serviceChannel = serviceType,
-                    photoIds = photos.map { it.id }
+                    intro,
+                    serviceType,
+                    photos.map { it.id }
                 )
             }
         ).show(parentFragmentManager, "edit_intro")

@@ -1,36 +1,49 @@
 package com.example.bisit
 
-import android.content.Context
 import android.graphics.Rect
 import android.graphics.RectF
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowInsetsController
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI
 import com.example.bisit.databinding.ActivityMainBinding
 import com.example.bisit.ui.shop.HighlightOverlayView
+import com.example.bisit.ui.shop.ShopBasicFragment
+import com.example.bisit.ui.shop.ShopFragment
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    private var isOwner: Boolean = false
-    private var onboardingEnabled: Boolean = false
+    /* 🔥 추가된 것 */
+    private lateinit var globalOverlay: HighlightOverlayView
+    private lateinit var globalGuideTextLayer: FrameLayout
 
-    /* ===================== 온보딩 단계 ===================== */
+    private var isOwner = false
+    private var onboardingEnabled = false
+    private var isTransitioning = false
 
     enum class GuideStep {
         TAB,
         EDIT_BUTTON,
         SERVICE_TAB,
         SERVICE_SCREEN,
+        SERVICE_MODAL_GUIDE,
+        SERVICE_MODAL_OPEN,
         TODAY_TAB,
-        TODAY_SCREEN,
+        TODAY_APPROVE,
+        TODAY_STATUS,
+        TODAY_CONFIRM,
+        TODAY_DETAIL,
         MY_TAB,
+        MY_COUPON,
+        MY_COUPON_ADD,
         DONE
     }
 
@@ -38,8 +51,46 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val decorView = window.decorView as ViewGroup
+
+        /* ===============================
+           🔥 1. Overlay 최상단 추가
+        =============================== */
+        globalOverlay = HighlightOverlayView(this)
+        decorView.addView(
+            globalOverlay,
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        )
+
+        globalOverlay.elevation = 9999f
+        globalOverlay.visibility = View.GONE
+
+        /* ===============================
+           🔥 2. 텍스트 레이어를 Overlay 위에 추가
+        =============================== */
+        globalGuideTextLayer = FrameLayout(this)
+        globalGuideTextLayer.layoutParams =
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+
+        decorView.addView(globalGuideTextLayer)
+        globalGuideTextLayer.elevation = 10000f
+
+        /* =============================== */
+
+        globalOverlay.setOnNextClickListener {
+            if (!onboardingEnabled) return@setOnNextClickListener
+            goToNextStep()
+        }
 
         setupStatusBar()
 
@@ -48,21 +99,19 @@ class MainActivity : AppCompatActivity() {
 
         setupBottomNav(userType)
         setupNavGraph(userType)
-
-        setupGuideTouch()
         setupSkipListener()
 
-        if (isOwner && !isOnboardingCompleted()) {
+        if (isOwner) {
             onboardingEnabled = true
             currentGuideStep = GuideStep.TAB
+            binding.root.post { refreshCurrentFragmentOverlay() }
         }
     }
 
-    /* ===================== 네비 설정 ===================== */
+    /* ========================================================= */
 
     private fun setupBottomNav(userType: String?) {
         binding.bottomNavView.menu.clear()
-
         if (userType == "owner") {
             binding.bottomNavView.inflateMenu(R.menu.bottom_nav_menu_owner)
         } else {
@@ -88,123 +137,184 @@ class MainActivity : AppCompatActivity() {
         NavigationUI.setupWithNavController(binding.bottomNavView, navController)
     }
 
-    /* ===================== 오버레이 터치 = 다음 단계 ===================== */
-
-    private fun setupGuideTouch() {
-        binding.globalOverlay.setOnClickListener {
-            if (!onboardingEnabled) return@setOnClickListener
-            goToNextStep()
-        }
-    }
-
-    /* ===================== Skip 버튼 (Overlay 내부 버튼 사용) ===================== */
-
     private fun setupSkipListener() {
-        binding.globalOverlay.setOnSkipClickListener {
+        globalOverlay.setOnSkipClickListener {
             finishOnboarding()
             binding.bottomNavView.selectedItemId = R.id.shopFragment
         }
     }
 
-    /* ===================== 단계 전환 ===================== */
+    /* ========================================================= */
 
     private fun goToNextStep() {
 
+        if (isTransitioning) return
+        isTransitioning = true
+
+        binding.root.postDelayed({
+            isTransitioning = false
+        }, 250)
+
         when (currentGuideStep) {
-
-            GuideStep.TAB -> {
-                currentGuideStep = GuideStep.EDIT_BUTTON
-            }
-
-            GuideStep.EDIT_BUTTON -> {
-                currentGuideStep = GuideStep.SERVICE_TAB
-            }
+            GuideStep.TAB -> currentGuideStep = GuideStep.EDIT_BUTTON
+            GuideStep.EDIT_BUTTON -> currentGuideStep = GuideStep.SERVICE_TAB
 
             GuideStep.SERVICE_TAB -> {
                 currentGuideStep = GuideStep.SERVICE_SCREEN
+                binding.bottomNavView.selectedItemId = R.id.shopFragment
+                binding.root.post { refreshCurrentFragmentOverlay() }
+                return
             }
 
-            GuideStep.SERVICE_SCREEN -> {
-                currentGuideStep = GuideStep.TODAY_TAB
-                binding.bottomNavView.selectedItemId = R.id.todayReservFragment
-            }
+            GuideStep.SERVICE_SCREEN ->
+                currentGuideStep = GuideStep.SERVICE_MODAL_GUIDE
+
+            GuideStep.SERVICE_MODAL_GUIDE ->
+                currentGuideStep = GuideStep.SERVICE_MODAL_OPEN
+
+            GuideStep.SERVICE_MODAL_OPEN -> return
 
             GuideStep.TODAY_TAB -> {
-                currentGuideStep = GuideStep.TODAY_SCREEN
+                currentGuideStep = GuideStep.TODAY_APPROVE
+                binding.bottomNavView.selectedItemId =
+                    R.id.todayReservFragment
+                return
             }
 
-            GuideStep.TODAY_SCREEN -> {
+            GuideStep.TODAY_APPROVE ->
+                currentGuideStep = GuideStep.TODAY_STATUS
+
+            GuideStep.TODAY_STATUS ->
+                currentGuideStep = GuideStep.TODAY_CONFIRM
+
+            GuideStep.TODAY_CONFIRM ->
+                currentGuideStep = GuideStep.TODAY_DETAIL
+
+            GuideStep.TODAY_DETAIL -> {
                 currentGuideStep = GuideStep.MY_TAB
-                binding.bottomNavView.selectedItemId = R.id.myPageOwnerFragment
+                binding.bottomNavView.selectedItemId =
+                    R.id.myPageOwnerFragment
+                return
             }
 
-            GuideStep.MY_TAB -> {
+            GuideStep.MY_TAB ->
+                currentGuideStep = GuideStep.MY_COUPON
+
+            GuideStep.MY_COUPON ->
+                currentGuideStep = GuideStep.MY_COUPON_ADD
+
+            GuideStep.MY_COUPON_ADD -> {
                 finishOnboarding()
+                return
             }
 
-            else -> finishOnboarding()
+            else -> return
+        }
+
+        refreshCurrentFragmentOverlay()
+    }
+
+    /* ========================================================= */
+
+    fun refreshCurrentFragmentOverlay() {
+
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment)
+                    as NavHostFragment
+
+        val fragments = navHostFragment.childFragmentManager.fragments
+
+        fragments.forEach { fragment ->
+            when (fragment) {
+                is ShopFragment -> {
+                    fragment.refreshOnboarding()
+
+                    fragment.childFragmentManager.fragments.forEach { child ->
+                        if (child is ShopBasicFragment) {
+                            child.refreshOnboarding()
+                        }
+                    }
+                }
+            }
         }
     }
 
-    /* ===================== 글로벌 오버레이 ===================== */
+    fun isOnboardingActive(): Boolean = onboardingEnabled
+
+    fun getGlobalGuideLayer(): FrameLayout {
+        return globalGuideTextLayer
+    }
+
+    /* ========================================================= */
+
+    fun showGlobalOverlayMultiple(
+        rects: List<RectF>,
+        shape: HighlightOverlayView.HighlightShape,
+        radiusDp: Float
+    ) {
+        globalOverlay.visibility = View.VISIBLE
+        globalOverlay.highlightMultiple(rects, shape, radiusDp)
+    }
 
     fun showGlobalOverlay(
         targetView: View,
-        guideText: String,
-        shape: HighlightOverlayView.HighlightShape =
-            HighlightOverlayView.HighlightShape.ROUNDED_RECT,
-        radiusDp: Float = 12f
+        shape: HighlightOverlayView.HighlightShape,
+        radiusDp: Float
     ) {
-        if (!onboardingEnabled) return
-
         val rect = Rect()
         targetView.getGlobalVisibleRect(rect)
-
         val rectF = RectF(rect)
 
-        binding.globalOverlay.visibility = View.VISIBLE
-        binding.globalGuideText.visibility = View.VISIBLE
+        globalOverlay.visibility = View.VISIBLE
+        globalOverlay.highlight(rectF, shape, radiusDp)
+    }
 
-        binding.globalOverlay.highlight(
-            rect = rectF,
-            shape = shape,
-            radiusDp = radiusDp
-        )
+    fun highlightBottomNavItem(index: Int) {
 
-        binding.globalGuideText.text = guideText
-        binding.globalGuideText.x = rect.left.toFloat()
-        binding.globalGuideText.y = rect.bottom + 24f
+        val menuView = binding.bottomNavView.getChildAt(0) as ViewGroup
+        val itemView = menuView.getChildAt(index)
+
+        itemView.post {
+
+            val rect = Rect()
+            itemView.getGlobalVisibleRect(rect)
+
+            val size = 72f * resources.displayMetrics.density
+            val cx = rect.centerX()
+            val cy = rect.centerY()
+
+            val circleRect = RectF(
+                cx - size / 2,
+                cy - size / 2,
+                cx + size / 2,
+                cy + size / 2
+            )
+
+            globalOverlay.visibility = View.VISIBLE
+            globalOverlay.highlight(
+                circleRect,
+                HighlightOverlayView.HighlightShape.CIRCLE,
+                0f
+            )
+        }
     }
 
     fun hideGlobalOverlay() {
-        binding.globalOverlay.visibility = View.GONE
-        binding.globalGuideText.visibility = View.GONE
+        globalOverlay.visibility = View.GONE
+        globalOverlay.clearHighlight()
     }
-
-    /* ===================== 온보딩 완료 ===================== */
 
     fun finishOnboarding() {
         currentGuideStep = GuideStep.DONE
         onboardingEnabled = false
-        saveOnboardingCompleted()
         hideGlobalOverlay()
+        globalGuideTextLayer.removeAllViews()
     }
 
-    private fun isOnboardingCompleted(): Boolean {
-        val prefs = getSharedPreferences("guide_pref", Context.MODE_PRIVATE)
-        return prefs.getBoolean("owner_onboarding_done", false)
-    }
-
-    private fun saveOnboardingCompleted() {
-        val prefs = getSharedPreferences("guide_pref", Context.MODE_PRIVATE)
-        prefs.edit().putBoolean("owner_onboarding_done", true).apply()
-    }
-
-    /* ===================== 상태바 ===================== */
+    /* ========================================================= */
 
     private fun setupStatusBar() {
         window.statusBarColor = android.graphics.Color.WHITE
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.insetsController?.setSystemBarsAppearance(
                 WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
@@ -217,23 +327,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /* ===================== 로그인 이동 ===================== */
-
     fun logout() {
         binding.bottomNavView.visibility = View.GONE
         val navController = findNavController(R.id.nav_host_fragment)
-        val navGraph = navController.navInflater.inflate(R.navigation.nav_graph)
+        val navGraph =
+            navController.navInflater.inflate(R.navigation.nav_graph)
         navGraph.setStartDestination(R.id.authFragment)
         navController.setGraph(navGraph, null)
-    }
-
-    fun moveToHomeAfterLogin(userType: String) {
-        binding.bottomNavView.visibility = View.VISIBLE
-        setupNavGraph(userType)
-
-        if (userType == "owner" && !isOnboardingCompleted()) {
-            onboardingEnabled = true
-            currentGuideStep = GuideStep.TAB
-        }
     }
 }
