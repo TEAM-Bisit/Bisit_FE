@@ -1,10 +1,12 @@
 package com.example.bisit.ui.shop
 
 import android.graphics.Color
+import android.graphics.Rect
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.util.TypedValue
+import android.view.*
+import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -39,6 +41,178 @@ class ShopFragment : Fragment() {
         return binding.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        refreshOnboarding()
+    }
+
+
+    fun refreshOnboarding() {
+
+        val activity = requireActivity() as MainActivity
+
+        if (!activity.isOnboardingActive()) {
+            clearGuide()
+            return
+        }
+
+        binding.root.post {
+
+            when (activity.currentGuideStep) {
+
+                MainActivity.GuideStep.TAB -> {
+
+                    activity.showGlobalOverlay(
+                        targetView = binding.tabContainer,
+                        shape = HighlightOverlayView.HighlightShape.ROUNDED_RECT,
+                        radiusDp = 16f
+                    )
+
+                    showTextBelow(
+                        targetView = binding.tabContainer,
+                        big = "고객님들에게 보이는\n정보들을 관리할 수 있어요",
+                        small = "리뷰 관리와 공지사항 등록 등을 관리해보세요.",
+                        bottomMarginDp = 20f
+                    )
+                }
+
+                MainActivity.GuideStep.SERVICE_TAB -> {
+
+                    activity.showGlobalOverlay(
+                        targetView = binding.tabServices,
+                        shape = HighlightOverlayView.HighlightShape.CIRCLE,
+                        radiusDp = 50f
+                    )
+
+                    showTextBelow(
+                        targetView = binding.tabServices,
+                        big = "안녕하세요 사장님!\n" + "우선 우리 가게 서비스를 등록해볼까요?",
+                        small = "밝은 곳을 터치해서\n 매장 시술을 등록해보세요.",
+                        bottomMarginDp = 24f
+                    )
+                }
+
+                MainActivity.GuideStep.SERVICE_SCREEN -> {
+                    binding.viewPager.currentItem = 2
+                    clearGuide()
+                }
+
+                MainActivity.GuideStep.TODAY_TAB -> {
+
+                    activity.highlightBottomNavItem(index = 1)
+
+                    showTextCenterAbove(
+                        big = "오늘 예약 확인",
+                        small = "오늘 예약을 눌러 확인해보세요."
+                    )
+                }
+
+                else -> clearGuide()
+            }
+        }
+    }
+
+    /* ================= Guide Layer ================= */
+
+    private fun getGuideLayer(): FrameLayout {
+        return (requireActivity() as MainActivity).getGlobalGuideLayer()
+    }
+
+    private fun clearGuide() {
+        val layer = getGuideLayer()
+        layer.removeAllViews()
+        layer.visibility = View.GONE
+    }
+
+    private fun dp(value: Float): Float {
+        return TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            value,
+            resources.displayMetrics
+        )
+    }
+
+    private fun createBigText(text: String): TextView {
+        return TextView(requireContext()).apply {
+            this.text = text
+            setTextColor(Color.WHITE)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+            setTypeface(null, android.graphics.Typeface.BOLD)
+        }
+    }
+
+    private fun createSmallText(text: String): TextView {
+        return TextView(requireContext()).apply {
+            this.text = text
+            setTextColor(Color.WHITE)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+        }
+    }
+
+    private fun showTextBelow(
+        targetView: View,
+        big: String,
+        small: String,
+        bottomMarginDp: Float
+    ) {
+
+        val guideLayer = getGuideLayer()
+        guideLayer.removeAllViews()
+        guideLayer.visibility = View.VISIBLE
+
+        val bigText = createBigText(big)
+        val smallText = createSmallText(small)
+
+        guideLayer.addView(bigText)
+        guideLayer.addView(smallText)
+
+        bigText.post {
+
+            val rect = Rect()
+            targetView.getGlobalVisibleRect(rect)
+
+            val layerLocation = IntArray(2)
+            guideLayer.getLocationOnScreen(layerLocation)
+
+            val left = rect.left - layerLocation[0] + dp(4f)
+            val top = rect.bottom - layerLocation[1] + dp(bottomMarginDp)
+
+            bigText.x = left
+            bigText.y = top
+
+            smallText.x = left
+            smallText.y = top + dp(64f)
+        }
+    }
+
+    private fun showTextCenterAbove(
+        big: String,
+        small: String
+    ) {
+
+        val guideLayer = getGuideLayer()
+        guideLayer.removeAllViews()
+        guideLayer.visibility = View.VISIBLE
+
+        val bigText = createBigText(big)
+        val smallText = createSmallText(small)
+
+        guideLayer.addView(bigText)
+        guideLayer.addView(smallText)
+
+        bigText.post {
+
+            val centerX = guideLayer.width / 2f
+
+            bigText.x = centerX - bigText.width / 2f
+            bigText.y = guideLayer.height * 0.55f
+
+            smallText.x = centerX - smallText.width / 2f
+            smallText.y = bigText.y + dp(64f)
+        }
+    }
+
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -49,55 +223,7 @@ class ShopFragment : Fragment() {
         observeStaffRequestState()
 
         updateTabUI(0)
-
-        // 🔥 온보딩 체크
-        binding.root.post {
-            checkOnboardingStep()
-        }
     }
-
-    /* ===================== 온보딩 처리 ===================== */
-
-    private fun checkOnboardingStep() {
-
-        val activity = requireActivity() as MainActivity
-
-        when (activity.currentGuideStep) {
-
-            MainActivity.GuideStep.TAB -> {
-                activity.showGlobalOverlay(
-                    targetView = binding.tabContainer,
-                    guideText = "탭을 눌러 화면을 이동할 수 있어요.",
-                    shape = HighlightOverlayView.HighlightShape.ROUNDED_RECT,
-                    radiusDp = 8f
-                )
-            }
-
-            MainActivity.GuideStep.EDIT_BUTTON -> {
-                activity.showGlobalOverlay(
-                    targetView = binding.viewPager,
-                    guideText = "수정 버튼을 눌러 매장 정보를 바꿀 수 있어요.",
-                    shape = HighlightOverlayView.HighlightShape.ROUNDED_RECT,
-                    radiusDp = 12f
-                )
-            }
-
-            MainActivity.GuideStep.SERVICE_TAB -> {
-                activity.showGlobalOverlay(
-                    targetView = binding.tabServices,
-                    guideText = "서비스 등록 탭에서 서비스를 추가해보세요.",
-                    shape = HighlightOverlayView.HighlightShape.ROUNDED_RECT,
-                    radiusDp = 12f
-                )
-            }
-
-            else -> {
-                activity.hideGlobalOverlay()
-            }
-        }
-    }
-
-    /* ===================== setup ===================== */
 
     private fun setupStaffRequestViewModel() {
         val api = RetrofitClient.getStaffManageApi(requireContext())
@@ -134,8 +260,6 @@ class ShopFragment : Fragment() {
         }
     }
 
-    /* ===================== observe ===================== */
-
     private fun observeShopIdForBadgeOnly() {
         viewLifecycleOwner.lifecycleScope.launch {
             shopRegisterViewModel.shopId.collect { shopId ->
@@ -159,8 +283,6 @@ class ShopFragment : Fragment() {
             }
         }
     }
-
-    /* ===================== UI ===================== */
 
     private fun updateTabUI(position: Int) {
         val inactive = "#9AA1AF".toColorInt()

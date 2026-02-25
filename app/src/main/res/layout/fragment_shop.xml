@@ -65,8 +65,10 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
+            android:layout_marginHorizontal="20dp"
             android:layout_marginTop="13dp">
 
+            <!-- 기본 -->
             <LinearLayout
                 android:id="@+id/tabBasic"
                 android:orientation="vertical"
@@ -92,6 +94,7 @@
                     android:background="#4076FF" />
             </LinearLayout>
 
+            <!-- 리뷰 -->
             <LinearLayout
                 android:id="@+id/tabReviews"
                 android:orientation="vertical"
@@ -117,6 +120,7 @@
                     android:background="@android:color/transparent" />
             </LinearLayout>
 
+            <!-- 서비스 -->
             <LinearLayout
                 android:id="@+id/tabServices"
                 android:orientation="vertical"
@@ -142,6 +146,7 @@
                     android:background="@android:color/transparent" />
             </LinearLayout>
 
+            <!-- 공지 -->
             <LinearLayout
                 android:id="@+id/tabNotices"
                 android:orientation="vertical"
@@ -165,6 +170,7 @@
                     android:layout_marginTop="10dp"
                     android:background="@android:color/transparent" />
             </LinearLayout>
+
         </LinearLayout>
 
         <!-- ================= 콘텐츠 영역 ================= -->
@@ -183,20 +189,12 @@
 
     </LinearLayout>
 
-    <!-- ================= 전체 화면 오버레이 ================= -->
-    <com.example.bisit.ui.shop.HighlightOverlayView
-        android:id="@+id/globalOverlay"
+    <FrameLayout
+        android:id="@+id/guideLayer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone" />
-
-    <!-- 안내 텍스트 -->
-    <TextView
-        android:id="@+id/globalGuideText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@android:color/white"
-        android:textSize="14sp"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:clickable="false"
+        android:focusable="false" />
 
 </FrameLayout>
