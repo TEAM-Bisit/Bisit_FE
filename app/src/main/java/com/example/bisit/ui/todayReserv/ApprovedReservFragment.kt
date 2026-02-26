@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.bisit.MainActivity
 import com.example.bisit.data.api.RetrofitClient
 import com.example.bisit.data.model.todayReservation.ChangeStatusRequest
 import com.example.bisit.data.model.todayReservation.ReservationItem
@@ -17,28 +18,26 @@ import com.example.bisit.ui.todayReserv.adapter.TodayReservationAdapter
 import com.example.bisit.ui.todayReserv.dialog.ChangeStatusDialog
 import kotlinx.coroutines.launch
 
-class ApprovedReservFragment : Fragment(), SortableFragment {
+class ApprovedReservFragment : Fragment(), SortableFragment, TodayStatusTargetProvider {
 
-    companion object {
-        private const val TAG = "ApprovedReserv"
-    }
+    companion object { private const val TAG = "ApprovedReserv" }
 
     private var _binding: FragmentApprovedReservBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var adapter: TodayReservationAdapter
     private var reservationList = mutableListOf<ReservationItem>()
-
     private var sortBy: String = "recent"
-
-    // ✅ Repository 사용
     private lateinit var repository: TodayReservationRepository
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    // ✅ 온보딩에서 쓸 "상태변경 버튼" View 캐시
+    private var changeStatusBtnForGuide: View? = null
+    override fun getChangeStatusButtonForGuide(): View? = changeStatusBtnForGuide
+
+    // ✅ 모달 중복 오픈 방지
+    private var onboardingDialogOpened = false
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentApprovedReservBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -46,15 +45,15 @@ class ApprovedReservFragment : Fragment(), SortableFragment {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        Log.d(TAG, "Fragment 진입")
-
         sortBy = arguments?.getString("sortBy") ?: "recent"
-        Log.d(TAG, "초기 sortBy: $sortBy")
 
-        // ✅ Repository 초기화
         repository = TodayReservationRepository(
             RetrofitClient.getTodayReservationApi(requireContext())
         )
+
+        // ✅ 온보딩이면 repo도 mock 사용
+        val useMock = (requireActivity() as MainActivity).isOnboardingActive()
+        repository.setOnboardingMode(useMock)
 
         adapter = TodayReservationAdapter(
             currentTab = "confirmed",
@@ -72,42 +71,28 @@ class ApprovedReservFragment : Fragment(), SortableFragment {
             adapter = this@ApprovedReservFragment.adapter
         }
 
-        // 최초 진입 시 API 호출
         fetchApprovedReservations()
     }
 
-    /**
-     * 🔹 정렬 변경 시 호출
-     */
     override fun sort(sortBy: String) {
         this.sortBy = sortBy
-        Log.d(TAG, "정렬 변경 요청: $sortBy")
         fetchApprovedReservations()
     }
 
-    /**
-     * 🔹 승인/완료 예약 조회 API
-     */
     private fun fetchApprovedReservations() {
         lifecycleScope.launch {
             try {
-                Log.d(TAG, "API 호출 시작")
-
                 val response = repository.getTodayReservations(
-                    shopId = 1L,        // TODO 실제 shopId
-                    tab = "confirmed", // 서버 명세 확인 필수
+                    shopId = 1L,
+                    tab = "confirmed",
                     sortBy = sortBy
                 )
 
-                Log.d(TAG, "API 성공")
-                Log.d(TAG, "응답 data: ${response.data}")
-
-                val reservations = response.data.reservations
-                reservationList = reservations.toMutableList()
-
+                reservationList = response.data.reservations.toMutableList()
                 adapter.submitList(reservationList.toList())
 
-                Log.d(TAG, "RecyclerView 갱신 완료 (size=${reservationList.size})")
+                // ✅ 리스트 갱신 뒤에 "첫 아이템의 상태변경 버튼" 잡기
+                captureChangeStatusButtonFromFirstItem()
 
             } catch (e: Exception) {
                 Log.e(TAG, "API 호출 실패", e)
@@ -115,23 +100,46 @@ class ApprovedReservFragment : Fragment(), SortableFragment {
         }
     }
 
+    private fun captureChangeStatusButtonFromFirstItem() {
+        binding.rvApprovedList.post {
+            val vh = binding.rvApprovedList.findViewHolderForAdapterPosition(0)
+            if (vh == null) {
+                binding.rvApprovedList.post {
+                    val vh2 = binding.rvApprovedList.findViewHolderForAdapterPosition(0)
+                    changeStatusBtnForGuide = vh2?.itemView?.findViewById(com.example.bisit.R.id.btnChangeStatus)
+                }
+                return@post
+            }
+            changeStatusBtnForGuide = vh.itemView.findViewById(com.example.bisit.R.id.btnChangeStatus)
+        }
+    }
+
+    // ✅ TODAY_CONFIRM 단계에서 TodayReservFragment가 호출할 함수
+    fun openChangeStatusDialogForOnboardingIfNeeded() {
+        val activity = requireActivity() as MainActivity
+        if (!activity.isOnboardingActive()) return
+        if (onboardingDialogOpened) return
+
+        // 이미 떠 있으면 또 띄우지 않기
+        if (parentFragmentManager.findFragmentByTag("change-status") != null) return
+
+        val first = reservationList.firstOrNull() ?: return
+
+        onboardingDialogOpened = true
+        ChangeStatusDialog(first.status) { newStatus ->
+            updateStatus(first.reservationId, newStatus)
+        }.show(parentFragmentManager, "change-status")
+    }
+
     private fun updateStatus(reservationId: Long, newStatus: String) {
         lifecycleScope.launch {
             try {
-                Log.d(TAG, "상태 변경 요청: id=$reservationId → $newStatus")
-
                 val body = ChangeStatusRequest(
                     targetStatus = newStatus,
                     cancellationReason = null
                 )
 
-                val response = repository.changeStatus(
-                    reservationId = reservationId,
-                    body = body
-                )
-
-                Log.d(TAG, "상태 변경 성공: ${response.data}")
-
+                repository.changeStatus(reservationId, body)
                 fetchApprovedReservations()
 
             } catch (e: Exception) {

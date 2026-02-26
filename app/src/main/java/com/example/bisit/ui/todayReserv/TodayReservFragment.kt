@@ -88,6 +88,58 @@ class TodayReservFragment : Fragment() {
                     )
                 }
 
+                MainActivity.GuideStep.TODAY_STATUS -> {
+                    if (isPendingTab) {
+                        switchTab(false) // approved
+                        // 탭 바뀐 뒤 다시 한번 그리기
+                        binding.root.post { refreshOnboarding() }
+                        return@post
+                    }
+
+                    val child = childFragmentManager.findFragmentById(binding.fragmentContainer.id)
+                    val statusBtn = (child as? TodayStatusTargetProvider)?.getChangeStatusButtonForGuide()
+
+                    if (statusBtn != null) {
+                        // 1) 버튼 하이라이트
+                        activity.showGlobalOverlay(
+                            targetView = statusBtn,
+                            shape = HighlightOverlayView.HighlightShape.ROUNDED_RECT,
+                            radiusDp = 16f
+                        )
+
+                        // 2) 버튼 위 텍스트(big/small)
+                        showTextAboveTarget(
+                            targetView = statusBtn,
+                            big = "승인내역에서 상태를 변경할 수 있어요",
+                            small = "시술 진행 상황을 관리해보세요.",
+                            smallTextSizeSp = 14f
+                        )
+                    } else {
+                        // 버튼 아직 못 잡았으면 한번 더 시도
+                        binding.root.post { refreshOnboarding() }
+                    }
+                }
+
+                MainActivity.GuideStep.TODAY_CONFIRM -> {
+                    if (isPendingTab) {
+                        switchTab(false)
+                        binding.root.post { refreshOnboarding() }
+                        return@post
+                    }
+
+                    val child = childFragmentManager.findFragmentById(binding.fragmentContainer.id)
+
+                    // 1) 모달 자동 오픈
+                    (child as? ApprovedReservFragment)?.openChangeStatusDialogForOnboardingIfNeeded()
+
+                    // 2) 모달 위쪽 텍스트(온보딩 한정 / small은 12sp)
+                    showTopFixedText(
+                        big = "예약 확정을 해주세요",
+                        small = "예약 확정을 하셔야 원활한 서비스 제공이 가능합니다.",
+                        smallTextSizeSp = 12f
+                    )
+                }
+
                 else -> Unit
             }
         }
@@ -161,6 +213,114 @@ class TodayReservFragment : Fragment() {
                 tail.bringToFront()
                 bigText.bringToFront()
             }
+        }
+    }
+
+    private fun showTextAboveTarget(
+        targetView: View,
+        big: String,
+        small: String,
+        smallTextSizeSp: Float
+    ) {
+        val guideLayer = getGuideLayer()
+        guideLayer.removeAllViews()
+        guideLayer.visibility = View.VISIBLE
+
+        val bigText = TextView(requireContext()).apply {
+            text = big
+            setTextColor(Color.WHITE)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+            setTypeface(null, android.graphics.Typeface.BOLD)
+        }
+
+        val smallText = TextView(requireContext()).apply {
+            text = small
+            setTextColor(Color.WHITE)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, smallTextSizeSp)
+        }
+
+        guideLayer.addView(bigText)
+        guideLayer.addView(smallText)
+
+        guideLayer.post {
+            val layerLoc = IntArray(2)
+            guideLayer.getLocationOnScreen(layerLoc)
+
+            val r = Rect()
+            targetView.getGlobalVisibleRect(r)
+
+            val targetTopLocal = r.top - layerLoc[1]
+
+            val left = dp(22f)
+
+            var bigY = targetTopLocal - dp(84f)
+            val minY = dp(90f)
+            if (bigY < minY) bigY = minY
+
+            bigText.x = left
+            bigText.y = bigY
+
+            smallText.x = left
+            smallText.y = bigY + dp(28f)
+        }
+    }
+
+    private fun showTopFixedText(
+        big: String,
+        small: String,
+        smallTextSizeSp: Float
+    ) {
+        val guideLayer = getGuideLayer()
+        guideLayer.removeAllViews()
+        guideLayer.visibility = View.VISIBLE
+
+        val bigText = TextView(requireContext()).apply {
+            text = big
+            setTextColor(Color.WHITE)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+            setTypeface(null, android.graphics.Typeface.BOLD)
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        val smallText = TextView(requireContext()).apply {
+            text = small
+            setTextColor(Color.WHITE)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, smallTextSizeSp)
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        guideLayer.addView(bigText)
+        guideLayer.addView(smallText)
+
+        guideLayer.post {
+            val top = dp(140f)
+
+            bigText.measure(
+                View.MeasureSpec.makeMeasureSpec(guideLayer.width, View.MeasureSpec.AT_MOST),
+                View.MeasureSpec.makeMeasureSpec(guideLayer.height, View.MeasureSpec.AT_MOST)
+            )
+            smallText.measure(
+                View.MeasureSpec.makeMeasureSpec(guideLayer.width, View.MeasureSpec.AT_MOST),
+                View.MeasureSpec.makeMeasureSpec(guideLayer.height, View.MeasureSpec.AT_MOST)
+            )
+
+            val bigW = bigText.measuredWidth.toFloat()
+            val smallW = smallText.measuredWidth.toFloat()
+
+            val bigX = (guideLayer.width - bigW) / 2f
+            val smallX = (guideLayer.width - smallW) / 2f
+
+            bigText.x = bigX
+            bigText.y = top
+
+            smallText.x = smallX
+            smallText.y = top + dp(28f)
         }
     }
 

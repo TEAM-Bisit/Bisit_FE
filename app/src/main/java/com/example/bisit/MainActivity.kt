@@ -232,6 +232,12 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
+
+                is TodayReservFragment -> {
+                    fragment.refreshOnboarding()
+                    // 여기서 굳이 ApprovedReservFragment를 직접 콜할 필요 없음
+                    // (TodayReservFragment.refreshOnboarding()가 child fragment를 보고 버튼/모달을 처리하게 두는 게 맞음)
+                }
             }
         }
     }
