@@ -16,12 +16,12 @@ import com.example.bisit.databinding.ActivityMainBinding
 import com.example.bisit.ui.shop.HighlightOverlayView
 import com.example.bisit.ui.shop.ShopBasicFragment
 import com.example.bisit.ui.shop.ShopFragment
+import com.example.bisit.ui.shop.ShopServicesFragment
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    /* 🔥 추가된 것 */
     private lateinit var globalOverlay: HighlightOverlayView
     private lateinit var globalGuideTextLayer: FrameLayout
 
@@ -57,9 +57,6 @@ class MainActivity : AppCompatActivity() {
 
         val decorView = window.decorView as ViewGroup
 
-        /* ===============================
-           🔥 1. Overlay 최상단 추가
-        =============================== */
         globalOverlay = HighlightOverlayView(this)
         decorView.addView(
             globalOverlay,
@@ -72,9 +69,6 @@ class MainActivity : AppCompatActivity() {
         globalOverlay.elevation = 9999f
         globalOverlay.visibility = View.GONE
 
-        /* ===============================
-           🔥 2. 텍스트 레이어를 Overlay 위에 추가
-        =============================== */
         globalGuideTextLayer = FrameLayout(this)
         globalGuideTextLayer.layoutParams =
             ViewGroup.LayoutParams(
@@ -230,8 +224,9 @@ class MainActivity : AppCompatActivity() {
                     fragment.refreshOnboarding()
 
                     fragment.childFragmentManager.fragments.forEach { child ->
-                        if (child is ShopBasicFragment) {
-                            child.refreshOnboarding()
+                        when (child) {
+                            is ShopBasicFragment -> child.refreshOnboarding()
+                            is ShopServicesFragment -> child.refreshOnboarding()
                         }
                     }
                 }
@@ -301,6 +296,11 @@ class MainActivity : AppCompatActivity() {
 
     fun hideGlobalOverlay() {
         globalOverlay.visibility = View.GONE
+        globalOverlay.clearHighlight()
+    }
+
+    fun showDimOnlyOverlay() {
+        globalOverlay.visibility = View.VISIBLE
         globalOverlay.clearHighlight()
     }
 

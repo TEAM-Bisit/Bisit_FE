@@ -84,11 +84,12 @@ class ShopFragment : Fragment() {
                         radiusDp = 50f
                     )
 
-                    showTextBelow(
+                    showTextBelowFixedLeft(
                         targetView = binding.tabServices,
-                        big = "안녕하세요 사장님!\n" + "우선 우리 가게 서비스를 등록해볼까요?",
-                        small = "밝은 곳을 터치해서\n 매장 시술을 등록해보세요.",
-                        bottomMarginDp = 24f
+                        big = "안녕하세요 사장님!\n우선 우리 가게 서비스를 등록해볼까요?",
+                        small = "밝은 곳을 터치해서 매장 시술을 등록해보세요.",
+                        bottomMarginDp = 24f,
+                        leftMarginDp = 18f
                     )
                 }
 
@@ -102,8 +103,8 @@ class ShopFragment : Fragment() {
                     activity.highlightBottomNavItem(index = 1)
 
                     showTextCenterAbove(
-                        big = "오늘 예약 확인",
-                        small = "오늘 예약을 눌러 확인해보세요."
+                        big = "이곳에서 오늘 들어온 예약을 볼 수 있어요.",
+                        small = ""
                     )
                 }
 
@@ -212,6 +213,41 @@ class ShopFragment : Fragment() {
         }
     }
 
+    private fun showTextBelowFixedLeft(
+        targetView: View,
+        big: String,
+        small: String,
+        bottomMarginDp: Float,
+        leftMarginDp: Float = 18f
+    ) {
+        val guideLayer = getGuideLayer()
+        guideLayer.removeAllViews()
+        guideLayer.visibility = View.VISIBLE
+
+        val bigText = createBigText(big)
+        val smallText = createSmallText(small)
+
+        guideLayer.addView(bigText)
+        guideLayer.addView(smallText)
+
+        bigText.post {
+            val rect = Rect()
+            targetView.getGlobalVisibleRect(rect)
+
+            val layerLocation = IntArray(2)
+            guideLayer.getLocationOnScreen(layerLocation)
+
+            val fixedLeft = dp(leftMarginDp)
+
+            val top = rect.bottom - layerLocation[1] + dp(bottomMarginDp)
+
+            bigText.x = fixedLeft
+            bigText.y = top
+
+            smallText.x = fixedLeft
+            smallText.y = top + dp(64f)
+        }
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

@@ -23,6 +23,7 @@ import com.example.bisit.util.uriToMultipart
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
+import android.graphics.Typeface
 
 class ShopServicesFragment : Fragment() {
 
@@ -40,6 +41,10 @@ class ShopServicesFragment : Fragment() {
     }
 
     private var shopId: Long? = null
+
+    private fun getGuideLayer(): ViewGroup {
+        return (requireActivity() as MainActivity).getGlobalGuideLayer()
+    }
 
     /* ===================== Lifecycle ===================== */
 
@@ -60,8 +65,9 @@ class ShopServicesFragment : Fragment() {
         observeServiceList()
         observeError()
 
+        // ✅ 일반 동작: 사용자가 그냥 눌러도 모달 열리게 유지
         binding.fabAdd.setOnClickListener {
-            openAddServiceDialog()
+            openAddServiceDialogNormal()
         }
     }
 
@@ -78,7 +84,6 @@ class ShopServicesFragment : Fragment() {
                 showActionSheet(item)
             }
         )
-
         binding.rvServices.layoutManager = LinearLayoutManager(requireContext())
         binding.rvServices.adapter = adapter
     }
@@ -90,10 +95,7 @@ class ShopServicesFragment : Fragment() {
             shopRegisterViewModel.shopId.collectLatest { id ->
                 id?.let {
                     shopId = it
-                    shopServiceViewModel.loadTreatments(
-                        shopId = it,
-                        isFirst = true
-                    )
+                    shopServiceViewModel.loadTreatments(shopId = it, isFirst = true)
                 }
             }
         }
@@ -131,14 +133,8 @@ class ShopServicesFragment : Fragment() {
             viewLifecycleOwner
         ) { _, bundle ->
             when (bundle.getString(BottomActionSheet.RESULT_ACTION)) {
-
-                BottomActionSheet.ACTION_DELETE -> {
-                    showDeleteConfirm(item)
-                }
-
-                BottomActionSheet.ACTION_EDIT -> {
-                    openEditServiceDialog(item)
-                }
+                BottomActionSheet.ACTION_DELETE -> showDeleteConfirm(item)
+                BottomActionSheet.ACTION_EDIT -> openEditServiceDialog(item)
             }
         }
     }
@@ -159,50 +155,47 @@ class ShopServicesFragment : Fragment() {
         ).show(parentFragmentManager, "confirm_delete")
     }
 
-    /* ===================== 서비스 추가 ===================== */
+    /* ===================== 서비스 추가/수정(기존 로직 유지) ===================== */
 
-    private fun openAddServiceDialog() {
-        AddServiceDialog { treatment, imageUri ->
+    private fun openAddServiceDialogNormal() {
+        AddServiceDialog(
+            onSaved = { treatment, imageUri ->
+                val photoPart: MultipartBody.Part? =
+                    imageUri?.let { uriToMultipart(requireContext(), it, "photo") }
 
-            val photoPart: MultipartBody.Part? =
-                imageUri?.let {
-                    uriToMultipart(requireContext(), it, "photo")
+                shopId?.let {
+                    shopServiceViewModel.createTreatment(
+                        shopId = it,
+                        request = treatment.toRequest(),
+                        photo = photoPart
+                    )
                 }
-
-            shopId?.let {
-                shopServiceViewModel.createTreatment(
-                    shopId = it,
-                    request = treatment.toRequest(),
-                    photo = photoPart
-                )
             }
-        }.show(parentFragmentManager, "add_service")
+        ).show(parentFragmentManager, "add_service")
     }
-
-    /* ===================== 서비스 수정 ===================== */
 
     private fun openEditServiceDialog(item: TreatmentResponse) {
-        AddServiceDialog(prefill = item) { updated, imageUri ->
+        AddServiceDialog(
+            prefill = item,
+            onSaved = { updated, imageUri ->
+                val photoPart: MultipartBody.Part? =
+                    imageUri?.let { uriToMultipart(requireContext(), it, "photo") }
 
-            val photoPart: MultipartBody.Part? =
-                imageUri?.let {
-                    uriToMultipart(requireContext(), it, "photo")
+                shopId?.let {
+                    shopServiceViewModel.updateTreatment(
+                        treatmentId = updated.treatmentId,
+                        shopId = it,
+                        request = updated.toRequest(),
+                        photo = photoPart
+                    )
                 }
-
-            shopId?.let {
-                shopServiceViewModel.updateTreatment(
-                    treatmentId = updated.treatmentId,
-                    shopId = it,
-                    request = updated.toRequest(),
-                    photo = photoPart
-                )
             }
-        }.show(parentFragmentManager, "edit_service")
+        ).show(parentFragmentManager, "edit_service")
     }
 
+    /* ===================== Onboarding ===================== */
 
     fun refreshOnboarding() {
-
         val activity = requireActivity() as MainActivity
 
         if (!activity.isOnboardingActive()) {
@@ -211,58 +204,175 @@ class ShopServicesFragment : Fragment() {
         }
 
         binding.fabAdd.post {
+            when (activity.currentGuideStep) {
 
-            if (activity.currentGuideStep ==
-                MainActivity.GuideStep.SERVICE_SCREEN
-            ) {
+                // 1) FAB 동그라미 + "이곳을 누르세요!"
+                MainActivity.GuideStep.SERVICE_SCREEN -> {
+                    activity.showGlobalOverlay(
+                        targetView = binding.fabAdd,
+                        shape = HighlightOverlayView.HighlightShape.CIRCLE,
+                        radiusDp = 40f
+                    )
+                    showGuideTextAboveFab(binding.fabAdd, "이곳을 누르세요!")
+                }
 
-                activity.showGlobalOverlay(
-                    targetView = binding.fabAdd,
-                    shape = HighlightOverlayView.HighlightShape.CIRCLE,
-                    radiusDp = 40f
-                )
+                // 2) 모달 뜨기 직전 안내(텍스트만, 상단 160dp / left 18dp)
+                MainActivity.GuideStep.SERVICE_MODAL_GUIDE -> {
+                    activity.showDimOnlyOverlay() // 딤 + 버튼 유지 (구멍 없음)
+                    showModalGuideTextTop(
+                        big = "본격적으로 시술을 등록해볼까요?",
+                        small = "더 쾌적한 이용을 위해 모든 입력창을 채워주세요."
+                    )
+                }
 
-                showGuideTextAboveFab(binding.fabAdd)
+                // 3) 안내 끝 → 오버레이/텍스트 제거 → 모달 실제 오픈
+                MainActivity.GuideStep.SERVICE_MODAL_OPEN -> {
+                    activity.hideGlobalOverlay()
+                    clearGuide()
+                    openAddServiceDialogForOnboarding() // ✅ 닫히면 TODAY_TAB로
+                }
+
+                else -> {
+                    // 다른 단계는 여기서 관여 X (필요하면 정리만)
+                }
             }
         }
     }
 
-    private fun showGuideTextAboveFab(targetView: View) {
-
-        clearGuide()
-        binding.guideLayer.visibility = View.VISIBLE
+    // SERVICE_SCREEN 텍스트(기존 동작 유지)
+    private fun showGuideTextAboveFab(targetView: View, text: String) {
+        val guideLayer = getGuideLayer()
+        guideLayer.removeAllViews()
+        guideLayer.visibility = View.VISIBLE
 
         val guideText = TextView(requireContext()).apply {
-            text = "이곳을 누르세요!"
+            this.text = text
             setTextColor(0xFFFFFFFF.toInt())
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
         }
 
-        binding.guideLayer.addView(guideText)
+        guideLayer.addView(guideText)
 
-        guideText.post {
+        guideLayer.post {
+            guideText.post {
+                val rect = Rect()
+                targetView.getGlobalVisibleRect(rect)
 
-            val rect = Rect()
-            targetView.getGlobalVisibleRect(rect)
+                val layerLocation = IntArray(2)
+                guideLayer.getLocationOnScreen(layerLocation)
 
-            val layerLocation = IntArray(2)
-            binding.guideLayer.getLocationOnScreen(layerLocation)
+                val margin18 = dp(18f)
 
-            val localRight = rect.right - layerLocation[0]
-            val localTop = rect.top - layerLocation[1]
+                val fabLeft = rect.left - layerLocation[0]
+                val fabTop = rect.top - layerLocation[1]
 
-            val margin8dp = 8 * resources.displayMetrics.density
-            val margin18dp = 18 * resources.displayMetrics.density
+                var x = fabLeft + (targetView.width / 2f) - (guideText.width / 2f)
+                var y = fabTop - guideText.height - margin18
 
-            guideText.x = localRight - guideText.width - margin18dp
-            guideText.y = localTop - guideText.height - margin8dp
+                val minX = margin18
+                val maxX = (guideLayer.width - guideText.width - margin18).toFloat()
+                val minY = margin18
+                val maxY = (guideLayer.height - guideText.height - margin18).toFloat()
+
+                if (maxX >= minX) x = x.coerceIn(minX, maxX)
+                if (maxY >= minY) y = y.coerceIn(minY, maxY)
+
+                guideText.x = x
+                guideText.y = y
+                guideText.bringToFront()
+            }
         }
+    }
+
+    // SERVICE_MODAL_GUIDE: 상단 고정 텍스트(동그라미 없음)
+    private fun showModalGuideTextTop(big: String, small: String) {
+        val guideLayer = getGuideLayer()
+        guideLayer.removeAllViews()
+        guideLayer.visibility = View.VISIBLE
+
+        val bigText = TextView(requireContext()).apply {
+            text = big
+            setTextColor(0xFFFFFFFF.toInt())
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+            setTypeface(null, Typeface.BOLD)
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        val smallText = TextView(requireContext()).apply {
+            text = small
+            setTextColor(0xFFFFFFFF.toInt())
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        guideLayer.addView(bigText)
+        guideLayer.addView(smallText)
+
+        guideLayer.post {
+            val left = dp(18f)
+            val top = dp(180f)
+
+            bigText.x = left
+            bigText.y = top
+
+            smallText.x = left
+            smallText.y = top + dp(44f)
+
+            bigText.bringToFront()
+            smallText.bringToFront()
+        }
+    }
+
+    // SERVICE_MODAL_OPEN: 모달 열고, 닫히면(Tap X/추가하기) TODAY_TAB로 넘김
+    private fun openAddServiceDialogForOnboarding() {
+        val activity = requireActivity() as MainActivity
+
+        AddServiceDialog(
+            prefill = null,
+            onSaved = { treatment, imageUri ->
+                val photoPart: MultipartBody.Part? =
+                    imageUri?.let { uriToMultipart(requireContext(), it, "photo") }
+
+                shopId?.let {
+                    shopServiceViewModel.createTreatment(
+                        shopId = it,
+                        request = treatment.toRequest(),
+                        photo = photoPart
+                    )
+                }
+            },
+
+            onClosed = {
+                activity.currentGuideStep = MainActivity.GuideStep.TODAY_TAB
+                activity.hideGlobalOverlay()
+                clearGuide()
+                activity.refreshCurrentFragmentOverlay()
+            }
+        ).show(parentFragmentManager, "add_service_onboarding")
     }
 
     private fun clearGuide() {
-        binding.guideLayer.removeAllViews()
-        binding.guideLayer.visibility = View.GONE
+        val guideLayer = getGuideLayer()
+        guideLayer.removeAllViews()
+        guideLayer.visibility = View.GONE
     }
+
+    private fun dp(v: Float): Float =
+        TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            v,
+            resources.displayMetrics
+        )
 
     /* ===================== Cleanup ===================== */
 
