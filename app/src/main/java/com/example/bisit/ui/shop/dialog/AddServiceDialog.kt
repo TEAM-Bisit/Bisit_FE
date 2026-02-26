@@ -1,6 +1,7 @@
 package com.example.bisit.ui.shop.dialog
 
 import android.app.Activity
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -20,7 +21,8 @@ import com.example.bisit.data.model.shop.TreatmentResponse
 
 class AddServiceDialog(
     private val prefill: TreatmentResponse? = null,
-    private val onSaved: (TreatmentResponse, Uri?) -> Unit
+    private val onSaved: (TreatmentResponse, Uri?) -> Unit,
+    private val onClosed: (() -> Unit)? = null
 ) : DialogFragment() {
 
     private var _binding: DialogAddServiceBinding? = null
@@ -55,6 +57,12 @@ class AddServiceDialog(
         initInputWatcher()
         initClickListeners()
         updateButtonState(false)
+    }
+
+    // 어떤 방식으로 닫혀도( X / 추가하기 / 바깥 dismiss 등) 호출됨
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        onClosed?.invoke()
     }
 
     /* ===================== 초기화 ===================== */
@@ -122,7 +130,7 @@ class AddServiceDialog(
                 price = binding.etPrice.text.toString().toInt(),
                 durationHours = getHour(),
                 durationMinutes = getMinute(),
-                photoUrl = prefill?.photoUrl, // 서버에서 최종 갱신
+                photoUrl = prefill?.photoUrl,
                 isActive = true
             )
 
@@ -145,7 +153,6 @@ class AddServiceDialog(
 
             selectedImageUri = result.data?.data ?: return@registerForActivityResult
 
-            // ✅ 선택한 이미지 즉시 미리보기
             binding.ivImage.visibility = View.VISIBLE
             binding.ivAddImage.visibility = View.GONE
             binding.ivImage.setImageURI(selectedImageUri)

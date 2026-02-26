@@ -1,17 +1,27 @@
 package com.example.bisit.ui.todayReserv
 
 import android.graphics.Color
+import android.graphics.Rect
+import android.graphics.RectF
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.core.graphics.toColorInt
+import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
+import com.example.bisit.MainActivity
+import com.example.bisit.R
 import com.example.bisit.databinding.FragmentTodayReservBinding
+import com.example.bisit.ui.shop.HighlightOverlayView
 import com.example.bisit.ui.todayReserv.dialog.SortOptionDialog
 
 interface SortableFragment {
-    fun sort(sortBy: String)   // "recent" | "oldest"
+    fun sort(sortBy: String)
 }
 
 class TodayReservFragment : Fragment() {
@@ -20,7 +30,6 @@ class TodayReservFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var isPendingTab = false
-
     private var currentSortBy: String = "recent"
 
     override fun onCreateView(
@@ -34,13 +43,148 @@ class TodayReservFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         initTabs()
         initSortOption()
-
-        // 초기 화면: Pending 탭
         switchTab(true)
     }
+
+    override fun onResume() {
+        super.onResume()
+        refreshOnboarding()
+    }
+
+    fun refreshOnboarding() {
+        val activity = requireActivity() as MainActivity
+
+        if (!activity.isOnboardingActive()) {
+            clearGuide()
+            return
+        }
+
+        binding.root.post {
+            when (activity.currentGuideStep) {
+
+                MainActivity.GuideStep.TODAY_APPROVE -> {
+                    val child = childFragmentManager.findFragmentById(binding.fragmentContainer.id)
+                    val approveBtn =
+                        (child as? TodayApproveTargetProvider)?.getApproveButtonForGuide()
+
+                    showTodayApproveTextAndTail(
+                        big = "예약을 승인하면 이곳을 클릭하세요",
+                        approveTarget = approveBtn
+                    )
+
+                    val rects = mutableListOf<RectF>()
+                    rects += rectFOfView(binding.tabContainer)
+
+                    if (approveBtn != null) {
+                        rects += rectFOfView(approveBtn)
+                    }
+
+                    activity.showGlobalOverlayMultiple(
+                        rects = rects,
+                        shape = HighlightOverlayView.HighlightShape.ROUNDED_RECT,
+                        radiusDp = 16f
+                    )
+                }
+
+                else -> Unit
+            }
+        }
+    }
+
+    private fun showTodayApproveTextAndTail(
+        big: String,
+        approveTarget: View?
+    ) {
+        val guideLayer = getGuideLayer()
+        guideLayer.removeAllViews()
+        guideLayer.visibility = View.VISIBLE
+
+        val bigText = TextView(requireContext()).apply {
+            text = big
+            setTextColor(Color.WHITE)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+            setTypeface(null, android.graphics.Typeface.BOLD)
+            layoutParams = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        val tail = ImageView(requireContext()).apply {
+            setImageResource(R.drawable.ic_pig_tail2)
+            layoutParams = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        guideLayer.addView(bigText)
+        guideLayer.addView(tail)
+
+        binding.tabContainer.doOnLayout {
+            val tabRect = Rect()
+            binding.tabContainer.getGlobalVisibleRect(tabRect)
+
+            val layerLoc = IntArray(2)
+            guideLayer.getLocationOnScreen(layerLoc)
+
+            val tabBottomLocal = tabRect.bottom - layerLoc[1]
+            val left = dp(18f)
+            val textTop = tabBottomLocal + dp(20f)
+
+            bigText.x = left
+            bigText.y = textTop
+
+            tail.post {
+                val tabLeftLocal = tabRect.left - layerLoc[0]
+                val tabTopLocal = tabRect.top - layerLoc[1]
+                val tabRightLocal = tabRect.right - layerLoc[0]
+                val tabBottomLocal = tabRect.bottom - layerLoc[1]
+
+                tail.measure(
+                    View.MeasureSpec.makeMeasureSpec(guideLayer.width, View.MeasureSpec.AT_MOST),
+                    View.MeasureSpec.makeMeasureSpec(guideLayer.height, View.MeasureSpec.AT_MOST)
+                )
+                val tailW = tail.measuredWidth.toFloat()
+                val tailH = tail.measuredHeight.toFloat()
+
+                val rightMargin = dp(18f)
+                val tailX = tabRightLocal - tailW - rightMargin
+
+                val tailY = tabBottomLocal - dp(2f)
+
+                tail.x = tailX
+                tail.y = tailY
+
+                tail.bringToFront()
+                bigText.bringToFront()
+            }
+        }
+    }
+
+    private fun rectFOfView(v: View): RectF {
+        val r = Rect()
+        v.getGlobalVisibleRect(r)
+        return RectF(r)
+    }
+
+    private fun getGuideLayer(): FrameLayout {
+        return (requireActivity() as MainActivity).getGlobalGuideLayer()
+    }
+
+    private fun clearGuide() {
+        val layer = getGuideLayer()
+        layer.removeAllViews()
+        layer.visibility = View.GONE
+        (requireActivity() as MainActivity).hideGlobalOverlay()
+    }
+
+    private fun dp(value: Float): Float =
+        TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value, resources.displayMetrics)
+
+    // ===== 기존 탭/정렬 로직 =====
 
     private fun initTabs() {
         binding.tabPending.setOnClickListener { switchTab(true) }
@@ -54,10 +198,7 @@ class TodayReservFragment : Fragment() {
         val fragment: Fragment =
             if (isPending) PendingReservFragment() else ApprovedReservFragment()
 
-        // 현재 정렬값을 그대로 전달
-        fragment.arguments = Bundle().apply {
-            putString("sortBy", currentSortBy)
-        }
+        fragment.arguments = Bundle().apply { putString("sortBy", currentSortBy) }
 
         childFragmentManager.beginTransaction()
             .replace(binding.fragmentContainer.id, fragment)
@@ -79,18 +220,11 @@ class TodayReservFragment : Fragment() {
 
     private fun initSortOption() {
         binding.tvSortLabel.setOnClickListener {
-
-            // 문자열 기반 SortOptionDialog 사용
             SortOptionDialog(currentSortBy) { selectedSort ->
-
-                // "recent" 또는 "oldest"
                 currentSortBy = selectedSort
-
-                // 표시되는 텍스트 변경
                 binding.tvSortLabel.text =
                     if (selectedSort == "recent") "최근 순으로" else "오래된 순으로"
 
-                // 현재 화면 Fragment 에게 정렬 요청
                 val currentFragment =
                     childFragmentManager.findFragmentById(binding.fragmentContainer.id)
 

@@ -2,11 +2,14 @@ package com.example.bisit.ui.shop
 
 import android.graphics.Color
 import android.graphics.Rect
+import android.graphics.RectF
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.TextView
+import android.widget.ImageView
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -84,11 +87,12 @@ class ShopFragment : Fragment() {
                         radiusDp = 50f
                     )
 
-                    showTextBelow(
+                    showTextBelowFixedLeft(
                         targetView = binding.tabServices,
-                        big = "안녕하세요 사장님!\n" + "우선 우리 가게 서비스를 등록해볼까요?",
-                        small = "밝은 곳을 터치해서\n 매장 시술을 등록해보세요.",
-                        bottomMarginDp = 24f
+                        big = "안녕하세요 사장님!\n우선 우리 가게 서비스를 등록해볼까요?",
+                        small = "밝은 곳을 터치해서 매장 시술을 등록해보세요.",
+                        bottomMarginDp = 24f,
+                        leftMarginDp = 18f
                     )
                 }
 
@@ -101,10 +105,15 @@ class ShopFragment : Fragment() {
 
                     activity.highlightBottomNavItem(index = 1)
 
-                    showTextCenterAbove(
-                        big = "오늘 예약 확인",
-                        small = "오늘 예약을 눌러 확인해보세요."
-                    )
+                    val rect = activity.getBottomNavHighlightRect(index = 1)
+                    if (rect != null) {
+                        showTodayTabGuideWithPigTail(
+                            highlightRect = rect,
+                            big = "이곳에서 오늘 들어온 예약을 볼 수 있어요."
+                        )
+                    } else {
+                        clearGuide()
+                    }
                 }
 
                 else -> clearGuide()
@@ -185,11 +194,97 @@ class ShopFragment : Fragment() {
         }
     }
 
-    private fun showTextCenterAbove(
+    private fun showTodayTabGuideWithPigTail(
+        highlightRect: RectF,
         big: String,
-        small: String
+        tailToTextGapDp: Float = 10f
     ) {
+        val guideLayer = getGuideLayer()
+        guideLayer.removeAllViews()
+        guideLayer.visibility = View.VISIBLE
 
+        val tail = ImageView(requireContext()).apply {
+            setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.ic_pig_tail))
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        val bigText = createBigText(big)
+
+        guideLayer.addView(tail)
+        guideLayer.addView(bigText)
+
+        // guideLayer가 레이아웃 된 다음에 좌표 계산
+        guideLayer.post {
+
+            val layerLocation = IntArray(2)
+            guideLayer.getLocationOnScreen(layerLocation)
+
+            // highlightRect(스크린 좌표) -> guideLayer 로컬 좌표로 변환
+            val cx = highlightRect.centerX() - layerLocation[0]
+            val topOfCircle = highlightRect.top - layerLocation[1]
+
+            val gap = dp(tailToTextGapDp)
+
+            // tail 위치: 원의 top에 "바로 붙여" 올림 (tail의 bottom == 원 top)
+            tail.measure(
+                View.MeasureSpec.makeMeasureSpec(guideLayer.width, View.MeasureSpec.AT_MOST),
+                View.MeasureSpec.makeMeasureSpec(guideLayer.height, View.MeasureSpec.AT_MOST)
+            )
+            val tailW = tail.measuredWidth.toFloat()
+            val tailH = tail.measuredHeight.toFloat()
+
+            var tailX = cx - tailW / 2f
+            var tailY = topOfCircle - tailH
+
+            // 텍스트 위치: tail 위로 10dp
+            bigText.measure(
+                View.MeasureSpec.makeMeasureSpec(guideLayer.width, View.MeasureSpec.AT_MOST),
+                View.MeasureSpec.makeMeasureSpec(guideLayer.height, View.MeasureSpec.AT_MOST)
+            )
+            val textW = bigText.measuredWidth.toFloat()
+            val textH = bigText.measuredHeight.toFloat()
+
+            var textX = cx - textW / 2f
+            var textY = tailY - gap - textH
+
+            // 화면 밖으로 안 나가게 clamp (최소 18dp 정도 여백)
+            val margin = dp(18f)
+            val maxXForTail = guideLayer.width - tailW - margin
+            val maxXForText = guideLayer.width - textW - margin
+
+            tailX = tailX.coerceIn(margin, maxXForTail)
+            textX = textX.coerceIn(margin, maxXForText)
+
+            // Y도 너무 위로 가면 조금 내려줌(원하는대로 조절 가능)
+            val minY = margin
+            if (textY < minY) {
+                // textY가 너무 위면 tail/text를 같이 아래로 내림
+                val delta = (minY - textY)
+                textY += delta
+                tailY += delta
+            }
+
+            tail.x = tailX
+            tail.y = tailY
+
+            bigText.x = textX
+            bigText.y = textY
+
+            tail.bringToFront()
+            bigText.bringToFront()
+        }
+    }
+
+    private fun showTextBelowFixedLeft(
+        targetView: View,
+        big: String,
+        small: String,
+        bottomMarginDp: Float,
+        leftMarginDp: Float = 18f
+    ) {
         val guideLayer = getGuideLayer()
         guideLayer.removeAllViews()
         guideLayer.visibility = View.VISIBLE
@@ -201,17 +296,23 @@ class ShopFragment : Fragment() {
         guideLayer.addView(smallText)
 
         bigText.post {
+            val rect = Rect()
+            targetView.getGlobalVisibleRect(rect)
 
-            val centerX = guideLayer.width / 2f
+            val layerLocation = IntArray(2)
+            guideLayer.getLocationOnScreen(layerLocation)
 
-            bigText.x = centerX - bigText.width / 2f
-            bigText.y = guideLayer.height * 0.55f
+            val fixedLeft = dp(leftMarginDp)
 
-            smallText.x = centerX - smallText.width / 2f
-            smallText.y = bigText.y + dp(64f)
+            val top = rect.bottom - layerLocation[1] + dp(bottomMarginDp)
+
+            bigText.x = fixedLeft
+            bigText.y = top
+
+            smallText.x = fixedLeft
+            smallText.y = top + dp(64f)
         }
     }
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

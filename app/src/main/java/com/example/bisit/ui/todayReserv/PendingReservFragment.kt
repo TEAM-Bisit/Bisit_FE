@@ -18,11 +18,9 @@ import com.example.bisit.ui.todayReserv.dialog.ApproveCompleteDialog
 import com.example.bisit.ui.todayReserv.dialog.ChangeReasonDialog
 import kotlinx.coroutines.launch
 
-class PendingReservFragment : Fragment(), SortableFragment {
+class PendingReservFragment : Fragment(), SortableFragment, TodayApproveTargetProvider {
 
-    companion object {
-        private const val TAG = "PendingReserv"
-    }
+    companion object { private const val TAG = "PendingReserv" }
 
     private var _binding: FragmentPendingReservBinding? = null
     private val binding get() = _binding!!
@@ -31,8 +29,10 @@ class PendingReservFragment : Fragment(), SortableFragment {
     private var pendingList = mutableListOf<ReservationItem>()
 
     private var sortBy: String = "recent"
-
     private lateinit var repository: TodayReservationRepository
+
+    private var approveBtnForGuide: View? = null
+    override fun getApproveButtonForGuide(): View? = approveBtnForGuide
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -51,22 +51,23 @@ class PendingReservFragment : Fragment(), SortableFragment {
         sortBy = arguments?.getString("sortBy") ?: "recent"
         Log.d(TAG, "초기 sortBy: $sortBy")
 
-        // Repository 초기화
+        val activity = requireActivity() as com.example.bisit.MainActivity
+        val useMock = activity.isOnboardingActive()
+
         repository = TodayReservationRepository(
-            RetrofitClient.getTodayReservationApi(requireContext())
+            RetrofitClient.getTodayReservationApi(requireContext()),
         )
+
+        repository.setOnboardingMode(useMock)
 
         adapter = TodayReservationAdapter(
             currentTab = "pending",
 
-            // ✅ 승인
             onApprove = { item ->
                 lifecycleScope.launch {
                     try {
                         Log.d(TAG, "승인 요청: id=${item.reservationId}")
-
                         repository.approveReservation(item.reservationId)
-
                         Log.d(TAG, "승인 성공")
 
                         ApproveCompleteDialog().show(
@@ -74,37 +75,26 @@ class PendingReservFragment : Fragment(), SortableFragment {
                             "approve_complete"
                         )
 
-                        // 승인 후 다시 조회
                         fetchPendingReservations()
-
                     } catch (e: Exception) {
                         Log.e(TAG, "승인 실패", e)
                     }
                 }
             },
 
-            // ✅ 거절 (사유 포함)
             onReject = { item ->
                 ChangeReasonDialog { reason ->
                     lifecycleScope.launch {
                         try {
-                            Log.d(
-                                TAG,
-                                "거절 요청: id=${item.reservationId}, reason=$reason"
-                            )
+                            Log.d(TAG, "거절 요청: id=${item.reservationId}, reason=$reason")
 
                             repository.rejectReservation(
                                 reservationId = item.reservationId,
-                                body = RejectReservationRequest(
-                                    rejectionReason = reason
-                                )
+                                body = RejectReservationRequest(rejectionReason = reason)
                             )
 
                             Log.d(TAG, "거절 성공")
-
-                            // 거절 후 다시 조회
                             fetchPendingReservations()
-
                         } catch (e: Exception) {
                             Log.e(TAG, "거절 실패", e)
                         }
@@ -120,47 +110,60 @@ class PendingReservFragment : Fragment(), SortableFragment {
             adapter = this@PendingReservFragment.adapter
         }
 
-        // 최초 진입 시 조회
         fetchPendingReservations()
     }
 
-    /**
-     * 정렬 변경 시 호출
-     */
     override fun sort(sortBy: String) {
         this.sortBy = sortBy
         Log.d(TAG, "정렬 변경 요청: $sortBy")
         fetchPendingReservations()
     }
 
-    /**
-     * Pending 예약 조회 API
-     */
     private fun fetchPendingReservations() {
         lifecycleScope.launch {
             try {
                 Log.d(TAG, "Pending 예약 조회 API 호출")
 
                 val response = repository.getTodayReservations(
-                    shopId = 1L,   // TODO 실제 shopId
+                    shopId = 1L,
                     tab = "pending",
                     sortBy = sortBy
                 )
 
-                Log.d(TAG, "조회 성공: ${response.data}")
-
                 val reservations = response.data.reservations
                 pendingList = reservations.toMutableList()
+                adapter.submitList(pendingList.toList()) {
+                    binding.rvPendingList.post {
+                        binding.rvPendingList.scrollToPosition(0)
 
-                adapter.submitList(pendingList.toList())
+                        captureApproveButtonFromFirstItem()
+                    }
+                }
 
-                Log.d(
-                    TAG,
-                    "RecyclerView 갱신 완료 (size=${pendingList.size})"
-                )
+                Log.d(TAG, "RecyclerView 갱신 완료 (size=${pendingList.size})")
+
+                captureApproveButtonFromFirstItem()
 
             } catch (e: Exception) {
                 Log.e(TAG, "조회 실패", e)
+            }
+        }
+    }
+
+    private fun captureApproveButtonFromFirstItem() {
+        binding.rvPendingList.post {
+            val vh = binding.rvPendingList.findViewHolderForAdapterPosition(0)
+            approveBtnForGuide = vh?.itemView?.findViewById(com.example.bisit.R.id.btnApprove)
+
+            // 그래도 null이면(진짜 극초반) 한번만 더 늦춰서 재시도
+            if (approveBtnForGuide == null) {
+                binding.rvPendingList.post {
+                    val vh2 = binding.rvPendingList.findViewHolderForAdapterPosition(0)
+                    approveBtnForGuide = vh2?.itemView?.findViewById(com.example.bisit.R.id.btnApprove)
+                    Log.d(TAG, "approveBtnForGuide(retry)=$approveBtnForGuide")
+                }
+            } else {
+                Log.d(TAG, "approveBtnForGuide=$approveBtnForGuide")
             }
         }
     }
