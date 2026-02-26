@@ -17,6 +17,7 @@ import com.example.bisit.ui.shop.HighlightOverlayView
 import com.example.bisit.ui.shop.ShopBasicFragment
 import com.example.bisit.ui.shop.ShopFragment
 import com.example.bisit.ui.shop.ShopServicesFragment
+import com.example.bisit.ui.todayReserv.TodayReservFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -227,6 +228,7 @@ class MainActivity : AppCompatActivity() {
                         when (child) {
                             is ShopBasicFragment -> child.refreshOnboarding()
                             is ShopServicesFragment -> child.refreshOnboarding()
+                            is TodayReservFragment -> child.refreshOnboarding()
                         }
                     }
                 }
@@ -292,6 +294,25 @@ class MainActivity : AppCompatActivity() {
                 0f
             )
         }
+    }
+
+    fun getBottomNavHighlightRect(index: Int, sizeDp: Float = 72f): RectF? {
+        val menuView = binding.bottomNavView.getChildAt(0) as? ViewGroup ?: return null
+        val itemView = menuView.getChildAt(index) ?: return null
+
+        val rect = Rect()
+        itemView.getGlobalVisibleRect(rect)
+
+        val size = sizeDp * resources.displayMetrics.density
+        val cx = rect.centerX()
+        val cy = rect.centerY()
+
+        return RectF(
+            cx - size / 2f,
+            cy - size / 2f,
+            cx + size / 2f,
+            cy + size / 2f
+        )
     }
 
     fun hideGlobalOverlay() {
