@@ -1,10 +1,15 @@
 package com.example.bisit.ui.reservList
 
 import android.graphics.Color
+import android.graphics.Rect
+import android.graphics.RectF
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -14,6 +19,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.bisit.MainActivity
 import com.example.bisit.R
 import com.example.bisit.databinding.FragmentReservListBinding
 import com.example.bisit.ui.reservList.adapter.ReservListAdapter
@@ -40,6 +46,11 @@ class ReservListFragment : Fragment() {
     private lateinit var adapter: ReservListAdapter
     private val dateFormat = SimpleDateFormat("yyyy.MM.dd HH:mm", Locale.KOREA)
     private var isAscending = true
+
+    private var detailBtnForGuide: View? = null
+
+    private var retryCount = 0
+    private val MAX_RETRY = 20
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -72,13 +83,8 @@ class ReservListFragment : Fragment() {
 
         /** 달력 버튼 */
         binding.btnCalendar.setOnClickListener {
-            ReservListCalendarDialog { selectedDate ->
+            ReservListCalendarDialog { _ ->
                 // 날짜 필터 적용 시
-                // reservListViewModel.loadReservationList(
-                //     shopId = currentShopId,
-                //     date = selectedDate,
-                //     isRefresh = true
-                // )
             }.show(childFragmentManager, "CalendarDialog")
         }
 
@@ -102,15 +108,200 @@ class ReservListFragment : Fragment() {
         updateButtonUI()
     }
 
-    /**
-     * shopId 수신 → 예약 목록 조회
-     */
+    override fun onResume() {
+        super.onResume()
+        // ✅ 화면 돌아왔을 때 온보딩 다시 그리기
+        retryCount = 0
+        refreshOnboarding()
+    }
+
+    /* ===================== Onboarding (TODAY_DETAIL) ===================== */
+
+    fun refreshOnboarding() {
+        val activity = requireActivity() as MainActivity
+
+        if (!activity.isOnboardingActive()) {
+            clearGuide(activity)
+            return
+        }
+
+        if (activity.currentGuideStep != MainActivity.GuideStep.TODAY_DETAIL) {
+            return
+        }
+
+        if (detailBtnForGuide == null) {
+            captureDetailButtonFromFirstItem()
+        }
+
+        binding.root.post {
+            val navIndex = 2
+            val navRect = activity.getBottomNavHighlightRect(index = navIndex)
+
+            val detailBtn = detailBtnForGuide
+
+            if (navRect == null || detailBtn == null) {
+                if (retryCount < MAX_RETRY) {
+                    retryCount++
+                    binding.root.postDelayed({ refreshOnboarding() }, 120)
+                }
+                return@post
+            }
+
+            activity.showGlobalOverlayMixed(
+                specs = listOf(
+                    // 상세보기 버튼
+                    com.example.bisit.ui.shop.HighlightOverlayView.HighlightSpec(
+                        rect = rectFOfView(detailBtn),
+                        shape = com.example.bisit.ui.shop.HighlightOverlayView.HighlightShape.ROUNDED_RECT,
+                        radiusPx = 16f
+                    ),
+                    // 바텀네비 예약내역 탭
+                    com.example.bisit.ui.shop.HighlightOverlayView.HighlightSpec(
+                        rect = navRect,
+                        shape = com.example.bisit.ui.shop.HighlightOverlayView.HighlightShape.CIRCLE,
+                        radiusPx = 0f
+                    )
+                )
+            )
+
+            showTodayDetailGuideTextsAndTail(
+                highlightRect = navRect,
+                detailTarget = detailBtn,
+                topBig = "상세보기를 눌러\n고객님의 정보를 확인할 수 있어요.",
+                bottomBig = "승인하신 예약을 포함한 모든 예약을\n예약 내역에서 확인할 수 있어요."
+            )
+        }
+    }
+
+    private fun captureDetailButtonFromFirstItem() {
+        binding.rvReservations.post {
+            val vh = binding.rvReservations.findViewHolderForAdapterPosition(0)
+
+            if (vh == null) {
+                binding.rvReservations.postDelayed({
+                    val vh2 = binding.rvReservations.findViewHolderForAdapterPosition(0)
+                    detailBtnForGuide = vh2?.itemView?.findViewById(R.id.btnDetail)
+                }, 80)
+                return@post
+            }
+
+            detailBtnForGuide = vh.itemView.findViewById(R.id.btnDetail) // ✅ 실제 id로 변경
+        }
+    }
+
+    private fun showTodayDetailGuideTextsAndTail(
+        highlightRect: RectF,
+        detailTarget: View,
+        topBig: String,
+        bottomBig: String
+    ) {
+        val activity = requireActivity() as MainActivity
+        val guideLayer = activity.getGlobalGuideLayer()
+        guideLayer.removeAllViews()
+        guideLayer.visibility = View.VISIBLE
+
+        // (1) 상세보기 버튼 위 big 텍스트
+        val topText = TextView(requireContext()).apply {
+            text = topBig
+            setTextColor(Color.WHITE)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+            setTypeface(null, android.graphics.Typeface.BOLD)
+        }
+
+        // (2) 예약내역 탭용 돼지꼬리 + big 텍스트
+        val tail = ImageView(requireContext()).apply {
+            setImageResource(R.drawable.ic_pig_tail)
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        val bottomText = TextView(requireContext()).apply {
+            text = bottomBig
+            setTextColor(Color.WHITE)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+            setTypeface(null, android.graphics.Typeface.BOLD)
+        }
+
+        guideLayer.addView(topText)
+        guideLayer.addView(tail)
+        guideLayer.addView(bottomText)
+
+        guideLayer.post {
+            val layerLoc = IntArray(2)
+            guideLayer.getLocationOnScreen(layerLoc)
+
+            val left = dp(18f)
+
+            // ===== (A) 상세보기 버튼 위 텍스트 =====
+            val r = Rect()
+            detailTarget.getGlobalVisibleRect(r)
+            val targetTopLocal = r.top - layerLoc[1]
+
+            var topY = targetTopLocal - dp(86f)
+            val minY = dp(90f)
+            if (topY < minY) topY = minY
+
+            topText.x = left
+            topText.y = topY
+
+            // ===== (B) 바텀네비 원 + 꼬리 + 텍스트 =====
+            val circleCxLocal = highlightRect.centerX() - layerLoc[0]
+            val circleTopLocal = highlightRect.top - layerLoc[1]
+
+            tail.measure(
+                View.MeasureSpec.makeMeasureSpec(guideLayer.width, View.MeasureSpec.AT_MOST),
+                View.MeasureSpec.makeMeasureSpec(guideLayer.height, View.MeasureSpec.AT_MOST)
+            )
+            bottomText.measure(
+                View.MeasureSpec.makeMeasureSpec(guideLayer.width, View.MeasureSpec.AT_MOST),
+                View.MeasureSpec.makeMeasureSpec(guideLayer.height, View.MeasureSpec.AT_MOST)
+            )
+
+            val tailW = tail.measuredWidth.toFloat()
+            val tailH = tail.measuredHeight.toFloat()
+
+            // ✅ 꼬리: 원 위에 "딱 붙게" (tail.bottom == circleTop)
+            val tailX = circleCxLocal - tailW / 2f
+            val tailY = circleTopLocal - tailH
+
+            tail.x = tailX
+            tail.y = tailY
+
+            // ✅ 텍스트: 꼬리 위 / 왼쪽 18dp 기준
+            bottomText.x = left
+            bottomText.y = tailY - dp(12f) - bottomText.measuredHeight
+
+            tail.bringToFront()
+            bottomText.bringToFront()
+            topText.bringToFront()
+        }
+    }
+
+    private fun rectFOfView(v: View): RectF {
+        val r = Rect()
+        v.getGlobalVisibleRect(r)
+        return RectF(r)
+    }
+
+    private fun clearGuide(activity: MainActivity) {
+        val layer = activity.getGlobalGuideLayer()
+        layer.removeAllViews()
+        layer.visibility = View.GONE
+        activity.hideGlobalOverlay()
+    }
+
+    private fun dp(value: Float): Float =
+        TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value, resources.displayMetrics)
+
+    /* ===================== 기존 데이터/정렬 로직 ===================== */
+
     private fun observeShopId() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 shopRegisterViewModel.shopId.collect { shopId ->
                     shopId ?: return@collect
-
                     reservListViewModel.loadReservationList(
                         shopId = shopId,
                         isRefresh = true
@@ -120,16 +311,12 @@ class ReservListFragment : Fragment() {
         }
     }
 
-    /**
-     * 예약 목록 관찰
-     */
     private fun observeReservationList() {
         reservListViewModel.reservationList.observe(viewLifecycleOwner) { list ->
             sortAndSubmit(list)
         }
     }
 
-    /** 기존 정렬 로직 유지 */
     private fun sortList() {
         reservListViewModel.reservationList.value?.let {
             sortAndSubmit(it)
@@ -140,18 +327,20 @@ class ReservListFragment : Fragment() {
         list: List<com.example.bisit.data.model.reservList.ReservationListItem>
     ) {
         val sortedList = if (isAscending) {
-            list.sortedBy {
-                dateFormat.parse("${it.reservedDate} ${it.startTime}")
-            }
+            list.sortedBy { dateFormat.parse("${it.reservedDate} ${it.startTime}") }
         } else {
-            list.sortedByDescending {
-                dateFormat.parse("${it.reservedDate} ${it.startTime}")
-            }
+            list.sortedByDescending { dateFormat.parse("${it.reservedDate} ${it.startTime}") }
         }
+
         adapter.updateList(sortedList)
+
+        // ✅ 리스트 갱신 후 첫 아이템 버튼 다시 캡처 + 온보딩 갱신
+        detailBtnForGuide = null
+        captureDetailButtonFromFirstItem()
+        retryCount = 0
+        refreshOnboarding()
     }
 
-    /** 버튼 UI (기존 그대로) */
     private fun updateButtonUI() {
         if (isAscending) {
             binding.btnAscending.setBackgroundResource(R.drawable.bg_order_active)

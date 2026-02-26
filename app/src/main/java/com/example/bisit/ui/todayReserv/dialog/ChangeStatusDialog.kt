@@ -1,5 +1,6 @@
 package com.example.bisit.ui.todayReserv.dialog
 
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +15,8 @@ class ChangeStatusDialog(
     private val currentStatus: String,
     private val onConfirm: (String) -> Unit
 ) : DialogFragment() {
+
+    var onDismissCallback: (() -> Unit)? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -63,6 +66,11 @@ class ChangeStatusDialog(
         }
 
         return view
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        onDismissCallback?.invoke()
     }
 
     override fun onStart() {

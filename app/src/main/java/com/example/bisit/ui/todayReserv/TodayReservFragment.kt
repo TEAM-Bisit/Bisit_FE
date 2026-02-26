@@ -61,6 +61,10 @@ class TodayReservFragment : Fragment() {
             return
         }
 
+        val guideLayer = getGuideLayer()
+        guideLayer.removeAllViews()
+        guideLayer.visibility = View.VISIBLE
+
         binding.root.post {
             when (activity.currentGuideStep) {
 
@@ -90,8 +94,7 @@ class TodayReservFragment : Fragment() {
 
                 MainActivity.GuideStep.TODAY_STATUS -> {
                     if (isPendingTab) {
-                        switchTab(false) // approved
-                        // 탭 바뀐 뒤 다시 한번 그리기
+                        switchTab(false)
                         binding.root.post { refreshOnboarding() }
                         return@post
                     }
@@ -114,9 +117,6 @@ class TodayReservFragment : Fragment() {
                             small = "시술 진행 상황을 관리해보세요.",
                             smallTextSizeSp = 14f
                         )
-                    } else {
-                        // 버튼 아직 못 잡았으면 한번 더 시도
-                        binding.root.post { refreshOnboarding() }
                     }
                 }
 
@@ -129,10 +129,8 @@ class TodayReservFragment : Fragment() {
 
                     val child = childFragmentManager.findFragmentById(binding.fragmentContainer.id)
 
-                    // 1) 모달 자동 오픈
                     (child as? ApprovedReservFragment)?.openChangeStatusDialogForOnboardingIfNeeded()
 
-                    // 2) 모달 위쪽 텍스트(온보딩 한정 / small은 12sp)
                     showTopFixedText(
                         big = "예약 확정을 해주세요",
                         small = "예약 확정을 하셔야 원활한 서비스 제공이 가능합니다.",
@@ -190,8 +188,6 @@ class TodayReservFragment : Fragment() {
             bigText.y = textTop
 
             tail.post {
-                val tabLeftLocal = tabRect.left - layerLoc[0]
-                val tabTopLocal = tabRect.top - layerLoc[1]
                 val tabRightLocal = tabRect.right - layerLoc[0]
                 val tabBottomLocal = tabRect.bottom - layerLoc[1]
 
@@ -200,7 +196,6 @@ class TodayReservFragment : Fragment() {
                     View.MeasureSpec.makeMeasureSpec(guideLayer.height, View.MeasureSpec.AT_MOST)
                 )
                 val tailW = tail.measuredWidth.toFloat()
-                val tailH = tail.measuredHeight.toFloat()
 
                 val rightMargin = dp(18f)
                 val tailX = tabRightLocal - tailW - rightMargin

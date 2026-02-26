@@ -13,6 +13,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI
 import com.example.bisit.databinding.ActivityMainBinding
+import com.example.bisit.ui.reservList.ReservListFragment
 import com.example.bisit.ui.shop.HighlightOverlayView
 import com.example.bisit.ui.shop.ShopBasicFragment
 import com.example.bisit.ui.shop.ShopFragment
@@ -187,8 +188,7 @@ class MainActivity : AppCompatActivity() {
 
             GuideStep.TODAY_DETAIL -> {
                 currentGuideStep = GuideStep.MY_TAB
-                binding.bottomNavView.selectedItemId =
-                    R.id.myPageOwnerFragment
+                binding.bottomNavView.selectedItemId = R.id.reservListFragment
                 return
             }
 
@@ -235,8 +235,10 @@ class MainActivity : AppCompatActivity() {
 
                 is TodayReservFragment -> {
                     fragment.refreshOnboarding()
-                    // 여기서 굳이 ApprovedReservFragment를 직접 콜할 필요 없음
-                    // (TodayReservFragment.refreshOnboarding()가 child fragment를 보고 버튼/모달을 처리하게 두는 게 맞음)
+                }
+
+                is ReservListFragment -> {
+                    fragment.refreshOnboarding()
                 }
             }
         }
@@ -330,6 +332,26 @@ class MainActivity : AppCompatActivity() {
         globalOverlay.visibility = View.VISIBLE
         globalOverlay.clearHighlight()
     }
+
+    fun onboardingNext() {
+        if (!onboardingEnabled) return
+        goToNextStep()
+    }
+
+    fun showGlobalOverlayMixed(
+        specs: List<com.example.bisit.ui.shop.HighlightOverlayView.HighlightSpec>
+    ) {
+        globalOverlay.visibility = View.VISIBLE
+
+        val converted = specs.map { spec ->
+            spec.copy(radiusPx = dpToPx(spec.radiusPx))
+        }
+
+        globalOverlay.highlightMixed(converted)
+    }
+
+    private fun dpToPx(dp: Float): Float =
+        dp * resources.displayMetrics.density
 
     fun finishOnboarding() {
         currentGuideStep = GuideStep.DONE

@@ -30,11 +30,9 @@ class ApprovedReservFragment : Fragment(), SortableFragment, TodayStatusTargetPr
     private var sortBy: String = "recent"
     private lateinit var repository: TodayReservationRepository
 
-    // ✅ 온보딩에서 쓸 "상태변경 버튼" View 캐시
     private var changeStatusBtnForGuide: View? = null
     override fun getChangeStatusButtonForGuide(): View? = changeStatusBtnForGuide
 
-    // ✅ 모달 중복 오픈 방지
     private var onboardingDialogOpened = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -51,7 +49,6 @@ class ApprovedReservFragment : Fragment(), SortableFragment, TodayStatusTargetPr
             RetrofitClient.getTodayReservationApi(requireContext())
         )
 
-        // ✅ 온보딩이면 repo도 mock 사용
         val useMock = (requireActivity() as MainActivity).isOnboardingActive()
         repository.setOnboardingMode(useMock)
 
@@ -91,7 +88,6 @@ class ApprovedReservFragment : Fragment(), SortableFragment, TodayStatusTargetPr
                 reservationList = response.data.reservations.toMutableList()
                 adapter.submitList(reservationList.toList())
 
-                // ✅ 리스트 갱신 뒤에 "첫 아이템의 상태변경 버튼" 잡기
                 captureChangeStatusButtonFromFirstItem()
 
             } catch (e: Exception) {
@@ -114,21 +110,29 @@ class ApprovedReservFragment : Fragment(), SortableFragment, TodayStatusTargetPr
         }
     }
 
-    // ✅ TODAY_CONFIRM 단계에서 TodayReservFragment가 호출할 함수
     fun openChangeStatusDialogForOnboardingIfNeeded() {
         val activity = requireActivity() as MainActivity
         if (!activity.isOnboardingActive()) return
         if (onboardingDialogOpened) return
 
-        // 이미 떠 있으면 또 띄우지 않기
         if (parentFragmentManager.findFragmentByTag("change-status") != null) return
 
         val first = reservationList.firstOrNull() ?: return
 
         onboardingDialogOpened = true
-        ChangeStatusDialog(first.status) { newStatus ->
+
+        val dialog = ChangeStatusDialog(first.status) { newStatus ->
             updateStatus(first.reservationId, newStatus)
-        }.show(parentFragmentManager, "change-status")
+        }
+
+        dialog.onDismissCallback = {
+            activity.getGlobalGuideLayer().removeAllViews()
+            activity.getGlobalGuideLayer().visibility = View.GONE
+
+            activity.onboardingNext()
+        }
+
+        dialog.show(parentFragmentManager, "change-status")
     }
 
     private fun updateStatus(reservationId: Long, newStatus: String) {
