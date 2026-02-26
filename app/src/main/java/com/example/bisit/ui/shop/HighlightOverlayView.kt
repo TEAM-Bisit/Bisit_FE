@@ -22,6 +22,14 @@ class HighlightOverlayView @JvmOverloads constructor(
         CIRCLE
     }
 
+    data class HighlightSpec(
+        val rect: RectF,
+        val shape: HighlightShape,
+        val radiusPx: Float = 0f
+    )
+
+    private var mixedSpecs: List<HighlightSpec> = emptyList()
+
     private val dimPaint = Paint().apply {
         color = "#CC222222".toColorInt()
         style = Paint.Style.FILL
@@ -36,6 +44,7 @@ class HighlightOverlayView @JvmOverloads constructor(
     private var multipleRects: List<RectF> = emptyList()
 
     private var highlightShape = HighlightShape.ROUNDED_RECT
+
     private var cornerRadius = 0f
 
     private var skipClickListener: (() -> Unit)? = null
@@ -43,8 +52,6 @@ class HighlightOverlayView @JvmOverloads constructor(
 
     init {
         setWillNotDraw(false)
-
-        // ✅ CLEAR는 SOFTWARE 레이어에서만 정상 동작
         setLayerType(LAYER_TYPE_SOFTWARE, null)
 
         isClickable = true
@@ -79,6 +86,7 @@ class HighlightOverlayView @JvmOverloads constructor(
         shape: HighlightShape = HighlightShape.ROUNDED_RECT,
         radiusDp: Float = 16f
     ) {
+        mixedSpecs = emptyList()
         multipleRects = emptyList()
         highlightShape = shape
         cornerRadius = dpToPx(radiusDp)
@@ -96,6 +104,7 @@ class HighlightOverlayView @JvmOverloads constructor(
         shape: HighlightShape = HighlightShape.CIRCLE,
         radiusDp: Float = 12f
     ) {
+        mixedSpecs = emptyList()
         singleRect = null
         highlightShape = shape
         cornerRadius = dpToPx(radiusDp)
@@ -104,6 +113,19 @@ class HighlightOverlayView @JvmOverloads constructor(
 
         multipleRects = rects.map { rect ->
             createRect(rect, shape, padding)
+        }
+
+        invalidate()
+    }
+
+    fun highlightMixed(specs: List<HighlightSpec>) {
+        singleRect = null
+        multipleRects = emptyList()
+
+        mixedSpecs = specs.map { spec ->
+            val padding = dpToPx(10f)
+            val r = createRect(spec.rect, spec.shape, padding)
+            spec.copy(rect = r) // rect에 padding 적용
         }
 
         invalidate()
@@ -148,6 +170,7 @@ class HighlightOverlayView @JvmOverloads constructor(
     fun clearHighlight() {
         singleRect = null
         multipleRects = emptyList()
+        mixedSpecs = emptyList()
         invalidate()
     }
 
@@ -165,7 +188,6 @@ class HighlightOverlayView @JvmOverloads constructor(
             null
         )
 
-        // 1️⃣ 전체 dim
         canvas.drawRect(
             0f,
             0f,
@@ -174,9 +196,12 @@ class HighlightOverlayView @JvmOverloads constructor(
             dimPaint
         )
 
-        // 2️⃣ 구멍
         singleRect?.let { drawHole(canvas, it) }
         multipleRects.forEach { drawHole(canvas, it) }
+
+        mixedSpecs.forEach { spec ->
+            drawHole(canvas, spec.rect, spec.shape, spec.radiusPx)
+        }
 
         canvas.restoreToCount(save)
 
@@ -192,6 +217,24 @@ class HighlightOverlayView @JvmOverloads constructor(
 
             HighlightShape.ROUNDED_RECT ->
                 canvas.drawRoundRect(rect, cornerRadius, cornerRadius, clearPaint)
+
+            HighlightShape.CIRCLE ->
+                canvas.drawOval(rect, clearPaint)
+        }
+    }
+
+    private fun drawHole(
+        canvas: Canvas,
+        rect: RectF,
+        shape: HighlightShape,
+        radiusPx: Float
+    ) {
+        when (shape) {
+            HighlightShape.RECT ->
+                canvas.drawRect(rect, clearPaint)
+
+            HighlightShape.ROUNDED_RECT ->
+                canvas.drawRoundRect(rect, radiusPx, radiusPx, clearPaint)
 
             HighlightShape.CIRCLE ->
                 canvas.drawOval(rect, clearPaint)
