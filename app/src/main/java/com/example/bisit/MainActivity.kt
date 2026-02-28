@@ -48,7 +48,6 @@ class MainActivity : AppCompatActivity() {
         TODAY_DETAIL,
         MY_TAB,
         MY_COUPON,
-        MY_COUPON_ADD,
         DONE
     }
 
@@ -215,15 +214,10 @@ class MainActivity : AppCompatActivity() {
             }
 
             GuideStep.MY_COUPON -> {
-                currentGuideStep = GuideStep.MY_COUPON_ADD
-                binding.root.post { refreshCurrentFragmentOverlay() }
-                return
-            }
-
-            GuideStep.MY_COUPON_ADD -> {
                 finishOnboarding()
                 binding.root.post {
-                    findNavController(R.id.nav_host_fragment).navigate(R.id.onboardingDoneFragment)
+                    findNavController(R.id.nav_host_fragment)
+                        .navigate(R.id.action_global_onboardingDoneFragment)
                 }
                 return
             }
@@ -256,7 +250,7 @@ class MainActivity : AppCompatActivity() {
                             is TodayReservFragment -> child.refreshOnboarding()
                             is MyPageOwnerFragment -> { fragment.refreshOnboarding() }
                             is OwnerCouponManageFragment -> { fragment.refreshOnboarding() }
-                            is OnboardingDoneFragment -> { fragment.refreshOnboarding() }
+                            is OnboardingDoneFragment -> { }
                         }
                     }
                 }

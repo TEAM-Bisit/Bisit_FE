@@ -371,4 +371,8 @@
         android:name="com.example.bisit.ui.onboarding.OnboardingDoneFragment"
         android:label="OnboardingDoneFragment" />
 
+    <action
+        android:id="@+id/action_global_onboardingDoneFragment"
+        app:destination="@id/onboardingDoneFragment" />
+
 </navigation>

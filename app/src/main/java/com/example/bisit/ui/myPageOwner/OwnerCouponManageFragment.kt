@@ -101,7 +101,7 @@ class OwnerCouponManageFragment : Fragment() {
 
             val targetTopLocal = r.top - layerLoc[1]
             val left = dp(22f)
-            val margin = dp(12f)
+            val margin = dp(24f)
 
             bigText.measure(
                 View.MeasureSpec.makeMeasureSpec(guideLayer.width, View.MeasureSpec.AT_MOST),
@@ -111,7 +111,7 @@ class OwnerCouponManageFragment : Fragment() {
 
             var y = targetTopLocal - margin - textH
 
-            val minY = dp(16f)
+            val minY = dp(24f)
             if (y < minY) y = minY
 
             bigText.x = left
