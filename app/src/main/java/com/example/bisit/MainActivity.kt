@@ -146,10 +146,13 @@ class MainActivity : AppCompatActivity() {
 
         if (isTransitioning) return
         isTransitioning = true
-
         binding.root.postDelayed({
             isTransitioning = false
         }, 250)
+
+        globalGuideTextLayer.removeAllViews()
+        globalGuideTextLayer.visibility = View.GONE
+        hideGlobalOverlay()
 
         when (currentGuideStep) {
             GuideStep.TAB -> currentGuideStep = GuideStep.EDIT_BUTTON
@@ -183,8 +186,13 @@ class MainActivity : AppCompatActivity() {
             GuideStep.TODAY_STATUS ->
                 currentGuideStep = GuideStep.TODAY_CONFIRM
 
-            GuideStep.TODAY_CONFIRM ->
+            GuideStep.TODAY_CONFIRM -> {
                 currentGuideStep = GuideStep.TODAY_DETAIL
+                binding.bottomNavView.selectedItemId = R.id.reservListFragment
+                binding.root.post { refreshCurrentFragmentOverlay() }
+                return
+            }
+
 
             GuideStep.TODAY_DETAIL -> {
                 currentGuideStep = GuideStep.MY_TAB
@@ -192,8 +200,12 @@ class MainActivity : AppCompatActivity() {
                 return
             }
 
-            GuideStep.MY_TAB ->
+            GuideStep.MY_TAB -> {
                 currentGuideStep = GuideStep.MY_COUPON
+                binding.bottomNavView.selectedItemId =
+                    R.id.myPageOwnerFragment
+                return
+            }
 
             GuideStep.MY_COUPON ->
                 currentGuideStep = GuideStep.MY_COUPON_ADD

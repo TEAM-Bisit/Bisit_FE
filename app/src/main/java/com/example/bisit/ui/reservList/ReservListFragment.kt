@@ -21,14 +21,16 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bisit.MainActivity
 import com.example.bisit.R
+import com.example.bisit.data.model.reservList.ReservationListItem
 import com.example.bisit.databinding.FragmentReservListBinding
 import com.example.bisit.ui.reservList.adapter.ReservListAdapter
 import com.example.bisit.ui.reservList.dialog.ReservListCalendarDialog
+import com.example.bisit.ui.shop.HighlightOverlayView
 import com.example.bisit.ui.shop.ShopRegisterViewModel
 import com.example.bisit.ui.shop.ShopRegisterViewModelFactory
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Locale
 
 class ReservListFragment : Fragment() {
 
@@ -64,6 +66,9 @@ class ReservListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val activity = requireActivity() as MainActivity
+        reservListViewModel.setOnboardingMode(activity.isOnboardingActive())
+
         /** RecyclerView 설정 */
         adapter = ReservListAdapter(emptyList()) { selected ->
             val bundle = Bundle().apply {
@@ -88,7 +93,7 @@ class ReservListFragment : Fragment() {
             }.show(childFragmentManager, "CalendarDialog")
         }
 
-        /** 정렬 버튼 (기존 로직 그대로) */
+        /** 정렬 버튼 */
         binding.btnAscending.setOnClickListener {
             if (!isAscending) {
                 isAscending = true
@@ -110,8 +115,16 @@ class ReservListFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // ✅ 화면 돌아왔을 때 온보딩 다시 그리기
         retryCount = 0
+
+        val activity = requireActivity() as MainActivity
+        if (activity.isOnboardingActive()) {
+            reservListViewModel.loadReservationList(
+                shopId = 1L,
+                isRefresh = true
+            )
+        }
+
         refreshOnboarding()
     }
 
@@ -119,25 +132,28 @@ class ReservListFragment : Fragment() {
 
     fun refreshOnboarding() {
         val activity = requireActivity() as MainActivity
+        android.util.Log.d("ONBOARD", "ReservList refresh: step=${activity.currentGuideStep}, enabled=${activity.isOnboardingActive()}")
 
         if (!activity.isOnboardingActive()) {
             clearGuide(activity)
             return
         }
 
-        if (activity.currentGuideStep != MainActivity.GuideStep.TODAY_DETAIL) {
-            return
-        }
+        if (activity.currentGuideStep != MainActivity.GuideStep.TODAY_DETAIL) return
+
+        binding.rvReservations.scrollToPosition(0)
 
         if (detailBtnForGuide == null) {
             captureDetailButtonFromFirstItem()
         }
 
         binding.root.post {
-            val navIndex = 2
-            val navRect = activity.getBottomNavHighlightRect(index = navIndex)
-
+            val navRect = activity.getBottomNavHighlightRect(index = 2)
             val detailBtn = detailBtnForGuide
+
+            if (detailBtn == null) {
+                captureDetailButtonFromFirstItem()
+            }
 
             if (navRect == null || detailBtn == null) {
                 if (retryCount < MAX_RETRY) {
@@ -149,16 +165,14 @@ class ReservListFragment : Fragment() {
 
             activity.showGlobalOverlayMixed(
                 specs = listOf(
-                    // 상세보기 버튼
-                    com.example.bisit.ui.shop.HighlightOverlayView.HighlightSpec(
+                    HighlightOverlayView.HighlightSpec(
                         rect = rectFOfView(detailBtn),
-                        shape = com.example.bisit.ui.shop.HighlightOverlayView.HighlightShape.ROUNDED_RECT,
-                        radiusPx = 16f
+                        shape = HighlightOverlayView.HighlightShape.ROUNDED_RECT,
+                        radiusPx = dp(12f)
                     ),
-                    // 바텀네비 예약내역 탭
-                    com.example.bisit.ui.shop.HighlightOverlayView.HighlightSpec(
+                    HighlightOverlayView.HighlightSpec(
                         rect = navRect,
-                        shape = com.example.bisit.ui.shop.HighlightOverlayView.HighlightShape.CIRCLE,
+                        shape = HighlightOverlayView.HighlightShape.CIRCLE,
                         radiusPx = 0f
                     )
                 )
@@ -185,7 +199,7 @@ class ReservListFragment : Fragment() {
                 return@post
             }
 
-            detailBtnForGuide = vh.itemView.findViewById(R.id.btnDetail) // ✅ 실제 id로 변경
+            detailBtnForGuide = vh.itemView.findViewById(R.id.btnDetail)
         }
     }
 
@@ -200,7 +214,6 @@ class ReservListFragment : Fragment() {
         guideLayer.removeAllViews()
         guideLayer.visibility = View.VISIBLE
 
-        // (1) 상세보기 버튼 위 big 텍스트
         val topText = TextView(requireContext()).apply {
             text = topBig
             setTextColor(Color.WHITE)
@@ -208,7 +221,6 @@ class ReservListFragment : Fragment() {
             setTypeface(null, android.graphics.Typeface.BOLD)
         }
 
-        // (2) 예약내역 탭용 돼지꼬리 + big 텍스트
         val tail = ImageView(requireContext()).apply {
             setImageResource(R.drawable.ic_pig_tail)
             layoutParams = ViewGroup.LayoutParams(
@@ -234,7 +246,7 @@ class ReservListFragment : Fragment() {
 
             val left = dp(18f)
 
-            // ===== (A) 상세보기 버튼 위 텍스트 =====
+            // (A) 상세보기 버튼 위 텍스트
             val r = Rect()
             detailTarget.getGlobalVisibleRect(r)
             val targetTopLocal = r.top - layerLoc[1]
@@ -246,7 +258,7 @@ class ReservListFragment : Fragment() {
             topText.x = left
             topText.y = topY
 
-            // ===== (B) 바텀네비 원 + 꼬리 + 텍스트 =====
+            // (B) 바텀네비 원 + 꼬리 + 텍스트
             val circleCxLocal = highlightRect.centerX() - layerLoc[0]
             val circleTopLocal = highlightRect.top - layerLoc[1]
 
@@ -262,14 +274,12 @@ class ReservListFragment : Fragment() {
             val tailW = tail.measuredWidth.toFloat()
             val tailH = tail.measuredHeight.toFloat()
 
-            // ✅ 꼬리: 원 위에 "딱 붙게" (tail.bottom == circleTop)
             val tailX = circleCxLocal - tailW / 2f
             val tailY = circleTopLocal - tailH
 
             tail.x = tailX
             tail.y = tailY
 
-            // ✅ 텍스트: 꼬리 위 / 왼쪽 18dp 기준
             bottomText.x = left
             bottomText.y = tailY - dp(12f) - bottomText.measuredHeight
 
@@ -300,6 +310,12 @@ class ReservListFragment : Fragment() {
     private fun observeShopId() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+
+                val activity = requireActivity() as MainActivity
+                if (activity.isOnboardingActive()) {
+                    return@repeatOnLifecycle
+                }
+
                 shopRegisterViewModel.shopId.collect { shopId ->
                     shopId ?: return@collect
                     reservListViewModel.loadReservationList(
@@ -323,9 +339,7 @@ class ReservListFragment : Fragment() {
         }
     }
 
-    private fun sortAndSubmit(
-        list: List<com.example.bisit.data.model.reservList.ReservationListItem>
-    ) {
+    private fun sortAndSubmit(list: List<ReservationListItem>) {
         val sortedList = if (isAscending) {
             list.sortedBy { dateFormat.parse("${it.reservedDate} ${it.startTime}") }
         } else {

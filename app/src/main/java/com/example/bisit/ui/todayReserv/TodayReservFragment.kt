@@ -127,8 +127,9 @@ class TodayReservFragment : Fragment() {
                         return@post
                     }
 
-                    val child = childFragmentManager.findFragmentById(binding.fragmentContainer.id)
+                    activity.showDimOnlyOverlay()
 
+                    val child = childFragmentManager.findFragmentById(binding.fragmentContainer.id)
                     (child as? ApprovedReservFragment)?.openChangeStatusDialogForOnboardingIfNeeded()
 
                     showTopFixedText(
