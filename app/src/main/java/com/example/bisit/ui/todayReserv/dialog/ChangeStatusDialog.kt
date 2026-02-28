@@ -18,6 +18,11 @@ class ChangeStatusDialog(
 
     var onDismissCallback: (() -> Unit)? = null
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        isCancelable = false
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -28,7 +33,6 @@ class ChangeStatusDialog(
         val radioGroup = view.findViewById<RadioGroup>(R.id.radioGroupStatus)
         val confirmButton = view.findViewById<AppCompatButton>(R.id.btnConfirm)
 
-        // 현재 상태에 따른 기본 선택 라디오 버튼 지정
         val currentCheckedId = when (currentStatus) {
             "확정 대기", "PENDING" -> R.id.radioWaiting
             "예약 확정", "CONFIRMED", "CUSTOMER_CONFIRMED" -> R.id.radioConfirmed
@@ -43,7 +47,6 @@ class ChangeStatusDialog(
             val selectedId = radioGroup.checkedRadioButtonId
             val selectedText = view.findViewById<RadioButton>(selectedId).text.toString()
 
-            // 한글 UI 텍스트 → 서버 상태 코드로 변환
             val mappedStatus = when (selectedText) {
                 "확정 대기" -> "PENDING"
                 "예약 확정" -> "CONFIRMED"
@@ -53,28 +56,23 @@ class ChangeStatusDialog(
                 else -> currentStatus
             }
 
-            // 취소 사유 필요
             if (mappedStatus == "CANCELED_BY_SHOP") {
                 dismiss()
                 ChangeCancelReasonDialog().show(parentFragmentManager, "cancel_reason")
                 return@setOnClickListener
             }
 
-            // 즉시 상태 반영
             onConfirm(mappedStatus)
+            onDismissCallback?.invoke()
             dismiss()
         }
 
         return view
     }
 
-    override fun onDismiss(dialog: DialogInterface) {
-        super.onDismiss(dialog)
-        onDismissCallback?.invoke()
-    }
-
     override fun onStart() {
         super.onStart()
+        dialog?.setCanceledOnTouchOutside(false)
         dialog?.window?.apply {
             setBackgroundDrawableResource(android.R.color.transparent)
 
@@ -83,5 +81,9 @@ class ChangeStatusDialog(
 
             setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT)
         }
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
     }
 }

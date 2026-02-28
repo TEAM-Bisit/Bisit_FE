@@ -15,6 +15,10 @@ class ReservListViewModel(
 
     private val repository = ReservationRepository(application)
 
+    fun setOnboardingMode(enabled: Boolean) {
+        repository.setOnboardingMode(enabled)
+    }
+
     private val _reservationList = MutableLiveData<List<ReservationListItem>>()
     val reservationList: LiveData<List<ReservationListItem>> = _reservationList
 
@@ -24,11 +28,6 @@ class ReservListViewModel(
     private var currentPage = 0
     private var hasNext = true
 
-    /**
-     * 매장 예약 내역 조회
-     * - 최신순 고정 (desc = recent)
-     * - 페이징 지원
-     */
     fun loadReservationList(
         shopId: Long,
         date: String? = null,
