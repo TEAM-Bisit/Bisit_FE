@@ -3,6 +3,7 @@ package com.example.bisit.ui.myPageOwner
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.widget.TextView
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -71,6 +72,80 @@ class MyPageOwnerFragment : Fragment() {
             findNavController().navigate(R.id.action_myPageOwnerFragment_to_myPageTerm4Fragment)
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        refreshOnboarding()
+    }
+
+    fun refreshOnboarding() {
+        val activity = requireActivity() as MainActivity
+
+        if (!activity.isOnboardingActive()) {
+            clearGuide(activity)
+            return
+        }
+
+        if (activity.currentGuideStep != MainActivity.GuideStep.MY_TAB) return
+
+        binding.btnCouponIssue.post {
+
+            activity.showGlobalOverlay(
+                targetView = binding.btnCouponIssue,
+                shape = com.example.bisit.ui.shop.HighlightOverlayView.HighlightShape.ROUNDED_RECT,
+                radiusDp = 16f
+            )
+
+            showBigTextBelowTargetSimple(
+                targetView = binding.btnCouponIssue,
+                big = "고객님들에게 우리 가게의 쿠폰을\n발급할 수 있어요."
+            )
+        }
+    }
+
+    private fun showBigTextBelowTargetSimple(targetView: View, big: String) {
+        val activity = requireActivity() as MainActivity
+        val guideLayer = activity.getGlobalGuideLayer()
+        guideLayer.removeAllViews()
+        guideLayer.visibility = View.VISIBLE
+
+        val bigText = TextView(requireContext()).apply {
+            text = big
+            setTextColor(android.graphics.Color.WHITE)
+            setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 18f)
+            setTypeface(null, android.graphics.Typeface.BOLD)
+        }
+
+        guideLayer.addView(bigText)
+
+        guideLayer.post {
+            val layerLoc = IntArray(2)
+            guideLayer.getLocationOnScreen(layerLoc)
+
+            val r = android.graphics.Rect()
+            targetView.getGlobalVisibleRect(r)
+
+            val targetBottomLocal = r.bottom - layerLoc[1]
+
+            bigText.x = dp(22f)
+            bigText.y = targetBottomLocal + dp(24f)
+            bigText.bringToFront()
+        }
+    }
+
+    private fun clearGuide(activity: MainActivity) {
+        val layer = activity.getGlobalGuideLayer()
+        layer.removeAllViews()
+        layer.visibility = View.GONE
+        activity.hideGlobalOverlay()
+    }
+
+    private fun dp(value: Float): Float =
+        android.util.TypedValue.applyDimension(
+            android.util.TypedValue.COMPLEX_UNIT_DIP,
+            value,
+            resources.displayMetrics
+        )
 
     override fun onDestroyView() {
         super.onDestroyView()
