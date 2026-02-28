@@ -19,6 +19,9 @@ import com.example.bisit.ui.shop.ShopBasicFragment
 import com.example.bisit.ui.shop.ShopFragment
 import com.example.bisit.ui.shop.ShopServicesFragment
 import com.example.bisit.ui.todayReserv.TodayReservFragment
+import com.example.bisit.ui.myPageOwner.MyPageOwnerFragment
+import com.example.bisit.ui.myPageOwner.OwnerCouponManageFragment
+import com.example.bisit.ui.onboarding.OnboardingDoneFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -45,7 +48,6 @@ class MainActivity : AppCompatActivity() {
         TODAY_DETAIL,
         MY_TAB,
         MY_COUPON,
-        MY_COUPON_ADD,
         DONE
     }
 
@@ -193,25 +195,30 @@ class MainActivity : AppCompatActivity() {
                 return
             }
 
-
             GuideStep.TODAY_DETAIL -> {
                 currentGuideStep = GuideStep.MY_TAB
-                binding.bottomNavView.selectedItemId = R.id.reservListFragment
+                binding.bottomNavView.selectedItemId = R.id.myPageOwnerFragment
+                binding.root.post { refreshCurrentFragmentOverlay() }
                 return
             }
 
             GuideStep.MY_TAB -> {
                 currentGuideStep = GuideStep.MY_COUPON
-                binding.bottomNavView.selectedItemId =
-                    R.id.myPageOwnerFragment
+                binding.bottomNavView.selectedItemId = R.id.myPageOwnerFragment
+                binding.root.post {
+                    val navController = findNavController(R.id.nav_host_fragment)
+                    navController.navigate(R.id.action_myPageOwnerFragment_to_ownerCouponManageFragment)
+                    refreshCurrentFragmentOverlay()
+                }
                 return
             }
 
-            GuideStep.MY_COUPON ->
-                currentGuideStep = GuideStep.MY_COUPON_ADD
-
-            GuideStep.MY_COUPON_ADD -> {
+            GuideStep.MY_COUPON -> {
                 finishOnboarding()
+                binding.root.post {
+                    findNavController(R.id.nav_host_fragment)
+                        .navigate(R.id.action_global_onboardingDoneFragment)
+                }
                 return
             }
 
@@ -241,6 +248,9 @@ class MainActivity : AppCompatActivity() {
                             is ShopBasicFragment -> child.refreshOnboarding()
                             is ShopServicesFragment -> child.refreshOnboarding()
                             is TodayReservFragment -> child.refreshOnboarding()
+                            is MyPageOwnerFragment -> { fragment.refreshOnboarding() }
+                            is OwnerCouponManageFragment -> { fragment.refreshOnboarding() }
+                            is OnboardingDoneFragment -> { }
                         }
                     }
                 }
@@ -257,6 +267,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun isOnboardingActive(): Boolean = onboardingEnabled
+
+    fun goToShopTab() {
+        binding.bottomNavView.selectedItemId = R.id.shopFragment
+    }
 
     fun getGlobalGuideLayer(): FrameLayout {
         return globalGuideTextLayer
@@ -351,7 +365,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun showGlobalOverlayMixed(
-        specs: List<com.example.bisit.ui.shop.HighlightOverlayView.HighlightSpec>
+        specs: List<HighlightOverlayView.HighlightSpec>
     ) {
         globalOverlay.visibility = View.VISIBLE
 
