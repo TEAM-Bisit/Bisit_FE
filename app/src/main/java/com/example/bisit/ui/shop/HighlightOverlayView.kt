@@ -205,7 +205,6 @@ class HighlightOverlayView @JvmOverloads constructor(
 
         canvas.restoreToCount(save)
 
-        // 3️⃣ Overlay 내부 자식 (Skip / Next 버튼, 텍스트 등)
         super.dispatchDraw(canvas)
     }
 

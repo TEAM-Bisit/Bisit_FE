@@ -99,10 +99,16 @@ class MainActivity : AppCompatActivity() {
         setupNavGraph(userType)
         setupSkipListener()
 
-        if (isOwner) {
+        if (isOwner && !hasShownOnboarding()) {
             onboardingEnabled = true
             currentGuideStep = GuideStep.TAB
             binding.root.post { refreshCurrentFragmentOverlay() }
+        } else {
+            onboardingEnabled = false
+            currentGuideStep = GuideStep.DONE
+            hideGlobalOverlay()
+            globalGuideTextLayer.removeAllViews()
+            globalGuideTextLayer.visibility = View.GONE
         }
     }
 
@@ -349,6 +355,19 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    private val onboardingPrefs by lazy {
+        getSharedPreferences("onboarding_prefs", MODE_PRIVATE)
+    }
+
+    private val KEY_OWNER_ONBOARDING_SHOWN = "owner_onboarding_shown"
+
+    private fun hasShownOnboarding(): Boolean =
+        onboardingPrefs.getBoolean(KEY_OWNER_ONBOARDING_SHOWN, false)
+
+    private fun markOnboardingShown() {
+        onboardingPrefs.edit().putBoolean(KEY_OWNER_ONBOARDING_SHOWN, true).apply()
+    }
+
     fun hideGlobalOverlay() {
         globalOverlay.visibility = View.GONE
         globalOverlay.clearHighlight()
@@ -384,6 +403,8 @@ class MainActivity : AppCompatActivity() {
         onboardingEnabled = false
         hideGlobalOverlay()
         globalGuideTextLayer.removeAllViews()
+
+        if (isOwner) markOnboardingShown()
     }
 
     /* ========================================================= */
