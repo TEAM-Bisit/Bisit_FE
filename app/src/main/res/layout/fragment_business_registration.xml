@@ -8,12 +8,16 @@
     android:clipToPadding="false"
     android:fillViewport="true"
     tools:context=".ui.signUp.BusinessRegistrationFragment"
-    android:background="@color/white">
+    android:background="@color/white"
+    android:clickable="true"
+    android:focusable="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:clickable="true"
+        android:focusable="true">
 
         <TextView
             android:layout_width="wrap_content"
