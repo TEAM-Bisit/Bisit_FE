@@ -25,6 +25,8 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.util.regex.Pattern
+import android.content.Context
+import android.view.inputmethod.InputMethodManager
 
 class BusinessRegistrationFragment : Fragment() {
 
@@ -49,10 +51,15 @@ class BusinessRegistrationFragment : Fragment() {
 
         (parentFragment as? OwnerOnboardingFragment)?.setNextButtonEnabled(false)
 
+        binding.root.setOnClickListener {
+            hideKeyboard()
+            checkInputsAndShowNext()
+        }
+
         binding.etOwnerName.setOnEditorActionListener { textView, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_DONE && textView.text.isNotEmpty()) {
-                binding.layoutOpeningDate.visibility = View.VISIBLE
-                binding.etOpeningDate.requestFocus()
+                binding.layoutBusinessName.visibility = View.VISIBLE
+                binding.etBusinessName.requestFocus()
                 return@setOnEditorActionListener true
             }
             return@setOnEditorActionListener false
@@ -281,6 +288,41 @@ class BusinessRegistrationFragment : Fragment() {
 
     private fun showDialog(msg: String) {
         CommonInfoDialog(message = msg, onConfirm = {}).show(parentFragmentManager, "InfoDialog")
+    }
+
+    private fun checkInputsAndShowNext() {
+        // 1. 대표자명이 입력되어 있으면 상호명 노출
+        if (binding.etOwnerName.text.isNotEmpty()) {
+            showBusinessNameLayout()
+        }
+        // 2. 상호명이 입력되어 있으면 개업일자 노출
+        if (binding.etBusinessName.text.isNotEmpty()) {
+            showOpeningDateLayout()
+        }
+        // 3. 개업일자가 형식에 맞으면 사업자번호 노출
+        val dateInput = binding.etOpeningDate.text.toString()
+        if (datePattern.matcher(dateInput).matches()) {
+            showBusinessNumberLayout()
+        }
+    }
+
+    private fun showBusinessNameLayout() {
+        binding.layoutBusinessName.visibility = View.VISIBLE
+        // binding.etBusinessName.requestFocus() // 필요 시 다음 칸으로 포커스 이동
+    }
+
+    private fun showOpeningDateLayout() {
+        binding.layoutOpeningDate.visibility = View.VISIBLE
+    }
+
+    private fun showBusinessNumberLayout() {
+        binding.layoutBusinessNumber.visibility = View.VISIBLE
+    }
+
+    // 키보드를 내리는 함수
+    private fun hideKeyboard() {
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view?.windowToken, 0)
     }
 
     override fun onDestroyView() {
