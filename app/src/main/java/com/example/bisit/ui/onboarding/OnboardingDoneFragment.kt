@@ -24,9 +24,8 @@ class OnboardingDoneFragment : Fragment(R.layout.fragment_onboarding_done) {
         }
 
         binding.btnStart.setOnClickListener {
-            val activity = requireActivity() as MainActivity
-            activity.goToShopTab()
-            findNavController().popBackStack(R.id.shopFragment, false)
+            (requireActivity() as MainActivity).finishOnboarding()
+            findNavController().popBackStack()
         }
     }
 
