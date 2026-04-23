@@ -79,6 +79,10 @@ class MyPageFragment : Fragment() {
         binding.term4.setOnClickListener {
             findNavController().navigate(R.id.action_myPageFragment_to_myPageTerm4Fragment)
         }
+
+        binding.companyInfoLayout.setOnClickListener {
+            findNavController().navigate(R.id.action_myPageFragment_to_myPageCompanyInfoFragment)
+        }
     }
 
     override fun onDestroyView() {
