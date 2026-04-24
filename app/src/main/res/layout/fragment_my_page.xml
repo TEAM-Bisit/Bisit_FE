@@ -221,27 +221,6 @@
             android:background="#F0F2F5" />
 
         <LinearLayout
-            android:id="@+id/announce_layout"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:background="?attr/selectableItemBackground"
-            android:paddingStart="20dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="공지사항"
-                android:textSize="15sp" />
-        </LinearLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#F0F2F5" />
-
-        <LinearLayout
             android:id="@+id/company_info_layout"
             android:layout_width="match_parent"
             android:layout_height="48dp"
@@ -254,6 +233,27 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="회사 정보"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#F0F2F5" />
+
+        <LinearLayout
+            android:id="@+id/announce_layout"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:background="?attr/selectableItemBackground"
+            android:paddingStart="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="공지사항"
                 android:textSize="15sp" />
         </LinearLayout>
         <View
