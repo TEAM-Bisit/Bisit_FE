@@ -89,6 +89,9 @@
         <action
             android:id="@+id/action_myPageFragment_to_myPageTerm4Fragment"
             app:destination="@id/myPageTerm4Fragment" />
+        <action
+            android:id="@+id/action_myPageFragment_to_myPageCompanyInfoFragment"
+            app:destination="@id/myPageCompanyInfoFragment" />
     </fragment>
 
     <fragment
@@ -102,6 +105,11 @@
         android:name="com.example.bisit.ui.myPage.MyPageReviewFragment"
         android:label="fragment_my_page_review"
         tools:layout="@layout/fragment_my_page_review" />
+
+    <fragment
+        android:id="@+id/myPageCompanyInfoFragment"
+        android:name="com.example.bisit.ui.myPage.MyPageCompanyInfoFragment"
+        android:label="MyPageCompanyInfoFragment" />
 
     <fragment
         android:id="@+id/homeListFragment"
