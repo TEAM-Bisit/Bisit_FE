@@ -7,7 +7,7 @@
 
     <fragment
     android:id="@+id/userTypeFragment"
-    android:name="com.example.bisit.ui.signUp.UserTypeFragment"
+    android:name="kr.bisit.app.ui.signUp.UserTypeFragment"
     android:label="UserTypeFragment"
     tools:layout="@layout/fragment_user_type">
     <action
@@ -23,14 +23,14 @@
 
     <fragment
         android:id="@+id/ownerOnboardingFragment"
-        android:name="com.example.bisit.ui.signUp.OwnerOnboardingFragment"
+        android:name="kr.bisit.app.ui.signUp.OwnerOnboardingFragment"
         android:label="OwnerOnboardingFragment"
         tools:layout="@layout/fragment_owner_onboarding" >
     </fragment>
 
     <fragment
         android:id="@+id/signUpInfoFragment"
-        android:name="com.example.bisit.ui.signUp.SignUpInfoFragment"
+        android:name="kr.bisit.app.ui.signUp.SignUpInfoFragment"
         android:label="fragment_sign_up_info"
         tools:layout="@layout/fragment_sign_up_info" >
         <action
@@ -43,14 +43,14 @@
 
     <fragment
         android:id="@+id/termsDetailFragment"
-        android:name="com.example.bisit.ui.signUp.TermsDetailFragment"
+        android:name="kr.bisit.app.ui.signUp.TermsDetailFragment"
         android:label="fragment_terms_detail"
         tools:layout="@layout/fragment_terms_detail">
     </fragment>
 
     <fragment
         android:id="@+id/signUpCredentialsFragment"
-        android:name="com.example.bisit.ui.signUp.SignUpCredentialsFragment"
+        android:name="kr.bisit.app.ui.signUp.SignUpCredentialsFragment"
         android:label="fragment_sign_up_credentials"
         tools:layout="@layout/fragment_sign_up_credentials" >
         <action
@@ -60,7 +60,7 @@
 
     <fragment
         android:id="@+id/signUpCompleteFragment"
-        android:name="com.example.bisit.ui.signUp.SignUpCompleteFragment"
+        android:name="kr.bisit.app.ui.signUp.SignUpCompleteFragment"
         android:label="fragment_sign_up_complete"
         tools:layout="@layout/fragment_sign_up_complete">
 

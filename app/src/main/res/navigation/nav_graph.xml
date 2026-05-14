@@ -7,13 +7,13 @@
 
     <fragment
         android:id="@+id/mapFragment"
-        android:name="com.example.bisit.ui.home.MapFragment"
+        android:name="kr.bisit.app.ui.home.MapFragment"
         android:label="fragment_map"
         tools:layout="@layout/fragment_map" />
 
     <fragment
         android:id="@+id/customerCategoryFragment"
-        android:name="com.example.bisit.ui.home.CustomerCategoryFragment"
+        android:name="kr.bisit.app.ui.home.CustomerCategoryFragment"
         android:label="customer_category"
         tools:layout="@layout/fragment_customer_category">
 
@@ -33,7 +33,7 @@
 
     <fragment
         android:id="@+id/CustomerMyReserve"
-        android:name="com.example.bisit.ui.customerMyReserve.CustomerMyReserveFragment"
+        android:name="kr.bisit.app.ui.customerMyReserve.CustomerMyReserveFragment"
         android:label="fragment_customer_my_reserve"
         tools:layout="@layout/fragment_customer_my_reserve">
         <action
@@ -43,7 +43,7 @@
 
     <fragment
         android:id="@+id/customerMyReserveDetailFragment"
-        android:name="com.example.bisit.ui.customerMyReserve.CustomerMyReserveDetailFragment"
+        android:name="kr.bisit.app.ui.customerMyReserve.CustomerMyReserveDetailFragment"
         android:label="예약 상세"
         tools:layout="@layout/fragment_customer_my_reserve_detail">
         <argument
@@ -53,7 +53,7 @@
 
     <fragment
         android:id="@+id/myPageFragment"
-        android:name="com.example.bisit.ui.myPage.MyPageFragment"
+        android:name="kr.bisit.app.ui.myPage.MyPageFragment"
         android:label="fragment_my_page"
         tools:layout="@layout/fragment_my_page">
         <action
@@ -96,24 +96,24 @@
 
     <fragment
         android:id="@+id/myPageCouponFragment"
-        android:name="com.example.bisit.ui.myPage.MyPageCouponFragment"
+        android:name="kr.bisit.app.ui.myPage.MyPageCouponFragment"
         android:label="fragment_my_page_coupon"
         tools:layout="@layout/fragment_my_page_coupon" />
 
     <fragment
         android:id="@+id/myPageReviewFragment"
-        android:name="com.example.bisit.ui.myPage.MyPageReviewFragment"
+        android:name="kr.bisit.app.ui.myPage.MyPageReviewFragment"
         android:label="fragment_my_page_review"
         tools:layout="@layout/fragment_my_page_review" />
 
     <fragment
         android:id="@+id/myPageCompanyInfoFragment"
-        android:name="com.example.bisit.ui.myPage.MyPageCompanyInfoFragment"
+        android:name="kr.bisit.app.ui.myPage.MyPageCompanyInfoFragment"
         android:label="MyPageCompanyInfoFragment" />
 
     <fragment
         android:id="@+id/homeListFragment"
-        android:name="com.example.bisit.ui.home.HomeListFragment"
+        android:name="kr.bisit.app.ui.home.HomeListFragment"
         android:label="home_list">
         <action
             android:id="@+id/action_homeListFragment_to_customerShopFragment"
@@ -122,7 +122,7 @@
 
     <fragment
         android:id="@+id/shopFragment"
-        android:name="com.example.bisit.ui.shop.ShopFragment"
+        android:name="kr.bisit.app.ui.shop.ShopFragment"
         android:label="fragment_shop"
         tools:layout="@layout/fragment_shop">
 
@@ -137,13 +137,13 @@
 
     <fragment
         android:id="@+id/shopBasicFragment"
-        android:name="com.example.bisit.ui.shop.ShopBasicFragment"
+        android:name="kr.bisit.app.ui.shop.ShopBasicFragment"
         tools:layout="@layout/fragment_shop_basic">
     </fragment>
 
     <fragment
         android:id="@+id/customerShopFragment"
-        android:name="com.example.bisit.ui.customerShop.CustomerShopFragment"
+        android:name="kr.bisit.app.ui.customerShop.CustomerShopFragment"
         android:label="fragment_customer_shop"
         tools:layout="@layout/fragment_customer_shop">
         <action
@@ -156,7 +156,7 @@
 
     <fragment
         android:id="@+id/shopDesignerFragment"
-        android:name="com.example.bisit.ui.customerShop.CustomerShopDesignerFragment"
+        android:name="kr.bisit.app.ui.customerShop.CustomerShopDesignerFragment"
         android:label="fragment_shop_designer"
         tools:layout="@layout/fragment_shop_designer">
         <action
@@ -169,7 +169,7 @@
 
     <fragment
         android:id="@+id/customerShopMoreReviewFragment"
-        android:name="com.example.bisit.ui.customerShop.CustomerShopMoreReviewFragment"
+        android:name="kr.bisit.app.ui.customerShop.CustomerShopMoreReviewFragment"
         android:label="fragment_customer_shop_more_review"
         tools:layout="@layout/fragment_customer_shop_more_review">
         <argument
@@ -182,7 +182,7 @@
 
     <fragment
         android:id="@+id/customerReserveFragment"
-        android:name="com.example.bisit.ui.customerReserve.CustomerReserveFragment"
+        android:name="kr.bisit.app.ui.customerReserve.CustomerReserveFragment"
         android:label="fragment_customer_reserve"
         tools:layout="@layout/fragment_customer_reserve" >
 
@@ -193,7 +193,7 @@
 
     <fragment
         android:id="@+id/customerPayFragment"
-        android:name="com.example.bisit.ui.customerPay.CustomerPayFragment"
+        android:name="kr.bisit.app.ui.customerPay.CustomerPayFragment"
         android:label="fragment_customer_pay"
         tools:layout="@layout/fragment_customer_pay">
 
@@ -209,7 +209,7 @@
 
     <fragment
         android:id="@+id/customerReserveCompleteFragment"
-        android:name="com.example.bisit.ui.customerReserve.CustomerReserveCompleteFragment"
+        android:name="kr.bisit.app.ui.customerReserve.CustomerReserveCompleteFragment"
         android:label="fragment_customer_reserve_complete"
         tools:layout="@layout/fragment_customer_reserve_complete">
         <argument android:name="shopName" app:argType="string"/>
@@ -223,13 +223,13 @@
 
     <fragment
         android:id="@+id/todayReservFragment"
-        android:name="com.example.bisit.ui.todayReserv.TodayReservFragment"
+        android:name="kr.bisit.app.ui.todayReserv.TodayReservFragment"
         android:label="fragment_today_reserv"
         tools:layout="@layout/fragment_today_reserv" />
 
     <fragment
         android:id="@+id/reservListFragment"
-        android:name="com.example.bisit.ui.reservList.ReservListFragment"
+        android:name="kr.bisit.app.ui.reservList.ReservListFragment"
         android:label="fragment_reserv_list"
         tools:layout="@layout/fragment_reserv_list">
         <action
@@ -239,13 +239,13 @@
 
     <fragment
         android:id="@+id/reservListDetailFragment"
-        android:name="com.example.bisit.ui.reservList.ReservListDetailFragment"
+        android:name="kr.bisit.app.ui.reservList.ReservListDetailFragment"
         android:label="fragment_reserv_list_detail"
         tools:layout="@layout/fragment_reserv_list_detail" />
 
     <fragment
         android:id="@+id/myPageOwnerFragment"
-        android:name="com.example.bisit.ui.myPageOwner.MyPageOwnerFragment"
+        android:name="kr.bisit.app.ui.myPageOwner.MyPageOwnerFragment"
         android:label="fragment_my_page_owner"
         tools:layout="@layout/fragment_my_page_owner">
 
@@ -283,42 +283,42 @@
 
     <fragment
         android:id="@+id/ownerCouponManageFragment"
-        android:name="com.example.bisit.ui.myPageOwner.OwnerCouponManageFragment"
+        android:name="kr.bisit.app.ui.myPageOwner.OwnerCouponManageFragment"
         android:label="쿠폰 관리"
         tools:layout="@layout/fragment_owner_coupon_manage" />
 
     <fragment
         android:id="@+id/myPageOwnerEditFragment"
-        android:name="com.example.bisit.ui.myPageOwner.MyPageOwnerEditFragment"
+        android:name="kr.bisit.app.ui.myPageOwner.MyPageOwnerEditFragment"
         android:label="MyPageOwnerEditFragment" />
 
     <fragment
         android:id="@+id/myPageEditFragment"
-        android:name="com.example.bisit.ui.myPage.MyPageEditFragment"
+        android:name="kr.bisit.app.ui.myPage.MyPageEditFragment"
         android:label="fragment_my_page_edit"
         tools:layout="@layout/fragment_my_page_edit" />
 
     <fragment
         android:id="@+id/authFragment"
-        android:name="com.example.bisit.ui.auth.AuthFragment"
+        android:name="kr.bisit.app.ui.auth.AuthFragment"
         android:label="fragment_auth"
         tools:layout="@layout/fragment_auth" />
 
     <fragment
         android:id="@+id/myPageLeaveFragment"
-        android:name="com.example.bisit.ui.myPage.MyPageLeaveFragment"
+        android:name="kr.bisit.app.ui.myPage.MyPageLeaveFragment"
         android:label="fragment_my_page_leave"
         tools:layout="@layout/fragment_my_page_leave" />
 
     <fragment
         android:id="@+id/myPageCenterFragment"
-        android:name="com.example.bisit.ui.myPage.MyPageCenterFragment"
+        android:name="kr.bisit.app.ui.myPage.MyPageCenterFragment"
         android:label="fragment_my_page_center"
         tools:layout="@layout/fragment_my_page_center" />
 
     <fragment
         android:id="@+id/myPageAnnounceFragment"
-        android:name="com.example.bisit.ui.myPage.MyPageAnnounceFragment"
+        android:name="kr.bisit.app.ui.myPage.MyPageAnnounceFragment"
         android:label="fragment_my_page_announce"
         tools:layout="@layout/fragment_my_page_announce">
         <action
@@ -328,55 +328,55 @@
 
     <fragment
         android:id="@+id/myPageAnnounceDetailFragment"
-        android:name="com.example.bisit.ui.myPage.MyPageAnnounceDetailFragment"
+        android:name="kr.bisit.app.ui.myPage.MyPageAnnounceDetailFragment"
         android:label="fragment_my_page_announce_detail"
         tools:layout="@layout/fragment_my_page_announce_detail" />
 
     <fragment
         android:id="@+id/myPageTerm1Fragment"
-        android:name="com.example.bisit.ui.myPage.terms.MyPageTerm1Fragment"
+        android:name="kr.bisit.app.ui.myPage.terms.MyPageTerm1Fragment"
         android:label="fragment_my_page_term1"
         tools:layout="@layout/fragment_my_page_term1" />
 
     <fragment
         android:id="@+id/myPageTerm2Fragment"
-        android:name="com.example.bisit.ui.myPage.terms.MyPageTerm2Fragment"
+        android:name="kr.bisit.app.ui.myPage.terms.MyPageTerm2Fragment"
         android:label="fragment_my_page_term2"
         tools:layout="@layout/fragment_my_page_term2" />
 
     <fragment
         android:id="@+id/myPageTerm3Fragment"
-        android:name="com.example.bisit.ui.myPage.terms.MyPageTerm3Fragment"
+        android:name="kr.bisit.app.ui.myPage.terms.MyPageTerm3Fragment"
         android:label="fragment_my_page_term3"
         tools:layout="@layout/fragment_my_page_term3" />
 
     <fragment
         android:id="@+id/myPageTerm4Fragment"
-        android:name="com.example.bisit.ui.myPage.terms.MyPageTerm4Fragment"
+        android:name="kr.bisit.app.ui.myPage.terms.MyPageTerm4Fragment"
         android:label="fragment_my_page_term4"
         tools:layout="@layout/fragment_my_page_term4" />
 
     <fragment
         android:id="@+id/customerPayCouponFragment"
-        android:name="com.example.bisit.ui.customerPay.CustomerPayCouponFragment"
+        android:name="kr.bisit.app.ui.customerPay.CustomerPayCouponFragment"
         android:label="fragment_customer_pay_coupon"
         tools:layout="@layout/fragment_customer_pay_coupon"/>
 
     <fragment
         android:id="@+id/staffManagementFragment"
-        android:name="com.example.bisit.ui.staffManage.StaffManagementFragment"
+        android:name="kr.bisit.app.ui.staffManage.StaffManagementFragment"
         android:label="fragment_staff_management"
         tools:layout="@layout/fragment_staff_management" />
 
     <fragment
         android:id="@+id/editOpenHourFragment"
-        android:name="com.example.bisit.ui.shop.EditOpenHourFragment"
+        android:name="kr.bisit.app.ui.shop.EditOpenHourFragment"
         android:label="영업 시간 수정"
         tools:layout="@layout/fragment_edit_open_hour" />
 
     <fragment
         android:id="@+id/onboardingDoneFragment"
-        android:name="com.example.bisit.ui.onboarding.OnboardingDoneFragment"
+        android:name="kr.bisit.app.ui.onboarding.OnboardingDoneFragment"
         android:label="OnboardingDoneFragment" />
 
     <action
