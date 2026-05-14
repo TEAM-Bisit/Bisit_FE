@@ -26,11 +26,11 @@ val naverDevClientSecret = localProps.getProperty("naver.dev.client.secret") ?: 
 val tossClientKey = localProps.getProperty("TOSS_CLIENT_KEY") ?: ""
 
 android {
-    namespace = "com.example.bisit"
+    namespace = "kr.bisit.app"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.bisit"
+        applicationId = "kr.bisit.app"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
